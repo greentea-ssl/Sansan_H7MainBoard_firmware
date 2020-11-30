@@ -76,12 +76,12 @@ void Error_Handler(void);
 #define DIPSW_3_GPIO_Port GPIOB
 #define DIPSW_4_Pin GPIO_PIN_15
 #define DIPSW_4_GPIO_Port GPIOB
+#define EMO_Pin GPIO_PIN_11
+#define EMO_GPIO_Port GPIOD
 #define ALIVE_Pin GPIO_PIN_12
 #define ALIVE_GPIO_Port GPIOD
 #define POWER_Pin GPIO_PIN_13
 #define POWER_GPIO_Port GPIOD
-#define EMO_Pin GPIO_PIN_14
-#define EMO_GPIO_Port GPIOD
 #define USER_SW0_Pin GPIO_PIN_0
 #define USER_SW0_GPIO_Port GPIOD
 #define USER_SW1_Pin GPIO_PIN_1

@@ -587,11 +587,21 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     /* Peripheral clock enable */
     __HAL_RCC_UART8_CLK_ENABLE();
   
+    __HAL_RCC_GPIOD_CLK_ENABLE();
     __HAL_RCC_GPIOE_CLK_ENABLE();
     /**UART8 GPIO Configuration    
+    PD14     ------> UART8_CTS
+    PD15     ------> UART8_RTS
     PE0     ------> UART8_RX
     PE1     ------> UART8_TX 
     */
+    GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF8_UART8;
+    HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -719,9 +729,13 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     __HAL_RCC_UART8_CLK_DISABLE();
   
     /**UART8 GPIO Configuration    
+    PD14     ------> UART8_CTS
+    PD15     ------> UART8_RTS
     PE0     ------> UART8_RX
     PE1     ------> UART8_TX 
     */
+    HAL_GPIO_DeInit(GPIOD, GPIO_PIN_14|GPIO_PIN_15);
+
     HAL_GPIO_DeInit(GPIOE, GPIO_PIN_0|GPIO_PIN_1);
 
   /* USER CODE BEGIN UART8_MspDeInit 1 */
