@@ -60,14 +60,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define KICK_Pin GPIO_PIN_8
-#define KICK_GPIO_Port GPIOE
-#define BOOST_Pin GPIO_PIN_9
-#define BOOST_GPIO_Port GPIOE
-#define DONE_Pin GPIO_PIN_10
+#define DONE_Pin GPIO_PIN_8
 #define DONE_GPIO_Port GPIOE
-#define KICKMODE_Pin GPIO_PIN_11
+#define KICKMODE_Pin GPIO_PIN_9
 #define KICKMODE_GPIO_Port GPIOE
+#define KICK_Pin GPIO_PIN_10
+#define KICK_GPIO_Port GPIOE
+#define BOOST_Pin GPIO_PIN_11
+#define BOOST_GPIO_Port GPIOE
 #define DIPSW_1_Pin GPIO_PIN_14
 #define DIPSW_1_GPIO_Port GPIOB
 #define DIPSW_2_Pin GPIO_PIN_15
