@@ -89,6 +89,19 @@ static void MX_UART5_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
+void __io_putchar(uint8_t ch)
+{
+	HAL_UART_Transmit(&huart2, &ch, 1, 1);
+}
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -134,6 +147,10 @@ int main(void)
   MX_FDCAN2_Init();
   MX_UART5_Init();
   /* USER CODE BEGIN 2 */
+
+
+  printf("oppai..\n");
+
 
   /* USER CODE END 2 */
 
