@@ -137,7 +137,7 @@ int main(void)
 
   char str[] = "Hello.\r\n";
 
-  HAL_UART_Transmit(&huart2, str, sizeof(str), 1);
+  HAL_UART_Transmit(&huart2, str, sizeof(str), 10);
 
 
   /* USER CODE END 2 */
