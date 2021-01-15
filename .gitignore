@@ -52,3 +52,5 @@ Mkfile.old
 dkms.conf
 
 .settings/language.settings.xml
+
+/Debug/
