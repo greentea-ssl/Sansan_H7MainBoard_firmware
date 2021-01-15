@@ -74,16 +74,20 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pins : PBPin PBPin */
   GPIO_InitStruct.Pin = DIPSW_1_Pin|DIPSW_2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PDPin PDPin PDPin PDPin 
-                           PDPin */
-  GPIO_InitStruct.Pin = DIPSW_3_Pin|DIPSW_4_Pin|EMO_Pin|USER_SW0_Pin 
-                          |USER_SW1_Pin;
+  /*Configure GPIO pins : PDPin PDPin PDPin PDPin */
+  GPIO_InitStruct.Pin = DIPSW_3_Pin|DIPSW_4_Pin|USER_SW0_Pin|USER_SW1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = EMO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(EMO_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PDPin PDPin */
   GPIO_InitStruct.Pin = ALIVE_Pin|POWER_Pin;
