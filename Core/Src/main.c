@@ -75,11 +75,33 @@ void __io_putchar(uint8_t ch)
 	HAL_UART_Transmit(&huart6, &ch, 1, 1);
 }
 
-
+/**
+ *
+ */
 
 void putGPIOState(void)
 {
 
+
+	printf("DIPSW: [1]:%d, [2]:%d, [3]:%d, [4]:%d\n",
+			HAL_GPIO_ReadPin(DIPSW_1_GPIO_Port, DIPSW_1_Pin),
+			HAL_GPIO_ReadPin(DIPSW_2_GPIO_Port, DIPSW_2_Pin),
+			HAL_GPIO_ReadPin(DIPSW_3_GPIO_Port, DIPSW_3_Pin),
+			HAL_GPIO_ReadPin(DIPSW_4_GPIO_Port, DIPSW_4_Pin)
+			);
+
+	printf("USER-SW: [0]:%d, [1]:%d\n",
+			HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin),
+			HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin)
+			);
+
+	printf("EMO:%d, DONE:%d\n",
+			HAL_GPIO_ReadPin(EMO_GPIO_Port, EMO_Pin),
+			HAL_GPIO_ReadPin(DONE_GPIO_Port, DONE_Pin)
+			);
+
+
+	printf("\e[3A");
 
 }
 
@@ -144,8 +166,9 @@ int main(void)
   {
 
 
+	  HAL_Delay(100);
 
-
+	  putGPIOState();
 
 
 
