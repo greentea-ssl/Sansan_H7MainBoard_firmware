@@ -76,6 +76,16 @@ void __io_putchar(uint8_t ch)
 }
 
 
+
+void putGPIOState(void)
+{
+
+
+}
+
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -124,6 +134,10 @@ int main(void)
 
 
   printf("oppai..\n");
+
+  char str[] = "Hello.\r\n";
+
+  HAL_UART_Transmit(&huart2, str, sizeof(str), 1);
 
 
   /* USER CODE END 2 */
