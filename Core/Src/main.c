@@ -72,7 +72,7 @@ void SystemClock_Config(void);
 #endif /* __GNUC__ */
 void __io_putchar(uint8_t ch)
 {
-	HAL_UART_Transmit(&huart2, &ch, 1, 1);
+	HAL_UART_Transmit(&huart6, &ch, 1, 1);
 }
 
 
@@ -134,10 +134,6 @@ int main(void)
 
 
   printf("oppai..\n");
-
-  char str[] = "Hello.\r\n";
-
-  HAL_UART_Transmit(&huart2, str, sizeof(str), 10);
 
 
   /* USER CODE END 2 */
