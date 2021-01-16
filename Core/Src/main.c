@@ -172,7 +172,7 @@ uint8_t BNO055_getChipID()
 		return 0;
 	}
 
-	return rxBuf;
+	return rxBuf[0];
 
 }
 
