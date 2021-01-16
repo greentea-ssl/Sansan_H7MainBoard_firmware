@@ -143,7 +143,7 @@ void driveMotor_speed(uint8_t channel, float omega)
 	HAL_FDCAN_ActivateNotification(&hfdcan2, 0, FDCAN_IT_TX_COMPLETE);
 
 	HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan2, &fdcan2TxHeader, fdcan2TxData);
-	while(HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan2) != 3) {}
+	//while(HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan2) != 3) {}
 
 	//HAL_FDCAN_AddMessageToTxBuffer(&hfdcan2, &fdcan2TxHeader, fdcan2TxData, &fdcan2TxMailbox);
 
