@@ -156,7 +156,7 @@ void driveMotor_speed(uint8_t channel, float omega)
 int16_t BNO055_getChipID()
 {
 
-	uint8_t i2cAddress = 0x29 << 1;
+	uint8_t i2cAddress = 0x28 << 1;
 
 	uint8_t regAddress = 0x00;
 	uint8_t rxBuf[1] = {0};
