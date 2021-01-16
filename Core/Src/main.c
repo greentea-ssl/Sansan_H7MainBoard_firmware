@@ -107,6 +107,46 @@ void putGPIOState(void)
 
 
 
+void driveMotor_speed(uint8_t channel, float omega)
+{
+
+	uint32_t fdcan2TxMailbox;
+	FDCAN_TxHeaderTypeDef fdcan2TxHeader;
+	uint8_t fdcan2TxData[8];
+
+	union _ctrlRef{
+		struct{
+			float fval;
+		};
+		struct{
+			uint8_t byte[4];
+		};
+	}controlRef;
+
+	fdcan2TxHeader.Identifier = 0x200 | ((channel & 0x07) << 5) | (0x01 << 2);
+	fdcan2TxHeader.IdType = FDCAN_STANDARD_ID;
+	fdcan2TxHeader.TxFrameType = FDCAN_FRAME_CLASSIC;
+	fdcan2TxHeader.DataLength = FDCAN_DATA_BYTES_8;
+	fdcan2TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
+	fdcan2TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
+	fdcan2TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	fdcan2TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+	fdcan2TxHeader.MessageMarker = 0;
+
+	controlRef.fval = omega;
+
+	fdcan2TxData[0] = controlRef.byte[0];
+	fdcan2TxData[1] = controlRef.byte[1];
+	fdcan2TxData[2] = controlRef.byte[2];
+	fdcan2TxData[3] = controlRef.byte[3];
+
+	HAL_FDCAN_AddMessageToTxBuffer(&hfdcan2, &fdcan2TxHeader, fdcan2TxData, &fdcan2TxMailbox);
+
+	return;
+}
+
+
+
 
 /* USER CODE END 0 */
 
@@ -155,6 +195,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
+  if(HAL_FDCAN_Start(&hfdcan2) != HAL_OK)
+  {
+	  Error_Handler();
+  }
+
+
   printf("oppai..\n");
 
 
@@ -168,7 +214,9 @@ int main(void)
 
 	  HAL_Delay(100);
 
-	  putGPIOState();
+	  // putGPIOState();
+
+	  driveMotor_speed(1, 10.0f);
 
 
 
