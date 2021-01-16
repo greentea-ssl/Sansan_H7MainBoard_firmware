@@ -125,7 +125,7 @@ void driveMotor_speed(uint8_t channel, float omega)
 
 	fdcan2TxHeader.Identifier = 0x200 | ((channel & 0x07) << 5) | (0x01 << 2);
 	fdcan2TxHeader.IdType = FDCAN_STANDARD_ID;
-	fdcan2TxHeader.TxFrameType = FDCAN_FRAME_CLASSIC;
+	fdcan2TxHeader.TxFrameType = FDCAN_DATA_FRAME;
 	fdcan2TxHeader.DataLength = FDCAN_DLC_BYTES_4;
 	fdcan2TxHeader.ErrorStateIndicator = FDCAN_ESI_PASSIVE;
 	fdcan2TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
