@@ -153,23 +153,23 @@ void driveMotor_speed(uint8_t channel, float omega)
 
 
 
-uint8_t BNO055_getChipID()
+int16_t BNO055_getChipID()
 {
 
-	uint8_t i2cAddress = 0x29;
+	uint8_t i2cAddress = 0x29 << 1;
 
 	uint8_t regAddress = 0x00;
 	uint8_t rxBuf[1] = {0};
 
-	if(HAL_I2C_Master_Transmit(&hi2c2, i2cAddress, &regAddress, 1, 10) != HAL_OK)
+	if(HAL_I2C_Master_Transmit(&hi2c2, i2cAddress, &regAddress, 1, 100) != HAL_OK)
 	{
-		return 0;
+		return 0xffff;
 	}
 
 
-	if(HAL_I2C_Master_Receive(&hi2c2, i2cAddress, rxBuf, 1, 10) != HAL_OK)
+	if(HAL_I2C_Master_Receive(&hi2c2, i2cAddress, rxBuf, 1, 100) != HAL_OK)
 	{
-		return 0;
+		return 0x7fff;
 	}
 
 	return rxBuf[0];
@@ -245,7 +245,7 @@ int main(void)
 
 	  HAL_Delay(1000);
 
-	  printf("BNO055 chip ID : 0x%02x\n", BNO055_getChipID());
+	  printf("BNO055 chip ID : 0x%04x\n", BNO055_getChipID());
 
 	  // putGPIOState();
 
