@@ -140,8 +140,9 @@ void driveMotor_speed(uint8_t channel, float omega)
 	fdcan2TxData[2] = controlRef.byte[2];
 	fdcan2TxData[3] = controlRef.byte[3];
 
-	HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan2, &fdcan2TxHeader, fdcan2TxData);
+	//HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan2, &fdcan2TxHeader, fdcan2TxData);
 
+	HAL_FDCAN_AddMessageToTxBuffer(&hfdcan2, &fdcan2TxHeader, fdcan2TxData, &fdcan2TxMailbox);
 
 
 
