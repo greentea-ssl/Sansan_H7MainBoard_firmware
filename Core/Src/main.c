@@ -219,7 +219,7 @@ int main(void)
   {
 
 
-	  HAL_Delay(100);
+	  HAL_Delay(1);
 
 	  // putGPIOState();
 
