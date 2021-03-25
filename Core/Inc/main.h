@@ -60,6 +60,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define BUZZER_Pin GPIO_PIN_0
+#define BUZZER_GPIO_Port GPIOA
+#define LEDR_Pin GPIO_PIN_6
+#define LEDR_GPIO_Port GPIOA
+#define LEDG_Pin GPIO_PIN_7
+#define LEDG_GPIO_Port GPIOA
+#define LEDB_Pin GPIO_PIN_0
+#define LEDB_GPIO_Port GPIOB
 #define DONE_Pin GPIO_PIN_8
 #define DONE_GPIO_Port GPIOE
 #define KICKMODE_Pin GPIO_PIN_9
