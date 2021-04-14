@@ -26,6 +26,8 @@
 
 #include <stdio.h>
 
+#include "cppWrapper.hpp"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,109 +102,6 @@ void __io_putchar(uint8_t ch)
 	HAL_UART_Transmit(&huart6, &ch, 1, 1);
 }
 
-/**
- *
- */
-
-void putGPIOState(void)
-{
-
-
-	printf("DIPSW: [1]:%d, [2]:%d, [3]:%d, [4]:%d\n",
-			HAL_GPIO_ReadPin(DIPSW_1_GPIO_Port, DIPSW_1_Pin),
-			HAL_GPIO_ReadPin(DIPSW_2_GPIO_Port, DIPSW_2_Pin),
-			HAL_GPIO_ReadPin(DIPSW_3_GPIO_Port, DIPSW_3_Pin),
-			HAL_GPIO_ReadPin(DIPSW_4_GPIO_Port, DIPSW_4_Pin)
-			);
-
-	printf("USER-SW: [0]:%d, [1]:%d\n",
-			HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin),
-			HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin)
-			);
-
-	printf("EMO:%d, DONE:%d\n",
-			HAL_GPIO_ReadPin(EMO_GPIO_Port, EMO_Pin),
-			HAL_GPIO_ReadPin(DONE_GPIO_Port, DONE_Pin)
-			);
-
-
-	printf("\e[3A");
-
-}
-
-
-
-void driveMotor_speed(uint8_t channel, float omega)
-{
-
-	uint32_t fdcan2TxMailbox;
-	FDCAN_TxHeaderTypeDef fdcan2TxHeader;
-	uint8_t fdcan2TxData[8];
-
-	union _ctrlRef{
-		struct{
-			float fval;
-		};
-		struct{
-			uint8_t byte[4];
-		};
-	}controlRef;
-
-	fdcan2TxHeader.Identifier = 0x200 | ((channel & 0x07) << 5) | (0x01 << 2);
-	fdcan2TxHeader.IdType = FDCAN_STANDARD_ID;
-	fdcan2TxHeader.TxFrameType = FDCAN_DATA_FRAME;
-	fdcan2TxHeader.DataLength = FDCAN_DLC_BYTES_4;
-	fdcan2TxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
-	fdcan2TxHeader.BitRateSwitch = FDCAN_BRS_OFF;
-	fdcan2TxHeader.FDFormat = FDCAN_CLASSIC_CAN;
-	fdcan2TxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
-	fdcan2TxHeader.MessageMarker = 0;
-
-	controlRef.fval = omega;
-
-	fdcan2TxData[0] = controlRef.byte[0];
-	fdcan2TxData[1] = controlRef.byte[1];
-	fdcan2TxData[2] = controlRef.byte[2];
-	fdcan2TxData[3] = controlRef.byte[3];
-
-	HAL_FDCAN_ActivateNotification(&hfdcan2, 0, FDCAN_IT_TX_COMPLETE);
-
-	HAL_FDCAN_AddMessageToTxFifoQ(&hfdcan2, &fdcan2TxHeader, fdcan2TxData);
-	//while(HAL_FDCAN_GetTxFifoFreeLevel(&hfdcan2) != 3) {}
-
-	//HAL_FDCAN_AddMessageToTxBuffer(&hfdcan2, &fdcan2TxHeader, fdcan2TxData, &fdcan2TxMailbox);
-
-
-	return;
-}
-
-
-
-int16_t BNO055_getChipID()
-{
-
-	uint8_t i2cAddress = 0x28 << 1;
-
-	uint8_t regAddress = 0x00;
-	uint8_t rxBuf[1] = {0};
-
-	if(HAL_I2C_Master_Transmit(&hi2c2, i2cAddress, &regAddress, 1, 100) != HAL_OK)
-	{
-		return 0xffff;
-	}
-
-
-	if(HAL_I2C_Master_Receive(&hi2c2, i2cAddress, rxBuf, 1, 100) != HAL_OK)
-	{
-		return 0x7fff;
-	}
-
-	return rxBuf[0];
-
-}
-
-
-
 
 
 /* USER CODE END 0 */
@@ -251,13 +150,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-  if(HAL_FDCAN_Start(&hfdcan2) != HAL_OK)
-  {
-	  Error_Handler();
-  }
+
+  cppMain();
 
 
-  printf("oppai..\n");
 
 
   /* USER CODE END 2 */
@@ -266,15 +162,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-
-	  HAL_Delay(1000);
-
-	  printf("BNO055 chip ID : 0x%04x\n", BNO055_getChipID());
-
-	  // putGPIOState();
-
-	  //driveMotor_speed(1, 10.0f);
 
 
 
