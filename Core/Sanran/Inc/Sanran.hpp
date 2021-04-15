@@ -3,7 +3,7 @@
 #define _SANRAN_HPP_
 
 
-
+#include "Power.hpp"
 
 
 class Sanran{
@@ -27,6 +27,11 @@ private:
 
 
 	int count;
+
+	Power power;
+
+
+
 
 
 };
