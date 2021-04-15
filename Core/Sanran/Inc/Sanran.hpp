@@ -4,6 +4,8 @@
 
 
 #include "Power.hpp"
+#include "RGBLED.hpp"
+
 
 
 class Sanran{
@@ -30,7 +32,10 @@ private:
 
 	Power power;
 
+	RGBLED onBrdLED;
 
+
+	float deg;
 
 
 

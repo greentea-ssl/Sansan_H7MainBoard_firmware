@@ -1,25 +1,34 @@
 
 
 
-
 #include "Sanran.hpp"
+
 
 
 #include <stdio.h>
 #include "main.h"
+
+
+
+extern TIM_HandleTypeDef htim3;
+
+
 
 /**
  * @fn  Sanran()
  * @brief Constructor of Sanran class
  *
  */
-Sanran::Sanran()
+Sanran::Sanran() : onBrdLED(&htim3, TIM_CHANNEL_2, TIM_CHANNEL_1, TIM_CHANNEL_3)
 {
-
 
 	printf("oppai...\n");
 
 	count = 0;
+
+	onBrdLED.setRGB(0, 0, 0);
+
+	deg = 0.0;
 
 }
 
@@ -33,16 +42,17 @@ void Sanran::UpdateAsync()
 
 	power.update();
 
-	HAL_Delay(100);
+	HAL_Delay(10);
 
 	//printf("count = %d\n", count++);
 
 	power.enableSupply();
 
+	deg += 0.0005;
+	if(deg > 1.0) deg -= 1.0;
 
-	HAL_Delay(100);
+	onBrdLED.setHSV(deg, 1.0, 1.0);
 
-	//power.disableSupply();
 
 }
 
