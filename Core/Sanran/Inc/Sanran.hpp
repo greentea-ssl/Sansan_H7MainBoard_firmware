@@ -5,7 +5,7 @@
 
 #include "Power.hpp"
 #include "RGBLED.hpp"
-
+#include "canMotor.hpp"
 
 
 class Sanran{
@@ -13,6 +13,9 @@ class Sanran{
 public:
 
 	Sanran();
+
+
+	void init();
 
 
 	void UpdateAsync();
@@ -24,6 +27,9 @@ public:
 	void UpdateSyncLS();
 
 
+	void CAN_Rx_Callback(FDCAN_HandleTypeDef *hfdcan);
+
+
 
 private:
 
@@ -33,6 +39,8 @@ private:
 	Power power;
 
 	RGBLED onBrdLED;
+
+	CanMotorIF canMotorIF;
 
 
 	float deg;
