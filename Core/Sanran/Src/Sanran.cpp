@@ -10,6 +10,7 @@
 
 
 
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern FDCAN_HandleTypeDef hfdcan2;
 
@@ -22,7 +23,8 @@ extern FDCAN_HandleTypeDef hfdcan2;
  */
 Sanran::Sanran()
 	: onBrdLED(&htim3, TIM_CHANNEL_2, TIM_CHANNEL_1, TIM_CHANNEL_3),
-	  canMotorIF(&hfdcan2)
+	  canMotorIF(&hfdcan2),
+	  buzzer(&htim2, TIM_CHANNEL_1, 240E+6)
 {
 
 	printf("oppai...\n");
@@ -30,6 +32,8 @@ Sanran::Sanran()
 	count = 0;
 
 	onBrdLED.setRGB(0, 0, 0);
+
+	buzzer.sound_startup();
 
 	deg = 0.0;
 
@@ -48,7 +52,6 @@ void Sanran::UpdateAsync()
 
 	HAL_Delay(100);
 
-	//printf("count = %d\n", count++);
 
 	power.enableSupply();
 
@@ -60,20 +63,20 @@ void Sanran::UpdateAsync()
 
 	if(canMotorIF.motor[0].resIsUpdated() || canMotorIF.motor[1].resIsUpdated() || canMotorIF.motor[2].resIsUpdated() || canMotorIF.motor[3].resIsUpdated())
 	{
-		printf("    | Iq \t omega \t\t theta \n");
-		printf("------------------------------------------\n");
+		//printf("    | Iq \t omega \t\t theta \n");
+		//printf("------------------------------------------\n");
 		for(int i = 0; i < 4; i++)
 		{
-			printf("[%d] | %4.2f \t %4.2f \t\t %4.2f\n", i, canMotorIF.motor[i].get_Iq(), canMotorIF.motor[i].get_omega(), canMotorIF.motor[i].get_theta() * 180.0 / M_PI);
+			//printf("[%d] | %4.2f \t %4.2f \t\t %4.2f\n", i, canMotorIF.motor[i].get_Iq(), canMotorIF.motor[i].get_omega(), canMotorIF.motor[i].get_theta() * 180.0 / M_PI);
 		}
 
-		printf("\e[6A");
+		//printf("\e[6A");
 
 		canMotorIF.motor[0].clearUpdateFlag();
 	}
 	else
 	{
-		printf(".\n");
+		//printf(".\n");
 	}
 
 
@@ -84,7 +87,7 @@ void Sanran::UpdateAsync()
 	canMotorIF.motor[2].set_Iq_ref(0.0);
 	canMotorIF.motor[3].set_Iq_ref(0.0);
 
-	canMotorIF.send_Iq_ref();
+	//canMotorIF.send_Iq_ref();
 
 
 

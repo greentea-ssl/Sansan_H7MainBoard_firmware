@@ -6,6 +6,7 @@
 #include "Power.hpp"
 #include "RGBLED.hpp"
 #include "canMotor.hpp"
+#include "Buzzer.hpp"
 
 
 class Sanran{
@@ -39,6 +40,8 @@ private:
 	Power power;
 
 	RGBLED onBrdLED;
+
+	Buzzer buzzer;
 
 	CanMotorIF canMotorIF;
 
