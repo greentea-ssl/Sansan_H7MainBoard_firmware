@@ -88,6 +88,8 @@ void Error_Handler(void);
 #define USER_SW1_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
 
+#define delay_ms(MS)	HAL_Delay(MS)
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

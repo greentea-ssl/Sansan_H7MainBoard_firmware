@@ -7,6 +7,9 @@
 #include "RGBLED.hpp"
 #include "canMotor.hpp"
 #include "Buzzer.hpp"
+#include "BNO055.hpp"
+
+
 
 
 class Sanran{
@@ -44,6 +47,8 @@ private:
 	Buzzer buzzer;
 
 	CanMotorIF canMotorIF;
+
+	BNO055 bno055;
 
 
 	float deg;
