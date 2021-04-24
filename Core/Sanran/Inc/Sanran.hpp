@@ -8,6 +8,7 @@
 #include "canMotor.hpp"
 #include "Buzzer.hpp"
 #include "BNO055.hpp"
+#include "dribbler.hpp"
 
 
 
@@ -49,6 +50,8 @@ private:
 	CanMotorIF canMotorIF;
 
 	BNO055 bno055;
+
+	Dribbler dribbler;
 
 
 	float deg;

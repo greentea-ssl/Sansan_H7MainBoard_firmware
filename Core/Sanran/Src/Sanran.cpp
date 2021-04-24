@@ -10,6 +10,7 @@
 
 
 
+extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -26,7 +27,8 @@ Sanran::Sanran()
 	: onBrdLED(&htim3, TIM_CHANNEL_2, TIM_CHANNEL_1, TIM_CHANNEL_3),
 	  canMotorIF(&hfdcan2),
 	  buzzer(&htim2, TIM_CHANNEL_1, 240E+6),
-	  bno055(&hi2c2)
+	  bno055(&hi2c2),
+	  dribbler(&htim1, TIM_CHANNEL_1)
 {
 
 	printf("oppai...\n");
@@ -43,8 +45,21 @@ Sanran::Sanran()
 
 	printf("BNO055, who am i check : %d\n", bno055.checkChipID());
 
-
 	deg = 0.0;
+
+	dribbler.setSlow();
+
+	delay_ms(1000);
+
+	dribbler.setFast();
+
+	delay_ms(2000);
+
+	dribbler.setSlow();
+
+	delay_ms(2000);
+
+	dribbler.setStop();
 
 }
 
