@@ -28,7 +28,8 @@ Sanran::Sanran()
 	  canMotorIF(&hfdcan2),
 	  buzzer(&htim2, TIM_CHANNEL_1, 240E+6),
 	  bno055(&hi2c2),
-	  dribbler(&htim1, TIM_CHANNEL_1)
+	  dribbler(&htim1, TIM_CHANNEL_1),
+	  kicker(0.01, 0.5)
 {
 
 	printf("oppai...\n");
@@ -47,19 +48,13 @@ Sanran::Sanran()
 
 	deg = 0.0;
 
-	dribbler.setSlow();
-
-	delay_ms(1000);
-
-	dribbler.setFast();
-
-	delay_ms(2000);
-
-	dribbler.setSlow();
-
-	delay_ms(2000);
+	userButton0_prev = 1;
+	userButton1_prev = 1;
 
 	dribbler.setStop();
+
+
+
 
 }
 
@@ -113,12 +108,34 @@ void Sanran::UpdateAsync()
 	uint8_t st, er;
 	bno055.read(0x39, &st);
 	bno055.read(0x3D, &er);
-
+/*
 	printf("Roll  = %f rad.\n", bno055.get_IMU_roll());
 	printf("Pitch = %f rad.\n", bno055.get_IMU_pitch());
 	printf("Yaw   = %f rad.\n", bno055.get_IMU_yaw());
 	printf("status = %d, 0x%02x, 0x%02x\n", bno055.getStatus(), st, er);
 	printf("\e[4A");
+*/
+
+
+	printf("USER_SW0 = %d\n", kicker.chargeCompleted());
+
+	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
+	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
+
+	if(userButton0 == 0 && userButton1_prev == 1)
+	{
+		kicker.kickStraight();
+	}
+	if(userButton1 == 0 && userButton1_prev == 1)
+	{
+		kicker.kickChip();
+	}
+	userButton0_prev = userButton0;
+	userButton1_prev = userButton1;
+
+
+	kicker.update();
+
 
 }
 

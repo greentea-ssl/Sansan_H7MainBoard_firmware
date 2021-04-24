@@ -9,7 +9,7 @@
 #include "Buzzer.hpp"
 #include "BNO055.hpp"
 #include "dribbler.hpp"
-
+#include "kicker.hpp"
 
 
 
@@ -53,9 +53,15 @@ private:
 
 	Dribbler dribbler;
 
+	Kicker kicker;
+
+
+
 
 	float deg;
 
+	uint8_t userButton0_prev;
+	uint8_t userButton1_prev;
 
 
 };
