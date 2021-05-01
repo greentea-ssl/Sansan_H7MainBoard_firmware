@@ -58,6 +58,8 @@ void PendSV_Handler(void);
 void SysTick_Handler(void);
 void FDCAN2_IT0_IRQHandler(void);
 void FDCAN2_IT1_IRQHandler(void);
+void TIM8_BRK_TIM12_IRQHandler(void);
+void TIM8_UP_TIM13_IRQHandler(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */

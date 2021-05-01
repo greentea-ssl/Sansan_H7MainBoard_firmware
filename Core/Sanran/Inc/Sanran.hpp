@@ -3,6 +3,9 @@
 #define _SANRAN_HPP_
 
 
+#include "main.h"
+
+
 #include "Power.hpp"
 #include "RGBLED.hpp"
 #include "canMotor.hpp"
@@ -10,7 +13,7 @@
 #include "BNO055.hpp"
 #include "dribbler.hpp"
 #include "kicker.hpp"
-
+#include "OmniWheel.hpp"
 
 
 class Sanran{
@@ -20,7 +23,7 @@ public:
 	Sanran();
 
 
-	void init();
+	void startCycle();
 
 
 	void UpdateAsync();
@@ -55,7 +58,12 @@ private:
 
 	Kicker kicker;
 
+	OmniWheel omni;
 
+	OmniWheel::Cmd_t omniCmd;
+
+	TIM_HandleTypeDef *htim_HS_cycle;
+	TIM_HandleTypeDef *htim_LS_cycle;
 
 
 	float deg;

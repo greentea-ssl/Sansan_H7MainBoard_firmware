@@ -19,6 +19,20 @@ void HAL_FDCAN_RxFifo0Callback (FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs
 		p_sanran->CAN_Rx_Callback(hfdcan);
 	}
 
+}
+
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+
+	if(htim->Instance == TIM12)
+	{
+		p_sanran->UpdateSyncHS();
+	}
+	else if(htim->Instance == TIM13)
+	{
+		p_sanran->UpdateSyncLS();
+	}
 
 }
 
@@ -29,6 +43,8 @@ void cppMain(void)
 	Sanran sanran;
 
 	p_sanran = &sanran;
+
+	sanran.startCycle();
 
 	while(1)
 	{

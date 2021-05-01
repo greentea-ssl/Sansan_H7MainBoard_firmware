@@ -13,8 +13,19 @@
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim12;
+extern TIM_HandleTypeDef htim13;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern I2C_HandleTypeDef hi2c2;
+
+
+
+/* Debug variables */
+
+volatile float omega_w = 0.0;
+volatile float omega_w_ref = 0.0;
+volatile float Iq_ref = 0.0;
+
 
 
 
@@ -24,12 +35,15 @@ extern I2C_HandleTypeDef hi2c2;
  *
  */
 Sanran::Sanran()
-	: onBrdLED(&htim3, TIM_CHANNEL_2, TIM_CHANNEL_1, TIM_CHANNEL_3),
+	: htim_HS_cycle(&htim12),
+	  htim_LS_cycle(&htim13),
+	  onBrdLED(&htim3, TIM_CHANNEL_2, TIM_CHANNEL_1, TIM_CHANNEL_3),
 	  canMotorIF(&hfdcan2),
 	  buzzer(&htim2, TIM_CHANNEL_1, 240E+6),
 	  bno055(&hi2c2),
 	  dribbler(&htim1, TIM_CHANNEL_1),
-	  kicker(0.01, 0.5)
+	  kicker(0.01, 0.5),
+	  omni(OmniWheel::TYPE_P_CONTROL, &canMotorIF)
 {
 
 	printf("oppai...\n");
@@ -53,8 +67,20 @@ Sanran::Sanran()
 
 	dribbler.setStop();
 
+	power.enableSupply();
+
+	delay_ms(4000);
 
 
+}
+
+
+
+void Sanran::startCycle()
+{
+
+	HAL_TIM_Base_Start_IT(htim_HS_cycle);
+	HAL_TIM_Base_Start_IT(htim_LS_cycle);
 
 }
 
@@ -72,13 +98,13 @@ void Sanran::UpdateAsync()
 
 	HAL_Delay(10);
 
-	power.enableSupply();
-
 	deg += 0.05;
 	if(deg > 1.0) deg -= 1.0;
 
 	onBrdLED.setHSV(deg, 1.0, 1.0);
 
+
+#if 0
 
 	if(canMotorIF.motor[0].resIsUpdated() || canMotorIF.motor[1].resIsUpdated() || canMotorIF.motor[2].resIsUpdated() || canMotorIF.motor[3].resIsUpdated())
 	{
@@ -101,7 +127,7 @@ void Sanran::UpdateAsync()
 	canMotorIF.motor[3].set_Iq_ref(0.0);
 	//canMotorIF.send_Iq_ref();
 
-
+#endif
 
 	bno055.updateIMU();
 
@@ -117,7 +143,7 @@ void Sanran::UpdateAsync()
 */
 
 
-	printf("USER_SW0 = %d\n", kicker.chargeCompleted());
+	printf("USER_SW0 = %f\n", omega_w_ref);
 
 	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
 	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
@@ -136,7 +162,6 @@ void Sanran::UpdateAsync()
 
 	kicker.update();
 
-
 }
 
 /**
@@ -146,6 +171,33 @@ void Sanran::UpdateAsync()
  */
 void Sanran::UpdateSyncHS()
 {
+
+	if(count < 2000)
+	{
+		omega_w_ref = 100.0f;
+	}
+	else if(count < 4000)
+	{
+		omega_w_ref = 200.0f;
+	}
+	else
+	{
+		omega_w_ref -= 0.2;
+		if(omega_w_ref < 0.0f) omega_w_ref = 0.0f;
+	}
+
+	omega_w = canMotorIF.motor[0].get_omega();
+
+	count += 1;
+
+	omniCmd.omega_w[0] = omega_w_ref;
+	omniCmd.omega_w[1] = 0.0f;
+	omniCmd.omega_w[2] = 0.0f;
+	omniCmd.omega_w[3] = 0.0f;
+
+	omni.update(&omniCmd);
+
+	Iq_ref = canMotorIF.motor[0].get_Iq_ref();
 
 }
 
