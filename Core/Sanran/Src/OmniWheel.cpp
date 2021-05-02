@@ -11,7 +11,7 @@ volatile float estTorque = 0.0f;
 OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF, Param_t *param) : m_type(type), m_canMotorIF(canMotorIF), m_param(*param)
 {
 
-	for(ch = 0; ch < 4; ch++)
+	for(int ch = 0; ch < 4; ch++)
 	{
 		m_convMat_robot2motor[ch][0] = cosf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
 		m_convMat_robot2motor[ch][1] = sinf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
@@ -21,6 +21,10 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF, Param_t *param)
 	for(int i = 0; i < 4; i++)
 		dob[i].setParam(m_param.Ktn, m_param.Jmn, m_param.g_dis, m_param.Ts);
 
+
+	for(int ch = 0; ch < 4; ch++)
+		m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
+
 }
 
 OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
@@ -29,10 +33,10 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 {
 
 	m_param.Jmn = 5.2E-5;
-	m_param.Kp = 0.01;
+	m_param.Kp = 0.1;
 	m_param.Ktn = (60.0f / (320 * 2 * M_PI));
 	m_param.Ts = 1E-3;
-	m_param.g_dis = 400;
+	m_param.g_dis = 200;
 
 	for(int i = 0; i < 4; i++)
 	{
@@ -45,7 +49,7 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 	m_param.wheel_pos_theta_deg[2] = -135;
 	m_param.wheel_pos_theta_deg[3] = -60;
 
-	for(ch = 0; ch < 4; ch++)
+	for(int ch = 0; ch < 4; ch++)
 	{
 		m_convMat_robot2motor[ch][0] = cosf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
 		m_convMat_robot2motor[ch][1] = sinf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
@@ -56,6 +60,8 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 	for(int i = 0; i < 4; i++)
 		dob[i].setParam(m_param.Ktn, m_param.Jmn, m_param.g_dis, m_param.Ts);
 
+	for(int ch = 0; ch < 4; ch++)
+		m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
 
 }
 
@@ -95,9 +101,9 @@ void OmniWheel::update(Cmd_t *cmd)
 		for(int i = 0; i < 4; i++)
 		{
 			m_cmd.omega_w[i] =
-					hOmni->convMat_robot2motor[ch][0] * cmd->vel_x +
-					hOmni->convMat_robot2motor[ch][1] * cmd->vel_y +
-					hOmni->convMat_robot2motor[ch][2] * cmd->omega;
+					m_convMat_robot2motor[i][0] * cmd->vel_x +
+					m_convMat_robot2motor[i][1] * cmd->vel_y +
+					m_convMat_robot2motor[i][2] * cmd->omega;
 			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;

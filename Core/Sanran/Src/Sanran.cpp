@@ -42,7 +42,7 @@ Sanran::Sanran()
 	  bno055(&hi2c2),
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
-	  omni(OmniWheel::TYPE_INDEP_P_DOB, &canMotorIF)
+	  omni(OmniWheel::TYPE_P_DOB, &canMotorIF)
 {
 
 	printf("oppai...\n");
@@ -64,7 +64,8 @@ Sanran::Sanran()
 	userButton0_prev = 1;
 	userButton1_prev = 1;
 
-	dribbler.setStop();
+	//dribbler.setStop();
+	dribbler.setFast();
 
 	power.enableSupply();
 
@@ -173,26 +174,37 @@ void Sanran::UpdateSyncHS()
 
 	if(count < 2000)
 	{
-		omega_w_ref = 100.0f;
+		omniCmd.vel_x = 1.0f;
+		omniCmd.vel_y = 0.0f;
+		omniCmd.omega = 0.0f;
 	}
 	else if(count < 4000)
 	{
-		omega_w_ref = 200.0f;
+		omniCmd.vel_x = 0.0f;
+		omniCmd.vel_y = 1.0f;
+		omniCmd.omega = 0.0f;
+	}
+	else if(count < 6000)
+	{
+		omniCmd.vel_x = 0.0f;
+		omniCmd.vel_y = 0.0f;
+		omniCmd.omega = 10.0f;
 	}
 	else
 	{
-		omega_w_ref -= 0.2;
-		if(omega_w_ref < 0.0f) omega_w_ref = 0.0f;
+		omniCmd.vel_x = 0.0f;
+		omniCmd.vel_y = 0.0f;
+		omniCmd.omega = 0.0f;
 	}
+
+	omniCmd.omega_w[0] = 0.0f;
+	omniCmd.omega_w[1] = 0.0f;
+	omniCmd.omega_w[2] = 0.0f;
+	omniCmd.omega_w[3] = 0.0f;
 
 	omega_w = canMotorIF.motor[0].get_omega();
 
 	count += 1;
-
-	omniCmd.omega_w[0] = omega_w_ref;
-	omniCmd.omega_w[1] = 0.0f;
-	omniCmd.omega_w[2] = 0.0f;
-	omniCmd.omega_w[3] = 0.0f;
 
 	omni.update(&omniCmd);
 
