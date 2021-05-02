@@ -6,6 +6,8 @@
 
 #include "canMotor.hpp"
 
+#include "controlLib.hpp"
+
 
 class OmniWheel
 {
@@ -14,7 +16,9 @@ public:
 
 	typedef enum
 	{
-		TYPE_P_CONTROL,
+		TYPE_INDEP_P,
+		TYPE_INDEP_P_DOB,
+		TYPE_P_DOB,
 	}ControlType_t;
 
 	typedef struct
@@ -34,6 +38,11 @@ public:
 		float Ktn; /* Nominal torque constant */
 		float Kp; /* Speed control gain */
 		float Ts; /* Sampling time */
+
+		float wheel_pos_r[4];
+		float wheel_pos_theta_deg[4];
+		float wheel_r[4];
+
 	}Param_t;
 
 	OmniWheel(ControlType_t type, CanMotorIF *canMotorIF, Param_t *param);
@@ -48,9 +57,13 @@ private:
 
 	CanMotorIF *m_canMotorIF;
 
+	DOB dob[4];
+
 	Cmd_t m_cmd;
 
 	Param_t m_param;
+
+	float m_convMat_robot2motor[4][3];
 
 
 };

@@ -14,6 +14,7 @@
 #include "dribbler.hpp"
 #include "kicker.hpp"
 #include "OmniWheel.hpp"
+#include "controlLib.hpp"
 
 
 class Sanran{

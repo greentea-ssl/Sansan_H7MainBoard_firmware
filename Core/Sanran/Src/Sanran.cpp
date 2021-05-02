@@ -25,8 +25,7 @@ extern I2C_HandleTypeDef hi2c2;
 volatile float omega_w = 0.0;
 volatile float omega_w_ref = 0.0;
 volatile float Iq_ref = 0.0;
-
-
+volatile float lpf_test = 0.0f;
 
 
 /**
@@ -43,7 +42,7 @@ Sanran::Sanran()
 	  bno055(&hi2c2),
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
-	  omni(OmniWheel::TYPE_P_CONTROL, &canMotorIF)
+	  omni(OmniWheel::TYPE_INDEP_P_DOB, &canMotorIF)
 {
 
 	printf("oppai...\n");
@@ -143,7 +142,7 @@ void Sanran::UpdateAsync()
 */
 
 
-	printf("USER_SW0 = %f\n", omega_w_ref);
+	//printf("USER_SW0 = %f\n", omega_w_ref);
 
 	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
 	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
