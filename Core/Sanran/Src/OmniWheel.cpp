@@ -22,7 +22,7 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 {
 
 	m_param.Jmn = 5.2E-5;
-	m_param.Kp = 0.0;
+	m_param.Kp = 0.1;
 	m_param.Ktn = (60.0f / (320 * 2 * M_PI));
 	m_param.Ts = 1E-3;
 	m_param.g_dis = 200;
@@ -116,14 +116,32 @@ void OmniWheel::update(Cmd_t *cmd)
 		}
 		break;
 
-	case TYPE_P_DOB:
+	case TYPE_ROBOT_P_DOB:
 
 		for(int i = 0; i < 4; i++)
 		{
 			m_cmd.omega_w[i] =
-					m_convMat_robot2motor[i][0] * cmd->vel_x +
-					m_convMat_robot2motor[i][1] * cmd->vel_y +
+					m_convMat_robot2motor[i][0] * cmd->robot_vel_x +
+					m_convMat_robot2motor[i][1] * cmd->robot_vel_y +
 					m_convMat_robot2motor[i][2] * cmd->omega;
+			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
+			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
+			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
+			if(Iq_ref < -15.0) Iq_ref = -15.0;
+			if(Iq_ref > 15.0) Iq_ref = 15.0;
+			m_canMotorIF->motor[i].set_Iq_ref(Iq_ref);
+		}
+		break;
+
+	case TYPE_WORLD_P_DOB:
+		m_cmd.robot_vel_x = cmd->world_vel_x * cos(m_robotState.world_theta) + cmd->world_vel_y * sin(m_robotState.world_theta);
+		m_cmd.robot_vel_y = cmd->world_vel_x * -sin(m_robotState.world_theta) + cmd->world_vel_y * cos(m_robotState.world_theta);
+		for(int i = 0; i < 4; i++)
+		{
+			m_cmd.omega_w[i] =
+					m_convMat_robot2motor[i][0] * m_cmd.robot_vel_x +
+					m_convMat_robot2motor[i][1] * m_cmd.robot_vel_y +
+					m_convMat_robot2motor[i][2] * m_cmd.omega;
 			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;

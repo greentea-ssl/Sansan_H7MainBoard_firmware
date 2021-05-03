@@ -18,13 +18,16 @@ public:
 	{
 		TYPE_INDEP_P,
 		TYPE_INDEP_P_DOB,
-		TYPE_P_DOB,
+		TYPE_ROBOT_P_DOB,
+		TYPE_WORLD_P_DOB,
 	}ControlType_t;
 
 	typedef struct
 	{
-		float vel_x;
-		float vel_y;
+		float robot_vel_x;
+		float robot_vel_y;
+		float world_vel_x;
+		float world_vel_y;
 		float omega;
 		float accel_x;
 		float accel_y;

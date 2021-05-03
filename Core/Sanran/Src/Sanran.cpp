@@ -48,7 +48,7 @@ Sanran::Sanran()
 	  bno055(&hi2c2),
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
-	  omni(OmniWheel::TYPE_P_DOB, &canMotorIF)
+	  omni(OmniWheel::TYPE_WORLD_P_DOB, &canMotorIF)
 {
 
 	printf("oppai...\n");
@@ -105,7 +105,7 @@ void Sanran::UpdateAsync()
 
 	power.update();
 
-	HAL_Delay(100);
+	HAL_Delay(10);
 
 	deg += 0.05;
 	if(deg > 1.0) deg -= 1.0;
@@ -157,6 +157,7 @@ void Sanran::UpdateAsync()
 void Sanran::UpdateSyncHS()
 {
 
+	/*
 	if(count < 2000)
 	{
 		omniCmd.vel_x = 1.0f;
@@ -181,11 +182,11 @@ void Sanran::UpdateSyncHS()
 		omniCmd.vel_y = 0.0f;
 		omniCmd.omega = 0.0f;
 	}
+	*/
 
-	omniCmd.omega_w[0] = 0.0f;
-	omniCmd.omega_w[1] = 0.0f;
-	omniCmd.omega_w[2] = 0.0f;
-	omniCmd.omega_w[3] = 0.0f;
+	omniCmd.world_vel_x = 0.0f;
+	omniCmd.world_vel_y = 0.1f;
+	omniCmd.omega = 0.0f;
 
 	omega_w = canMotorIF.motor[0].get_omega();
 
