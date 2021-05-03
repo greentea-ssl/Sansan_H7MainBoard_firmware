@@ -4,26 +4,15 @@
 
 #include <math.h>
 
+#include <stdio.h>
 
-volatile float estTorque = 0.0f;
 
 
 OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF, Param_t *param) : m_type(type), m_canMotorIF(canMotorIF), m_param(*param)
 {
 
-	for(int ch = 0; ch < 4; ch++)
-	{
-		m_convMat_robot2motor[ch][0] = cosf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
-		m_convMat_robot2motor[ch][1] = sinf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
-		m_convMat_robot2motor[ch][2] = -m_param.wheel_pos_r[ch] / m_param.wheel_r[ch];
-	}
+	commonInit();
 
-	for(int i = 0; i < 4; i++)
-		dob[i].setParam(m_param.Ktn, m_param.Jmn, m_param.g_dis, m_param.Ts);
-
-
-	for(int ch = 0; ch < 4; ch++)
-		m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
 
 }
 
@@ -33,15 +22,15 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 {
 
 	m_param.Jmn = 5.2E-5;
-	m_param.Kp = 0.1;
+	m_param.Kp = 0.0;
 	m_param.Ktn = (60.0f / (320 * 2 * M_PI));
 	m_param.Ts = 1E-3;
 	m_param.g_dis = 200;
 
 	for(int i = 0; i < 4; i++)
 	{
-		m_param.wheel_pos_r[i] = 74.7E-3;
-		m_param.wheel_r[i] = 27.427E-3;
+		m_param.wheel_pos_r[i] = 81E-3;//74.7E-3;
+		m_param.wheel_r[i] = 55E-3 / 2.0f;
 	}
 
 	m_param.wheel_pos_theta_deg[0] = 60;
@@ -49,19 +38,8 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 	m_param.wheel_pos_theta_deg[2] = -135;
 	m_param.wheel_pos_theta_deg[3] = -60;
 
-	for(int ch = 0; ch < 4; ch++)
-	{
-		m_convMat_robot2motor[ch][0] = cosf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
-		m_convMat_robot2motor[ch][1] = sinf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
-		m_convMat_robot2motor[ch][2] = -m_param.wheel_pos_r[ch] / m_param.wheel_r[ch];
-	}
 
-
-	for(int i = 0; i < 4; i++)
-		dob[i].setParam(m_param.Ktn, m_param.Jmn, m_param.g_dis, m_param.Ts);
-
-	for(int ch = 0; ch < 4; ch++)
-		m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
+	commonInit();
 
 }
 
@@ -69,6 +47,49 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 void OmniWheel::update(Cmd_t *cmd)
 {
 
+	if(!m_canMotorIF->motor[0].resIsUpdated() || !m_canMotorIF->motor[1].resIsUpdated() || !m_canMotorIF->motor[2].resIsUpdated() || !m_canMotorIF->motor[3].resIsUpdated())
+	{
+		for(int ch = 0; ch < 4; ch++)
+		{
+			m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
+			m_canMotorIF->motor[ch].clearUpdateFlag();
+		}
+
+		m_canMotorIF->send_Iq_ref();
+
+		return;
+	}
+
+	for(int ch = 0; ch < 4; ch++)
+	{
+		m_canMotorIF->motor[ch].clearUpdateFlag();
+	}
+
+
+	// update wheel state
+	for(int ch = 0; ch < 4; ch++)
+	{
+		m_wheelState[ch].theta_res_prev = m_wheelState[ch].theta_res;
+		m_wheelState[ch].theta_res = m_canMotorIF->motor[ch].get_theta();
+		m_wheelState[ch].omega_res = m_canMotorIF->motor[ch].get_omega();
+		m_wheelState[ch].Iq_res = m_canMotorIF->motor[ch].get_Iq();
+	}
+
+	// First sample process
+	if(firstSampleFlag)
+	{
+		for(int ch = 0; ch < 4; ch++)
+		{
+			m_wheelState[ch].theta_res_prev = m_wheelState[ch].theta_res;
+		}
+
+		firstSampleFlag = false;
+	}
+
+	updateOdometry();
+
+
+	// Robot velocity control
 	switch(m_type)
 	{
 	case TYPE_INDEP_P:
@@ -93,7 +114,6 @@ void OmniWheel::update(Cmd_t *cmd)
 			if(Iq_ref > 15.0) Iq_ref = 15.0;
 			m_canMotorIF->motor[i].set_Iq_ref(Iq_ref);
 		}
-		estTorque = dob[0].getEstTorque();
 		break;
 
 	case TYPE_P_DOB:
@@ -118,6 +138,122 @@ void OmniWheel::update(Cmd_t *cmd)
 	}
 
 	m_canMotorIF->send_Iq_ref();
+
+}
+
+
+
+void OmniWheel::commonInit()
+{
+
+
+	calcKinematics();
+
+
+	for(int i = 0; i < 4; i++)
+		dob[i].setParam(m_param.Ktn, m_param.Jmn, m_param.g_dis, m_param.Ts);
+
+
+	for(int ch = 0; ch < 4; ch++)
+		m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
+
+	m_robotState.odometry_x = 0.0f;
+	m_robotState.odometry_y = 0.0f;
+	m_robotState.odometry_theta = 0.0f;
+
+	firstSampleFlag = true;
+
+}
+
+
+
+void OmniWheel::calcKinematics()
+{
+
+	// Inverse kinematics
+	for(int ch = 0; ch < 4; ch++)
+	{
+		m_convMat_robot2motor[ch][0] = cosf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
+		m_convMat_robot2motor[ch][1] = sinf(m_param.wheel_pos_theta_deg[ch] * M_PI / 180.0f) / m_param.wheel_r[ch];
+		m_convMat_robot2motor[ch][2] = -m_param.wheel_pos_r[ch] / m_param.wheel_r[ch];
+	}
+
+	// forward kinematics
+	float den_Vx, den_Vy, den_omega;
+
+	den_Vx = cos(m_param.wheel_pos_theta_deg[1] * M_PI / 180.0f) - cos(m_param.wheel_pos_theta_deg[0] * M_PI / 180.0f);
+	den_Vy = pow(sin(m_param.wheel_pos_theta_deg[1] * M_PI / 180.0f), 2) + pow(sin(m_param.wheel_pos_theta_deg[0] * M_PI / 180.0f), 2);
+	den_omega = m_param.wheel_pos_r[0] * (cos(m_param.wheel_pos_theta_deg[1] * M_PI / 180.0f) - cos(m_param.wheel_pos_theta_deg[0] * M_PI / 180.0f));
+
+	m_convMat_motor2robot[0][0] = -0.5 * m_param.wheel_r[0] / den_Vx;
+	m_convMat_motor2robot[0][1] = 0.5 * m_param.wheel_r[0] / den_Vx;
+	m_convMat_motor2robot[0][2] = 0.5 * m_param.wheel_r[0] / den_Vx;
+	m_convMat_motor2robot[0][3] = -0.5 * m_param.wheel_r[0] / den_Vx;
+
+	m_convMat_motor2robot[1][0] = 0.5 * m_param.wheel_r[0] * sin(m_param.wheel_pos_theta_deg[0] * M_PI / 180.0f) / den_Vy;
+	m_convMat_motor2robot[1][1] = 0.5 * m_param.wheel_r[0] * sin(m_param.wheel_pos_theta_deg[1] * M_PI / 180.0f) / den_Vy;
+	m_convMat_motor2robot[1][2] = -0.5 * m_param.wheel_r[0] * sin(m_param.wheel_pos_theta_deg[1] * M_PI / 180.0f) / den_Vy;
+	m_convMat_motor2robot[1][3] = -0.5 * m_param.wheel_r[0] * sin(m_param.wheel_pos_theta_deg[0] * M_PI / 180.0f) / den_Vy;
+
+	m_convMat_motor2robot[2][0] = -0.5 * m_param.wheel_r[0] * cos(m_param.wheel_pos_theta_deg[1] * M_PI / 180.0f) / den_omega;
+	m_convMat_motor2robot[2][1] = 0.5 * m_param.wheel_r[0] * cos(m_param.wheel_pos_theta_deg[0] * M_PI / 180.0f) / den_omega;
+	m_convMat_motor2robot[2][2] = 0.5 * m_param.wheel_r[0] * cos(m_param.wheel_pos_theta_deg[0] * M_PI / 180.0f) / den_omega;
+	m_convMat_motor2robot[2][3] = -0.5 * m_param.wheel_r[0] * cos(m_param.wheel_pos_theta_deg[1] * M_PI / 180.0f) / den_omega;
+
+
+	printf("\nm_convMat_motor2robot[][] = \n");
+	for(int i = 0; i < 3; i++)
+	{
+		for(int j = 0; j < 4; j++)
+		{
+			printf("%2.5e\t", m_convMat_motor2robot[i][j]);
+		}
+		printf("\n");
+	}
+
+
+
+
+}
+
+void OmniWheel::updateOdometry()
+{
+
+	float delta_theta_res[4];
+
+	float delta_x = 0.0f;
+	float delta_y = 0.0f;
+	float delta_theta = 0.0f;
+
+
+	for(int ch = 0; ch < 4; ch++)
+	{
+		delta_theta_res[ch] = m_wheelState[ch].theta_res - m_wheelState[ch].theta_res_prev;
+
+		m_wheelState[ch].theta_res_prev = m_wheelState[ch].theta_res;
+
+		if(delta_theta_res[ch] < -M_PI) delta_theta_res[ch] += 2 * M_PI;
+		else if(delta_theta_res[ch] > M_PI) delta_theta_res[ch] -= 2 * M_PI;
+
+		delta_x += m_convMat_motor2robot[0][ch] * delta_theta_res[ch];
+		delta_y += m_convMat_motor2robot[1][ch] * delta_theta_res[ch];
+		delta_theta += m_convMat_motor2robot[2][ch] * delta_theta_res[ch];
+	}
+
+
+	float cos_theta = cosf(m_robotState.odometry_theta);
+	float sin_theta = sinf(m_robotState.odometry_theta);
+
+	float cosc_wt = delta_theta * 0.5f;
+	float sinc_wt = 1.0f - delta_theta * delta_theta * 0.16666666666666666666666666666667f;
+
+
+	m_robotState.odometry_x += delta_x * (cos_theta * sinc_wt - sin_theta * cosc_wt) +
+			delta_y * (-cos_theta * cosc_wt - sin_theta * sinc_wt);
+	m_robotState.odometry_y += delta_x * (cos_theta * cosc_wt + sin_theta * sinc_wt) +
+			delta_y * (cos_theta * sinc_wt - sin_theta * cosc_wt);
+	m_robotState.odometry_theta += delta_theta;
+
 
 }
 

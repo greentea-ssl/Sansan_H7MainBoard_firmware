@@ -27,6 +27,12 @@ volatile float omega_w_ref = 0.0;
 volatile float Iq_ref = 0.0;
 volatile float lpf_test = 0.0f;
 
+volatile float odo_x = 0.0f;
+volatile float odo_y = 0.0f;
+volatile float odo_theta = 0.0f;
+
+volatile float wheel_theta[4] = {0};
+
 
 /**
  * @fn  Sanran()
@@ -64,12 +70,15 @@ Sanran::Sanran()
 	userButton0_prev = 1;
 	userButton1_prev = 1;
 
+	power.enableSupply();
+
+
+	dribbler.setup();
 	//dribbler.setStop();
 	dribbler.setFast();
 
-	power.enableSupply();
 
-	delay_ms(4000);
+	delay_ms(4000); // wait for BLDC sensor calibration
 
 
 }
@@ -102,32 +111,6 @@ void Sanran::UpdateAsync()
 	if(deg > 1.0) deg -= 1.0;
 
 	onBrdLED.setHSV(deg, 1.0, 1.0);
-
-
-#if 0
-
-	if(canMotorIF.motor[0].resIsUpdated() || canMotorIF.motor[1].resIsUpdated() || canMotorIF.motor[2].resIsUpdated() || canMotorIF.motor[3].resIsUpdated())
-	{
-		//printf("    | Iq \t omega \t\t theta \n");
-		//printf("------------------------------------------\n");
-		for(int i = 0; i < 4; i++)
-		{
-			//printf("[%d] | %4.2f \t %4.2f \t\t %4.2f\n", i, canMotorIF.motor[i].get_Iq(), canMotorIF.motor[i].get_omega(), canMotorIF.motor[i].get_theta() * 180.0 / M_PI);
-		}
-		//printf("\e[6A");
-		canMotorIF.motor[0].clearUpdateFlag();
-	}
-	else
-	{
-		//printf(".\n");
-	}
-	canMotorIF.motor[0].set_Iq_ref(0.0);
-	canMotorIF.motor[1].set_Iq_ref(0.0);
-	canMotorIF.motor[2].set_Iq_ref(0.0);
-	canMotorIF.motor[3].set_Iq_ref(0.0);
-	//canMotorIF.send_Iq_ref();
-
-#endif
 
 	bno055.updateIMU();
 
@@ -206,7 +189,15 @@ void Sanran::UpdateSyncHS()
 
 	count += 1;
 
+
 	omni.update(&omniCmd);
+
+	odo_x = omni.m_robotState.odometry_x;
+	odo_y = omni.m_robotState.odometry_y;
+	odo_theta = omni.m_robotState.odometry_theta;
+
+	for(int ch = 0; ch < 4; ch++) wheel_theta[ch] = canMotorIF.motor[ch].get_theta();
+
 
 	Iq_ref = canMotorIF.motor[0].get_Iq_ref();
 

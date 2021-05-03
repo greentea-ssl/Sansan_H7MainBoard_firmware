@@ -42,8 +42,20 @@ public:
 		float wheel_pos_r[4];
 		float wheel_pos_theta_deg[4];
 		float wheel_r[4];
-
 	}Param_t;
+
+	typedef struct{
+		float odometry_x;
+		float odometry_y;
+		float odometry_theta;
+	}RobotState_t;
+
+	typedef struct{
+		float theta_res;
+		float theta_res_prev;
+		float omega_res;
+		float Iq_res;
+	}WheelState_t;
 
 	OmniWheel(ControlType_t type, CanMotorIF *canMotorIF, Param_t *param);
 
@@ -51,7 +63,23 @@ public:
 
 	void update(Cmd_t *cmd);
 
+
+	RobotState_t m_robotState;
+
+	WheelState_t m_wheelState[4];
+
+
 private:
+
+	void commonInit();
+
+	void calcKinematics();
+
+	void updateOdometry();
+
+
+	bool firstSampleFlag;
+
 
 	ControlType_t m_type;
 
@@ -64,6 +92,7 @@ private:
 	Param_t m_param;
 
 	float m_convMat_robot2motor[4][3];
+	float m_convMat_motor2robot[3][4];
 
 
 };
