@@ -16,7 +16,7 @@ public:
 
 	Dribbler(TIM_HandleTypeDef *htim, uint32_t channel);
 
-	void init();
+	void setup();
 
 	void write(float rate);
 

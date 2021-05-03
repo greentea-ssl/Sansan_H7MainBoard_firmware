@@ -15,12 +15,10 @@ Dribbler::Dribbler(TIM_HandleTypeDef *htim, uint32_t channel) : m_htim(htim), m_
 
 	HAL_TIM_PWM_Start(m_htim, m_channel);
 
-	init();
-
 }
 
 
-void Dribbler::init()
+void Dribbler::setup()
 {
 
 	write(0.1);
