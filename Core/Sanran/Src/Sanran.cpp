@@ -105,7 +105,7 @@ void Sanran::UpdateAsync()
 
 	power.update();
 
-	HAL_Delay(10);
+	HAL_Delay(100);
 
 	deg += 0.05;
 	if(deg > 1.0) deg -= 1.0;
@@ -124,6 +124,8 @@ void Sanran::UpdateAsync()
 	printf("status = %d, 0x%02x, 0x%02x\n", bno055.getStatus(), st, er);
 	printf("\e[4A");
 */
+
+	omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
 
 
 	//printf("USER_SW0 = %f\n", omega_w_ref);
@@ -192,9 +194,9 @@ void Sanran::UpdateSyncHS()
 
 	omni.update(&omniCmd);
 
-	odo_x = omni.m_robotState.odometry_x;
-	odo_y = omni.m_robotState.odometry_y;
-	odo_theta = omni.m_robotState.odometry_theta;
+	odo_x = omni.m_robotState.world_x;
+	odo_y = omni.m_robotState.world_y;
+	odo_theta = omni.m_robotState.world_theta;
 
 	for(int ch = 0; ch < 4; ch++) wheel_theta[ch] = canMotorIF.motor[ch].get_theta();
 

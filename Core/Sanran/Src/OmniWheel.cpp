@@ -157,9 +157,9 @@ void OmniWheel::commonInit()
 	for(int ch = 0; ch < 4; ch++)
 		m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
 
-	m_robotState.odometry_x = 0.0f;
-	m_robotState.odometry_y = 0.0f;
-	m_robotState.odometry_theta = 0.0f;
+	m_robotState.world_x = 0.0f;
+	m_robotState.world_y = 0.0f;
+	m_robotState.world_theta = 0.0f;
 
 	firstSampleFlag = true;
 
@@ -241,19 +241,22 @@ void OmniWheel::updateOdometry()
 	}
 
 
-	float cos_theta = cosf(m_robotState.odometry_theta);
-	float sin_theta = sinf(m_robotState.odometry_theta);
+	float cos_theta = cosf(m_robotState.world_theta);
+	float sin_theta = sinf(m_robotState.world_theta);
 
 	float cosc_wt = delta_theta * 0.5f;
 	float sinc_wt = 1.0f - delta_theta * delta_theta * 0.16666666666666666666666666666667f;
 
 
-	m_robotState.odometry_x += delta_x * (cos_theta * sinc_wt - sin_theta * cosc_wt) +
+	m_robotState.odometry_dx = delta_x * (cos_theta * sinc_wt - sin_theta * cosc_wt) +
 			delta_y * (-cos_theta * cosc_wt - sin_theta * sinc_wt);
-	m_robotState.odometry_y += delta_x * (cos_theta * cosc_wt + sin_theta * sinc_wt) +
+	m_robotState.odometry_dy = delta_x * (cos_theta * cosc_wt + sin_theta * sinc_wt) +
 			delta_y * (cos_theta * sinc_wt - sin_theta * cosc_wt);
-	m_robotState.odometry_theta += delta_theta;
+	m_robotState.odometry_dtheta = delta_theta;
 
+	m_robotState.world_x += m_robotState.odometry_dx;
+	m_robotState.world_y += m_robotState.odometry_dy;
+	m_robotState.world_theta += m_robotState.odometry_dtheta;
 
 }
 

@@ -45,9 +45,12 @@ public:
 	}Param_t;
 
 	typedef struct{
-		float odometry_x;
-		float odometry_y;
-		float odometry_theta;
+		float odometry_dx;
+		float odometry_dy;
+		float odometry_dtheta;
+		float world_x;
+		float world_y;
+		float world_theta;
 	}RobotState_t;
 
 	typedef struct{
@@ -63,6 +66,10 @@ public:
 
 	void update(Cmd_t *cmd);
 
+	void correctAngle(float trueAngle)
+	{
+		m_robotState.world_theta = trueAngle;
+	}
 
 	RobotState_t m_robotState;
 
