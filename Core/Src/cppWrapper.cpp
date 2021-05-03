@@ -6,9 +6,9 @@
 
 #include <stdio.h>
 
-
-
 Sanran *p_sanran;
+
+
 
 
 void HAL_FDCAN_RxFifo0Callback (FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
@@ -33,6 +33,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		p_sanran->UpdateSyncLS();
 	}
+
+}
+
+
+void HAL_UART_RxCpltCallback (UART_HandleTypeDef *huart)
+{
+
+	p_sanran->UART_Rx_Callback(huart);
 
 }
 

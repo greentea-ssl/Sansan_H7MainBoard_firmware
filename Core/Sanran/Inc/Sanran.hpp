@@ -15,6 +15,7 @@
 #include "kicker.hpp"
 #include "OmniWheel.hpp"
 #include "controlLib.hpp"
+#include "simulinkSerial.hpp"
 
 
 class Sanran{
@@ -37,6 +38,9 @@ public:
 
 
 	void CAN_Rx_Callback(FDCAN_HandleTypeDef *hfdcan);
+
+
+	void UART_Rx_Callback(UART_HandleTypeDef *huart);
 
 
 
@@ -65,6 +69,9 @@ private:
 
 	TIM_HandleTypeDef *htim_HS_cycle;
 	TIM_HandleTypeDef *htim_LS_cycle;
+
+
+	SimulinkSerial simulink;
 
 
 	float deg;

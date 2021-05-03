@@ -141,7 +141,7 @@ void OmniWheel::update(Cmd_t *cmd)
 			m_cmd.omega_w[i] =
 					m_convMat_robot2motor[i][0] * m_cmd.robot_vel_x +
 					m_convMat_robot2motor[i][1] * m_cmd.robot_vel_y +
-					m_convMat_robot2motor[i][2] * m_cmd.omega;
+					m_convMat_robot2motor[i][2] * cmd->omega;
 			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;

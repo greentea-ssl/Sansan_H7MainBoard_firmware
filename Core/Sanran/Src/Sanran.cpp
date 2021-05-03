@@ -17,6 +17,8 @@ extern TIM_HandleTypeDef htim12;
 extern TIM_HandleTypeDef htim13;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern I2C_HandleTypeDef hi2c2;
+extern UART_HandleTypeDef huart5;
+extern UART_HandleTypeDef huart6;
 
 
 
@@ -48,7 +50,8 @@ Sanran::Sanran()
 	  bno055(&hi2c2),
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
-	  omni(OmniWheel::TYPE_WORLD_P_DOB, &canMotorIF)
+	  omni(OmniWheel::TYPE_WORLD_P_DOB, &canMotorIF),
+	  simulink(&huart5, 3)
 {
 
 	printf("oppai...\n");
@@ -147,6 +150,9 @@ void Sanran::UpdateAsync()
 
 	kicker.update();
 
+	printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
+
+
 }
 
 /**
@@ -184,9 +190,9 @@ void Sanran::UpdateSyncHS()
 	}
 	*/
 
-	omniCmd.world_vel_x = 0.0f;
-	omniCmd.world_vel_y = 0.1f;
-	omniCmd.omega = 0.0f;
+	omniCmd.world_vel_x = simulink.m_data[0];
+	omniCmd.world_vel_y = simulink.m_data[1];
+	omniCmd.omega = simulink.m_data[2];
 
 	omega_w = canMotorIF.motor[0].get_omega();
 
@@ -221,8 +227,16 @@ void Sanran::UpdateSyncLS()
 void Sanran::CAN_Rx_Callback(FDCAN_HandleTypeDef *hfdcan)
 {
 
-
 	canMotorIF.update_CAN_Rx();
+
+}
+
+
+
+void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
+{
+
+	simulink.dataReceivedCallback(huart);
 
 }
 
