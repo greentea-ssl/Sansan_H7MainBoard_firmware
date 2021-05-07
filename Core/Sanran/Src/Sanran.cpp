@@ -120,13 +120,13 @@ void Sanran::UpdateAsync()
 	uint8_t st, er;
 	bno055.read(0x39, &st);
 	bno055.read(0x3D, &er);
-/*
+
 	printf("Roll  = %f rad.\n", bno055.get_IMU_roll());
 	printf("Pitch = %f rad.\n", bno055.get_IMU_pitch());
 	printf("Yaw   = %f rad.\n", bno055.get_IMU_yaw());
 	printf("status = %d, 0x%02x, 0x%02x\n", bno055.getStatus(), st, er);
 	printf("\e[4A");
-*/
+
 
 	omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
 
@@ -150,7 +150,7 @@ void Sanran::UpdateAsync()
 
 	kicker.update();
 
-	printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
+	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
 
 }

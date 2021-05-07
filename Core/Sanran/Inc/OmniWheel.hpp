@@ -24,6 +24,7 @@ public:
 
 	typedef struct
 	{
+		float world_theta;
 		float robot_vel_x;
 		float robot_vel_y;
 		float world_vel_x;
