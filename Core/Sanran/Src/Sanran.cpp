@@ -81,6 +81,7 @@ Sanran::Sanran()
 	dribbler.setup();
 	//dribbler.setStop();
 	//dribbler.setFast();
+	dribbler.setSlow();
 
 
 	delay_ms(4000); // wait for BLDC sensor calibration
@@ -131,7 +132,13 @@ void Sanran::UpdateAsync()
 	printf("\e[4A");
 	*/
 
+	ballSensor.update();
+
 	printf("ball : %f\n", ballSensor.read());
+
+	if(ballSensor.read() > 0.15) dribbler.setSlow();
+	else dribbler.setFast();
+
 
 	omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
 
