@@ -19,6 +19,7 @@ extern FDCAN_HandleTypeDef hfdcan2;
 extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
+extern ADC_HandleTypeDef hadc1;
 
 
 
@@ -48,6 +49,7 @@ Sanran::Sanran()
 	  canMotorIF(&hfdcan2),
 	  buzzer(&htim2, TIM_CHANNEL_1, 240E+6),
 	  bno055(&hi2c2),
+	  ballSensor(&hadc1),
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
 	  omni(OmniWheel::TYPE_WORLD_P_DOB, &canMotorIF),
@@ -78,7 +80,7 @@ Sanran::Sanran()
 
 	dribbler.setup();
 	//dribbler.setStop();
-	dribbler.setFast();
+	//dribbler.setFast();
 
 
 	delay_ms(4000); // wait for BLDC sensor calibration
@@ -121,12 +123,15 @@ void Sanran::UpdateAsync()
 	bno055.read(0x39, &st);
 	bno055.read(0x3D, &er);
 
+	/*
 	printf("Roll  = %f rad.\n", bno055.get_IMU_roll());
 	printf("Pitch = %f rad.\n", bno055.get_IMU_pitch());
 	printf("Yaw   = %f rad.\n", bno055.get_IMU_yaw());
 	printf("status = %d, 0x%02x, 0x%02x\n", bno055.getStatus(), st, er);
 	printf("\e[4A");
+	*/
 
+	printf("ball : %f\n", ballSensor.read());
 
 	omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
 

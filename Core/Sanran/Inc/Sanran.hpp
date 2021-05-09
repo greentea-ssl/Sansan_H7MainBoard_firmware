@@ -11,6 +11,7 @@
 #include "canMotor.hpp"
 #include "Buzzer.hpp"
 #include "BNO055.hpp"
+#include "ballSensor.hpp"
 #include "dribbler.hpp"
 #include "kicker.hpp"
 #include "OmniWheel.hpp"
@@ -58,6 +59,8 @@ private:
 	CanMotorIF canMotorIF;
 
 	BNO055 bno055;
+
+	BallSensor ballSensor;
 
 	Dribbler dribbler;
 
