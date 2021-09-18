@@ -53,7 +53,7 @@ Sanran::Sanran()
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
 	  omni(OmniWheel::TYPE_WORLD_P_DOB, &canMotorIF),
-	  simulink(&huart5, 3)
+	  matcha(&huart5)
 {
 
 	printf("oppai...\n");
@@ -202,9 +202,11 @@ void Sanran::UpdateSyncHS()
 	}
 	*/
 
+#if 0
 	omniCmd.world_vel_x = simulink.m_data[0];
 	omniCmd.world_vel_y = simulink.m_data[1];
 	omniCmd.omega = simulink.m_data[2];
+#endif
 
 	omega_w = canMotorIF.motor[0].get_omega();
 
@@ -248,7 +250,11 @@ void Sanran::CAN_Rx_Callback(FDCAN_HandleTypeDef *hfdcan)
 void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
 {
 
-	simulink.dataReceivedCallback(huart);
+	//simulink.dataReceivedCallback(huart);
+
+	matcha.dataReceivedCallback(huart);
+
+	printf("%c", matcha.m_rxBuf[0]);
 
 }
 

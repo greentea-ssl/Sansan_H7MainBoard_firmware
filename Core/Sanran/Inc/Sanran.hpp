@@ -17,6 +17,7 @@
 #include "OmniWheel.hpp"
 #include "controlLib.hpp"
 #include "simulinkSerial.hpp"
+#include "matchaSerial.hpp"
 
 
 class Sanran{
@@ -50,13 +51,14 @@ private:
 
 	int count;
 
-	Power power;
+	TIM_HandleTypeDef *htim_HS_cycle;
+	TIM_HandleTypeDef *htim_LS_cycle;
 
 	RGBLED onBrdLED;
 
-	Buzzer buzzer;
-
 	CanMotorIF canMotorIF;
+
+	Buzzer buzzer;
 
 	BNO055 bno055;
 
@@ -68,13 +70,15 @@ private:
 
 	OmniWheel omni;
 
+	MatchaSerial matcha;
+
 	OmniWheel::Cmd_t omniCmd;
 
-	TIM_HandleTypeDef *htim_HS_cycle;
-	TIM_HandleTypeDef *htim_LS_cycle;
+	Power power;
 
 
-	SimulinkSerial simulink;
+
+//	SimulinkSerial simulink;
 
 
 	float deg;

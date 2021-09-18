@@ -53,7 +53,7 @@ bool BNO055::checkChipID()
 
 bool BNO055::reset()
 {
-	setSysTrigger(SysTrigger::RST_SYS);
+	return setSysTrigger(SysTrigger::RST_SYS);
 }
 
 bool BNO055::setOprMode(OprMode mode)
