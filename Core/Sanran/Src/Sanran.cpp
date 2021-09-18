@@ -134,7 +134,7 @@ void Sanran::UpdateAsync()
 
 	ballSensor.update();
 
-	printf("ball : %f\n", ballSensor.read());
+	//printf("ball : %f\n", ballSensor.read());
 
 	if(ballSensor.read() > 0.15) dribbler.setSlow();
 	else dribbler.setFast();
@@ -164,6 +164,8 @@ void Sanran::UpdateAsync()
 
 	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
+
+	printf("%c\n", matcha.m_rxBuf[0]);
 
 }
 
@@ -253,8 +255,6 @@ void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
 	//simulink.dataReceivedCallback(huart);
 
 	matcha.dataReceivedCallback(huart);
-
-	printf("%c", matcha.m_rxBuf[0]);
 
 }
 

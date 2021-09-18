@@ -429,12 +429,6 @@
         		
         <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
         		
-        <scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1123701074;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1123701074.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.1266231874;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.907483404">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
         <scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1367567015;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1367567015.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1068092537;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1136473213">
             			
             <autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
@@ -444,12 +438,6 @@
         <scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1123701074;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1123701074.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.1474388510;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.1302697657">
             			
             <autodiscovery enabled="false" problemReportingEnabled="true" selectedProfileId=""/>
-            		
-        </scannerConfigBuildInfo>
-        		
-        <scannerConfigBuildInfo instanceId="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1367567015;com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.release.1367567015.;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.2075173406;com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.cpp.compiler.input.cpp.725570320">
-            			
-            <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
             		
         </scannerConfigBuildInfo>
         	
