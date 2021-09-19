@@ -181,38 +181,18 @@ void Sanran::UpdateAsync()
 void Sanran::UpdateSyncHS()
 {
 
-	/*
-	if(count < 2000)
-	{
-		omniCmd.vel_x = 1.0f;
-		omniCmd.vel_y = 0.0f;
-		omniCmd.omega = 0.0f;
-	}
-	else if(count < 4000)
-	{
-		omniCmd.vel_x = 0.0f;
-		omniCmd.vel_y = 1.0f;
-		omniCmd.omega = 0.0f;
-	}
-	else if(count < 6000)
-	{
-		omniCmd.vel_x = 0.0f;
-		omniCmd.vel_y = 0.0f;
-		omniCmd.omega = 10.0f;
-	}
-	else
-	{
-		omniCmd.vel_x = 0.0f;
-		omniCmd.vel_y = 0.0f;
-		omniCmd.omega = 0.0f;
-	}
-	*/
 
 #if 0
 	omniCmd.world_vel_x = simulink.m_data[0];
 	omniCmd.world_vel_y = simulink.m_data[1];
 	omniCmd.omega = simulink.m_data[2];
 #endif
+
+
+	omniCmd.world_vel_x = matcha.cmd.vel_x;
+	omniCmd.world_vel_y = matcha.cmd.vel_y;
+	omniCmd.omega = matcha.cmd.omega;
+
 
 	omega_w = canMotorIF.motor[0].get_omega();
 
