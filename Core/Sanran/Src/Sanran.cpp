@@ -9,6 +9,8 @@
 #include "main.h"
 
 
+#include "stm32h753xx.h"
+
 
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
@@ -20,7 +22,7 @@ extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
 extern ADC_HandleTypeDef hadc1;
-
+extern DMA_HandleTypeDef hdma_uart5_rx;
 
 
 /* Debug variables */
@@ -111,7 +113,7 @@ void Sanran::UpdateAsync()
 
 	power.update();
 
-	HAL_Delay(10);
+	HAL_Delay(1);
 
 	deg += 0.05;
 	if(deg > 1.0) deg -= 1.0;
@@ -164,8 +166,10 @@ void Sanran::UpdateAsync()
 
 	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
+	matcha.Update();
 
-	printf("%c\n", matcha.m_rxBuf[0]);
+
+
 
 }
 
@@ -254,7 +258,7 @@ void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
 
 	//simulink.dataReceivedCallback(huart);
 
-	matcha.dataReceivedCallback(huart);
+	//matcha.dataReceivedCallback(huart);
 
 }
 
