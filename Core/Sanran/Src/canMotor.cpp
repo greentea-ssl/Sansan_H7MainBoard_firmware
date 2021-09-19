@@ -31,7 +31,7 @@ void CanMotor::resUpdate(int16_t Iq_int16, int16_t omega_int16, uint16_t theta_u
 
 
 
-CanMotorIF::CanMotorIF(FDCAN_HandleTypeDef *hfdcan) : m_hfdcan(hfdcan), motor{0, 1, 2, 3}
+CanMotorIF::CanMotorIF(FDCAN_HandleTypeDef *hfdcan) : motor{0, 1, 2, 3}, m_hfdcan(hfdcan)
 {
 
 
