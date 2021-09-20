@@ -115,7 +115,7 @@ void Sanran::UpdateAsync()
 
 	HAL_Delay(1);
 
-	deg += 0.05;
+	deg += 0.01;
 	if(deg > 1.0) deg -= 1.0;
 
 	onBrdLED.setHSV(deg, 1.0, 1.0);
