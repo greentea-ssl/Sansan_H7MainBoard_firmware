@@ -9,6 +9,8 @@
 #include "main.h"
 
 
+#include "stm32h753xx.h"
+
 
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
@@ -20,7 +22,7 @@ extern I2C_HandleTypeDef hi2c2;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
 extern ADC_HandleTypeDef hadc1;
-
+extern DMA_HandleTypeDef hdma_uart5_rx;
 
 
 /* Debug variables */
@@ -53,7 +55,7 @@ Sanran::Sanran()
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
 	  omni(OmniWheel::TYPE_WORLD_P_DOB, &canMotorIF),
-	  simulink(&huart5, 3)
+	  matcha(&huart5)
 {
 
 	printf("oppai...\n");
@@ -111,7 +113,7 @@ void Sanran::UpdateAsync()
 
 	power.update();
 
-	HAL_Delay(10);
+	HAL_Delay(1);
 
 	deg += 0.05;
 	if(deg > 1.0) deg -= 1.0;
@@ -134,7 +136,7 @@ void Sanran::UpdateAsync()
 
 	ballSensor.update();
 
-	printf("ball : %f\n", ballSensor.read());
+	//printf("ball : %f\n", ballSensor.read());
 
 	if(ballSensor.read() > 0.15) dribbler.setSlow();
 	else dribbler.setFast();
@@ -164,6 +166,10 @@ void Sanran::UpdateAsync()
 
 	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
+	matcha.Update();
+
+
+
 
 }
 
@@ -175,36 +181,18 @@ void Sanran::UpdateAsync()
 void Sanran::UpdateSyncHS()
 {
 
-	/*
-	if(count < 2000)
-	{
-		omniCmd.vel_x = 1.0f;
-		omniCmd.vel_y = 0.0f;
-		omniCmd.omega = 0.0f;
-	}
-	else if(count < 4000)
-	{
-		omniCmd.vel_x = 0.0f;
-		omniCmd.vel_y = 1.0f;
-		omniCmd.omega = 0.0f;
-	}
-	else if(count < 6000)
-	{
-		omniCmd.vel_x = 0.0f;
-		omniCmd.vel_y = 0.0f;
-		omniCmd.omega = 10.0f;
-	}
-	else
-	{
-		omniCmd.vel_x = 0.0f;
-		omniCmd.vel_y = 0.0f;
-		omniCmd.omega = 0.0f;
-	}
-	*/
 
+#if 0
 	omniCmd.world_vel_x = simulink.m_data[0];
 	omniCmd.world_vel_y = simulink.m_data[1];
 	omniCmd.omega = simulink.m_data[2];
+#endif
+
+
+	omniCmd.world_vel_x = matcha.cmd.vel_x;
+	omniCmd.world_vel_y = matcha.cmd.vel_y;
+	omniCmd.omega = matcha.cmd.omega;
+
 
 	omega_w = canMotorIF.motor[0].get_omega();
 
@@ -248,7 +236,9 @@ void Sanran::CAN_Rx_Callback(FDCAN_HandleTypeDef *hfdcan)
 void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
 {
 
-	simulink.dataReceivedCallback(huart);
+	//simulink.dataReceivedCallback(huart);
+
+	//matcha.dataReceivedCallback(huart);
 
 }
 
