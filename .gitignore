@@ -51,6 +51,6 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-.settings/language.settings.xml
-
+/.settings/
 /Debug/
+.mxproject
