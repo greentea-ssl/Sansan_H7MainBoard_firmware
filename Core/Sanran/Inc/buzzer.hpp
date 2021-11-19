@@ -23,6 +23,8 @@ public:
 
 	void sound_startup();
 
+	void sound_singleTone(uint8_t note, int period_ms);
+
 
 private:
 

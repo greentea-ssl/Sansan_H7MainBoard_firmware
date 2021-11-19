@@ -74,7 +74,7 @@ void Sanran::setup()
 
 	delay_ms(1000);
 
-	printf("********** Initialize.. ********************\n\n");
+	printf("********** Initialize ********************\n\n");
 
 
 	/***** Setting On board LED *****/
@@ -138,8 +138,16 @@ void Sanran::setup()
 	dribbler.setSlow();
 
 
-	delay_ms(4000); // wait for BLDC sensor calibration
+	// wait for BLDC sensor calibration
+	printf("\n Waiting for MD calibration ... \n");
+	for(int i = 0; i < 8; i++)
+	{
+		delay_ms(500);
+		buzzer.sound_singleTone(72+12, 100);
+	}
 
+
+	printf("\n********** Start ********************\n");
 
 }
 

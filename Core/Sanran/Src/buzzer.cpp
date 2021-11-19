@@ -67,4 +67,14 @@ void Buzzer::sound_startup()
 }
 
 
+void Buzzer::sound_singleTone(uint8_t note, int period_ms)
+{
+
+	on();
+	setNoteNumber(note);
+	HAL_Delay(period_ms);
+	off();
+}
+
+
 
