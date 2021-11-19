@@ -43,7 +43,7 @@ bool MatchaSerial::setup()
 	cmd.dribblePower = 0;
 	cmd.kickPower = 0;
 
-	return status;
+	return (status == HAL_OK);
 }
 
 

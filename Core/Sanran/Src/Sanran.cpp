@@ -70,10 +70,14 @@ void Sanran::setup()
 
 	printf("Hello.\n\n");
 
+	buzzer.sound_startup();
+
+	delay_ms(1000);
+
 	printf("********** Initialize.. ********************\n\n");
 
 
-	/***** On board LED Setting *****/
+	/***** Setting On board LED *****/
 	printf("\n Setting On board LED ...  \n");
 	boolStatus = onBrdLED.setup();
 	if(boolStatus){
@@ -82,7 +86,7 @@ void Sanran::setup()
 		printf("\t\t\t\t[ERROR]\n");
 	}
 
-	/***** CAN motor IF Setting *****/
+	/***** Setting CAN motor IF *****/
 	printf("\n Setting CAN motor IF ...  \n");
 	boolStatus = canMotorIF.setup();
 	if(boolStatus){
@@ -91,42 +95,34 @@ void Sanran::setup()
 		printf("\t\t\t\t[ERROR]\n");
 	}
 
-	/***** BNO055 Setting *****/
+	/***** Setting BNO055 *****/
 	printf("\n Setting BNO055 ...  \n");
-	bno055.setup();
+	boolStatus = bno055.setup();
 	if(boolStatus){
 		printf("\t\t\t\t[OK]\n");
 	}else{
 		printf("\t\t\t\t[ERROR]\n");
 	}
 
+	/***** Setting Omni Wheel *****/
 	printf("\n Setting Omni Wheel ... \n");
 	omni.setup();
 	printf("\t\t\t\t[Completed]\n");
 
+	/***** Setting Matcha Serial *****/
 	printf("\n Setting Matcha Serial ... \n");
-	matcha.setup();
+	boolStatus = matcha.setup();
 	if(boolStatus){
 		printf("\t\t\t\t[OK]\n");
 	}else{
 		printf("\t\t\t\t[ERROR]\n");
 	}
-
-
-
 
 
 	count = 0;
 
 	onBrdLED.setRGB(0, 0, 0);
 
-	buzzer.sound_startup();
-
-	//bno055.write(0x3D, 0x08);
-
-	printf("BNO055, initialize result: %d\n", bno055.getStatus());
-
-	printf("BNO055, who am i check : %d\n", bno055.checkChipID());
 
 	deg = 0.0;
 

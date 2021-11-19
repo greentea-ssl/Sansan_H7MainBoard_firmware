@@ -38,6 +38,8 @@ bool BNO055::setup()
 	if(!setOprMode(OprMode::IMU)) return false;
 	delay_ms(500);
 
+	if(!checkChipID()) return false;
+
 	return true;
 
 }
