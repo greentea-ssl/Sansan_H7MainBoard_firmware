@@ -26,6 +26,8 @@ public:
 
 	MatchaSerial(UART_HandleTypeDef *huart);
 
+	void setup();
+
 	bool Update();
 
 	struct Reference_TypeDef{

@@ -10,6 +10,11 @@
 
 MatchaSerial::MatchaSerial(UART_HandleTypeDef *huart) : m_huart(huart)
 {
+}
+
+
+void MatchaSerial::setup()
+{
 
 	m_rxBufSize = UART_BUF_SIZE;
 
@@ -38,7 +43,6 @@ MatchaSerial::MatchaSerial(UART_HandleTypeDef *huart) : m_huart(huart)
 
 
 }
-
 
 
 bool MatchaSerial::Update()

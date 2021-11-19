@@ -76,6 +76,8 @@ void Sanran::setup()
 
 	omni.setup();
 
+	matcha.setup();
+
 
 	/***********************/
 
