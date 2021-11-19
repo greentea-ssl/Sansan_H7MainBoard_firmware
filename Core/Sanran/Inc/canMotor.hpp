@@ -68,7 +68,7 @@ public:
 
 	CanMotorIF(FDCAN_HandleTypeDef *hfdcan);
 
-	void setup();
+	bool setup();
 
 	void update_CAN_Rx();
 

@@ -26,7 +26,7 @@ public:
 
 	MatchaSerial(UART_HandleTypeDef *huart);
 
-	void setup();
+	bool setup();
 
 	bool Update();
 

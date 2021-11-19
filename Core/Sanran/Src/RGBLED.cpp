@@ -30,14 +30,18 @@ RGBLED::RGBLED(TIM_HandleTypeDef *htim, uint32_t Rch, uint32_t Gch, uint32_t Bch
  * @brief Peripheral setting
  *
  */
-void RGBLED::setup()
+bool RGBLED::setup()
 {
-	HAL_TIM_PWM_Start_IT(m_htim, m_Rch);
-	HAL_TIM_PWM_Start_IT(m_htim, m_Gch);
-	HAL_TIM_PWM_Start_IT(m_htim, m_Bch);
+
+	uint8_t status = 0;
+
+	status |= HAL_TIM_PWM_Start_IT(m_htim, m_Rch);
+	status |= HAL_TIM_PWM_Start_IT(m_htim, m_Gch);
+	status |= HAL_TIM_PWM_Start_IT(m_htim, m_Bch);
 
 	setRGB(0, 0, 0);
 
+	return status == 0;
 }
 
 

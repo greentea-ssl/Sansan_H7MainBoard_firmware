@@ -52,6 +52,8 @@ void cppMain(void)
 
 	p_sanran = &sanran;
 
+	sanran.setup();
+
 	sanran.startCycle();
 
 	while(1)

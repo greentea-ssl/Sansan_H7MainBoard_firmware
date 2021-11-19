@@ -66,23 +66,55 @@ Sanran::Sanran()
 void Sanran::setup()
 {
 
-	/** Peripheral setting **/
+	bool boolStatus;
 
-	onBrdLED.setup();
+	printf("Hello.\n\n");
 
-	canMotorIF.setup();
+	printf("********** Initialize.. ********************\n\n");
 
+
+	/***** On board LED Setting *****/
+	printf("\n Setting On board LED ...  \n");
+	boolStatus = onBrdLED.setup();
+	if(boolStatus){
+		printf("\t\t\t\t[OK]\n");
+	}else{
+		printf("\t\t\t\t[ERROR]\n");
+	}
+
+	/***** CAN motor IF Setting *****/
+	printf("\n Setting CAN motor IF ...  \n");
+	boolStatus = canMotorIF.setup();
+	if(boolStatus){
+		printf("\t\t\t\t[OK]\n");
+	}else{
+		printf("\t\t\t\t[ERROR]\n");
+	}
+
+	/***** BNO055 Setting *****/
+	printf("\n Setting BNO055 ...  \n");
 	bno055.setup();
+	if(boolStatus){
+		printf("\t\t\t\t[OK]\n");
+	}else{
+		printf("\t\t\t\t[ERROR]\n");
+	}
 
+	printf("\n Setting Omni Wheel ... \n");
 	omni.setup();
+	printf("\t\t\t\t[Completed]\n");
 
+	printf("\n Setting Matcha Serial ... \n");
 	matcha.setup();
+	if(boolStatus){
+		printf("\t\t\t\t[OK]\n");
+	}else{
+		printf("\t\t\t\t[ERROR]\n");
+	}
 
 
-	/***********************/
 
 
-	printf("oppai...\n");
 
 	count = 0;
 

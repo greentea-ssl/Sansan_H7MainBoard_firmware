@@ -43,7 +43,7 @@ CanMotorIF::CanMotorIF(FDCAN_HandleTypeDef *hfdcan) : motor{0, 1, 2, 3}, m_hfdca
  * @brief CanMotorIF peripheral setting
  *
  */
-void CanMotorIF::setup()
+bool CanMotorIF::setup()
 {
 
 	FDCAN_FilterTypeDef sFilterConfig;
@@ -60,25 +60,29 @@ void CanMotorIF::setup()
 
 	if(HAL_FDCAN_ConfigFilter(m_hfdcan, &sFilterConfig) != HAL_OK)
 	{
-	  Error_Handler();
+		return false;
+		//Error_Handler();
 	}
 
 	if(HAL_FDCAN_ConfigGlobalFilter(m_hfdcan, FDCAN_ACCEPT_IN_RX_FIFO0, FDCAN_ACCEPT_IN_RX_FIFO0, ENABLE, ENABLE) != HAL_OK)
 	{
-		Error_Handler();
+		return false;
+		//Error_Handler();
 	}
 
 	if(HAL_FDCAN_ActivateNotification(m_hfdcan, FDCAN_FLAG_RX_FIFO0_NEW_MESSAGE, 0) != HAL_OK)
 	{
-		Error_Handler();
+		return false;
+		//Error_Handler();
 	}
 
 	if(HAL_FDCAN_Start(m_hfdcan) != HAL_OK)
 	{
-	  Error_Handler();
+		return false;
+		//Error_Handler();
 	}
 
-
+	return true;
 }
 
 

@@ -13,8 +13,10 @@ MatchaSerial::MatchaSerial(UART_HandleTypeDef *huart) : m_huart(huart)
 }
 
 
-void MatchaSerial::setup()
+bool MatchaSerial::setup()
 {
+
+	HAL_StatusTypeDef status;
 
 	m_rxBufSize = UART_BUF_SIZE;
 
@@ -24,7 +26,7 @@ void MatchaSerial::setup()
 
 	memset(m_rxBuf, ' ', sizeof(m_rxBuf));
 
-	HAL_UART_Receive_DMA(huart, m_rxBuf, sizeof(m_rxBuf));
+	status = HAL_UART_Receive_DMA(m_huart, m_rxBuf, sizeof(m_rxBuf));
 
 	m_rxBufSize = UART_BUF_SIZE;
 	m_rxBufMask = m_rxBufSize - 1;
@@ -41,7 +43,7 @@ void MatchaSerial::setup()
 	cmd.dribblePower = 0;
 	cmd.kickPower = 0;
 
-
+	return status;
 }
 
 
