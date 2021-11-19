@@ -74,6 +74,7 @@ void Sanran::setup()
 
 	bno055.setup();
 
+	omni.setup();
 
 
 	/***********************/

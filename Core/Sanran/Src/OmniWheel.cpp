@@ -11,9 +11,6 @@
 OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF, Param_t *param) : m_type(type), m_canMotorIF(canMotorIF), m_param(*param)
 {
 
-	commonInit();
-
-
 }
 
 OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
@@ -38,10 +35,40 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 	m_param.wheel_pos_theta_deg[2] = -135;
 	m_param.wheel_pos_theta_deg[3] = -60;
 
+}
 
-	commonInit();
+
+
+
+/**
+ * @fn void setup()
+ * @brief Initial calculation
+ *
+ */
+void OmniWheel::setup()
+{
+
+
+	calcKinematics();
+
+
+	for(int i = 0; i < 4; i++)
+		dob[i].setParam(m_param.Ktn, m_param.Jmn, m_param.g_dis, m_param.Ts);
+
+
+	for(int ch = 0; ch < 4; ch++)
+		m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
+
+	m_robotState.world_x = 0.0f;
+	m_robotState.world_y = 0.0f;
+	m_robotState.world_theta = 0.0f;
+
+	firstSampleFlag = true;
 
 }
+
+
+
 
 
 void OmniWheel::update(Cmd_t *cmd)
@@ -165,28 +192,6 @@ void OmniWheel::update(Cmd_t *cmd)
 }
 
 
-
-void OmniWheel::commonInit()
-{
-
-
-	calcKinematics();
-
-
-	for(int i = 0; i < 4; i++)
-		dob[i].setParam(m_param.Ktn, m_param.Jmn, m_param.g_dis, m_param.Ts);
-
-
-	for(int ch = 0; ch < 4; ch++)
-		m_canMotorIF->motor[ch].set_Iq_ref(0.0f);
-
-	m_robotState.world_x = 0.0f;
-	m_robotState.world_y = 0.0f;
-	m_robotState.world_theta = 0.0f;
-
-	firstSampleFlag = true;
-
-}
 
 
 

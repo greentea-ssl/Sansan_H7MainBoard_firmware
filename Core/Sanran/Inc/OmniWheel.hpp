@@ -68,6 +68,8 @@ public:
 
 	OmniWheel(ControlType_t type, CanMotorIF *canMotorIF);
 
+	void setup();
+
 	void update(Cmd_t *cmd);
 
 	void correctAngle(float trueAngle)
@@ -81,8 +83,6 @@ public:
 
 
 private:
-
-	void commonInit();
 
 	void calcKinematics();
 
