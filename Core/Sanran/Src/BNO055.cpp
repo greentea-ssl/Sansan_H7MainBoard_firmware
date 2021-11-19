@@ -8,13 +8,15 @@
 BNO055::BNO055(I2C_HandleTypeDef *hi2c) : m_hi2c(hi2c), m_i2cAddr(0x28), m_Timeout(10)
 {
 	m_status = true;
-
-	m_status = init();
-
 }
 
-
-bool BNO055::init()
+/**
+ * @fn bool setup()
+ * @brief setup BNO055
+ *
+ * @return true: success, false: failed
+ */
+bool BNO055::setup()
 {
 
 	if(!setPage(0)) return false;

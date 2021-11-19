@@ -72,7 +72,7 @@ void Sanran::setup()
 
 	canMotorIF.setup();
 
-
+	bno055.setup();
 
 
 

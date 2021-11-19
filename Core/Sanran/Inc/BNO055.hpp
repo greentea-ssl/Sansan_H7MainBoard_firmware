@@ -75,7 +75,7 @@ public:
 
 	bool getStatus(){return m_status;}
 
-	bool init();
+	bool setup();
 
 	bool checkChipID();
 
