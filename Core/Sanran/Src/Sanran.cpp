@@ -70,6 +70,8 @@ void Sanran::setup()
 
 	onBrdLED.setup();
 
+	canMotorIF.setup();
+
 
 
 

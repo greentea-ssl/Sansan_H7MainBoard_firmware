@@ -68,6 +68,8 @@ public:
 
 	CanMotorIF(FDCAN_HandleTypeDef *hfdcan);
 
+	void setup();
+
 	void update_CAN_Rx();
 
 	void send_Iq_ref();

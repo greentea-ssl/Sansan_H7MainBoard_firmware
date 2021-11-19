@@ -7,8 +7,6 @@
 
 CanMotor::CanMotor(uint32_t motorID) : m_motorID(motorID), m_resUpdated(0)
 {
-
-
 }
 
 
@@ -34,6 +32,19 @@ void CanMotor::resUpdate(int16_t Iq_int16, int16_t omega_int16, uint16_t theta_u
 CanMotorIF::CanMotorIF(FDCAN_HandleTypeDef *hfdcan) : motor{0, 1, 2, 3}, m_hfdcan(hfdcan)
 {
 
+
+
+
+}
+
+
+/**
+ * @fn void setup()
+ * @brief CanMotorIF peripheral setting
+ *
+ */
+void CanMotorIF::setup()
+{
 
 	FDCAN_FilterTypeDef sFilterConfig;
 
@@ -67,8 +78,8 @@ CanMotorIF::CanMotorIF(FDCAN_HandleTypeDef *hfdcan) : motor{0, 1, 2, 3}, m_hfdca
 	  Error_Handler();
 	}
 
-}
 
+}
 
 
 
