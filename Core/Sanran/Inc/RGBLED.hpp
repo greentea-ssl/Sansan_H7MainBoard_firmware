@@ -19,6 +19,8 @@ public:
 
 	RGBLED(TIM_HandleTypeDef *htim, uint32_t Rch, uint32_t Gch, uint32_t Bch);
 
+	void setup();
+
 	void setRGB(int R, int G, int B);
 
 	void setHSV(float H, float S, float V);

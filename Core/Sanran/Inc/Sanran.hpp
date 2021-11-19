@@ -27,6 +27,9 @@ public:
 	Sanran();
 
 
+	void setup();
+
+
 	void startCycle();
 
 

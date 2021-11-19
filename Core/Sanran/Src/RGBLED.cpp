@@ -8,25 +8,30 @@
 
 
 
-RGBLED::RGBLED(TIM_HandleTypeDef *htim) : m_htim(htim)
+RGBLED::RGBLED(TIM_HandleTypeDef *htim)
+: m_htim(htim)
 {
-
-	HAL_TIM_PWM_Start(m_htim, TIM_CHANNEL_1);
-	HAL_TIM_PWM_Start(m_htim, TIM_CHANNEL_2);
-	HAL_TIM_PWM_Start(m_htim, TIM_CHANNEL_3);
 
 	m_Rch = TIM_CHANNEL_1;
 	m_Gch = TIM_CHANNEL_2;
 	m_Bch = TIM_CHANNEL_3;
 
-	setRGB(0, 0, 0);
-
 }
 
 
-RGBLED::RGBLED(TIM_HandleTypeDef *htim, uint32_t Rch, uint32_t Gch, uint32_t Bch) : m_htim(htim), m_Rch(Rch), m_Gch(Gch), m_Bch(Bch)
+RGBLED::RGBLED(TIM_HandleTypeDef *htim, uint32_t Rch, uint32_t Gch, uint32_t Bch)
+: m_htim(htim), m_Rch(Rch), m_Gch(Gch), m_Bch(Bch)
 {
+}
 
+
+/**
+ * @fn void setup()
+ * @brief Peripheral setting
+ *
+ */
+void RGBLED::setup()
+{
 	HAL_TIM_PWM_Start_IT(m_htim, m_Rch);
 	HAL_TIM_PWM_Start_IT(m_htim, m_Gch);
 	HAL_TIM_PWM_Start_IT(m_htim, m_Bch);
@@ -34,6 +39,7 @@ RGBLED::RGBLED(TIM_HandleTypeDef *htim, uint32_t Rch, uint32_t Gch, uint32_t Bch
 	setRGB(0, 0, 0);
 
 }
+
 
 /**
  * @fn void setRGB(int, int, int)

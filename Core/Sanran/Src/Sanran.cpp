@@ -58,6 +58,25 @@ Sanran::Sanran()
 	  matcha(&huart5)
 {
 
+
+}
+
+
+
+void Sanran::setup()
+{
+
+	/** Peripheral setting **/
+
+	onBrdLED.setup();
+
+
+
+
+
+	/***********************/
+
+
 	printf("oppai...\n");
 
 	count = 0;
@@ -90,7 +109,6 @@ Sanran::Sanran()
 
 
 }
-
 
 
 void Sanran::startCycle()
