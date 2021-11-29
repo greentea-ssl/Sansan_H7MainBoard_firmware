@@ -54,7 +54,7 @@ Sanran::Sanran()
 	  ballSensor(&hadc1),
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
-	  omni(OmniWheel::TYPE_WORLD_P_DOB, &canMotorIF),
+	  omni(OmniWheel::TYPE_ROBOT_P_DOB, &canMotorIF),
 	  matcha(&huart5)
 {
 
