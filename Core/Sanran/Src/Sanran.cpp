@@ -170,64 +170,25 @@ void Sanran::startCycle()
 void Sanran::UpdateAsync()
 {
 
-	power.update();
 
 	HAL_Delay(1);
 
-	deg += 0.01;
-	if(deg > 1.0) deg -= 1.0;
 
-	onBrdLED.setHSV(deg, 1.0, 1.0);
 
-	bno055.updateIMU();
 
+
+
+	/*
 	uint8_t st, er;
 	bno055.read(0x39, &st);
 	bno055.read(0x3D, &er);
 
-	/*
 	printf("Roll  = %f rad.\n", bno055.get_IMU_roll());
 	printf("Pitch = %f rad.\n", bno055.get_IMU_pitch());
 	printf("Yaw   = %f rad.\n", bno055.get_IMU_yaw());
 	printf("status = %d, 0x%02x, 0x%02x\n", bno055.getStatus(), st, er);
 	printf("\e[4A");
 	*/
-
-	ballSensor.update();
-
-	//printf("ball : %f\n", ballSensor.read());
-
-	if(ballSensor.read() > 0.15) dribbler.setSlow();
-	else dribbler.setFast();
-
-
-	omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
-
-
-	//printf("USER_SW0 = %f\n", omega_w_ref);
-
-	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
-	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
-
-	if(userButton0 == 0 && userButton1_prev == 1)
-	{
-		kicker.kickStraight();
-	}
-	if(userButton1 == 0 && userButton1_prev == 1)
-	{
-		kicker.kickChip();
-	}
-	userButton0_prev = userButton0;
-	userButton1_prev = userButton1;
-
-
-	kicker.update();
-
-	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
-
-	matcha.Update();
-
-
 
 
 }
@@ -278,6 +239,48 @@ void Sanran::UpdateSyncHS()
  */
 void Sanran::UpdateSyncLS()
 {
+
+	power.update();
+
+	deg += 0.01;
+	if(deg > 1.0) deg -= 1.0;
+
+	onBrdLED.setHSV(deg, 1.0, 1.0);
+
+	bno055.updateIMU();
+	ballSensor.update();
+
+	//printf("ball : %f\n", ballSensor.read());
+
+	if(ballSensor.read() > 0.15) dribbler.setSlow();
+	else dribbler.setFast();
+
+	omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
+
+
+	//printf("USER_SW0 = %f\n", omega_w_ref);
+
+	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
+	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
+
+	if(userButton0 == 0 && userButton1_prev == 1)
+	{
+		kicker.kickStraight();
+	}
+	if(userButton1 == 0 && userButton1_prev == 1)
+	{
+		kicker.kickChip();
+	}
+	userButton0_prev = userButton0;
+	userButton1_prev = userButton1;
+
+
+	kicker.update();
+
+	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
+
+	matcha.Update();
+
 
 }
 
