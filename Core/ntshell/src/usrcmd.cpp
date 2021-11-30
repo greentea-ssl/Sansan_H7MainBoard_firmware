@@ -46,7 +46,6 @@ extern UART_HandleTypeDef huart6;
 
 
 #define uart_puts(str) puts(str)
-#define uart_putc(str) putc(str)
 
 
 typedef int (*USRCMDFUNC)(int argc, char **argv);
@@ -56,6 +55,7 @@ static int ntshell_serial_read(char *buf, int cnt, void *extobj);
 static int ntshell_serial_write(const char *buf, int cnt, void *extobj);
 static int ntshell_callback(const char *text, void *extobj);
 
+void uart_putc(char c);
 static char ntshell_serial_getc_timeout(int timeout_ms);
 
 int usrcmd_execute(const char *text);
@@ -91,8 +91,7 @@ void ntshell_usr_init(ntshell_t *p)
 static int ntshell_serial_read(char *buf, int cnt, void *extobj)
 {
 
-	//while(HAL_UART_Receive(&UartHandler, (uint8_t*)buf, cnt, 1000) != HAL_OK);
-	HAL_UART_Receive(&UartHandler, (uint8_t*)buf, cnt, 1000);
+	while(HAL_UART_Receive(&UartHandler, (uint8_t*)buf, cnt, 1000) != HAL_OK);
 
 	return cnt;
 }
@@ -100,8 +99,8 @@ static int ntshell_serial_read(char *buf, int cnt, void *extobj)
 static int ntshell_serial_write(const char *buf, int cnt, void *extobj)
 {
 
-	//while(HAL_UART_Transmit(&UartHandler, (uint8_t*)buf, cnt, 1000) != HAL_OK);
-	HAL_UART_Transmit(&UartHandler, (uint8_t*)buf, cnt, 1000);
+	while(HAL_UART_Transmit(&UartHandler, (uint8_t*)buf, cnt, 1000) != HAL_OK);
+
 	return cnt;
 }
 
@@ -126,14 +125,17 @@ static int ntshell_callback(const char *text, void *extobj)
 
 }
 
+void uart_putc(char c)
+{
+	void *extobj = 0;
+	ntshell_serial_write(&c, 1, extobj);
+}
+
 static char ntshell_serial_getc_timeout(int timeout_ms)
 {
 	char c;
 
-	if(HAL_UART_Receive(&UartHandler, (uint8_t*)(&c), 1, timeout_ms) != HAL_OK)
-	{
-		return 0;
-	}
+	HAL_UART_Receive(&UartHandler, (uint8_t*)(&c), 1, timeout_ms);
 
 	return c;
 }
@@ -206,7 +208,7 @@ static int usrcmd_view(int argc, char **argv)
 
 	while(1)
 	{
-		HAL_Delay(100);
+		HAL_Delay(10);
 		c = ntshell_serial_getc_timeout(1);
 		//printf("recv:0x%02x\r\n", c);
 		printf("recv:%c\r\n", c);
@@ -215,6 +217,8 @@ static int usrcmd_view(int argc, char **argv)
 			puts("\r\n^C\r\n");
 			break;
 		}
+
+
 	}
 
 	return 0;
