@@ -90,6 +90,14 @@ private:
 	uint8_t userButton1_prev;
 
 
+	typedef struct{
+		uint32_t start_count;
+		uint32_t end_count;
+	}Sync_loop_timestamp_t;
+
+	Sync_loop_timestamp_t syncHS_timestamp;
+	Sync_loop_timestamp_t syncLS_timestamp;
+
 };
 
 

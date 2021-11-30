@@ -171,10 +171,17 @@ void Sanran::UpdateAsync()
 {
 
 
-	HAL_Delay(1);
+	HAL_Delay(100);
 
+	Sync_loop_timestamp_t LS_timestamp;
+	LS_timestamp = syncLS_timestamp;
 
+	Sync_loop_timestamp_t HS_timestamp;
+	HS_timestamp = syncHS_timestamp;
 
+	//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, htim13.Init.Period);
+
+	printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, htim12.Init.Period);
 
 
 
@@ -200,6 +207,8 @@ void Sanran::UpdateAsync()
  */
 void Sanran::UpdateSyncHS()
 {
+
+	syncHS_timestamp.start_count = htim12.Instance->CNT;
 
 
 #if 0
@@ -230,6 +239,10 @@ void Sanran::UpdateSyncHS()
 
 	Iq_ref = canMotorIF.motor[0].get_Iq_ref();
 
+
+
+	syncHS_timestamp.end_count = htim12.Instance->CNT;
+
 }
 
 /**
@@ -239,6 +252,8 @@ void Sanran::UpdateSyncHS()
  */
 void Sanran::UpdateSyncLS()
 {
+
+	syncLS_timestamp.start_count = htim13.Instance->CNT;
 
 	power.update();
 
@@ -281,6 +296,9 @@ void Sanran::UpdateSyncLS()
 
 	matcha.Update();
 
+
+
+	syncLS_timestamp.end_count = htim13.Instance->CNT;
 
 }
 
