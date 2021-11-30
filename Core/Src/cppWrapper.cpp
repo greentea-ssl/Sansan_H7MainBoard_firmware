@@ -6,7 +6,16 @@
 
 #include <stdio.h>
 
+#include "ntshell.h"
+#include "usrcmd.h"
+
+
+
 Sanran sanran;
+
+
+ntshell_t nts;
+
 
 
 void HAL_FDCAN_RxFifo0Callback (FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
@@ -47,9 +56,15 @@ void cppMain(void)
 {
 
 
+
 	sanran.setup();
 
 	sanran.startCycle();
+
+	ntshell_usr_init(&nts);
+
+	ntshell_execute(&nts);
+
 
 	while(1)
 	{
