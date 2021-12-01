@@ -67,6 +67,7 @@ static int usrcmd_ntopt_callback(int argc, char **argv, void *extobj);
 static int usrcmd_help(int argc, char **argv);
 static int usrcmd_info(int argc, char **argv);
 static int usrcmd_view(int argc, char **argv);
+static int usrcmd_cls(int argc, char **argv);
 
 typedef struct {
     char *cmd;
@@ -78,6 +79,7 @@ static const cmd_table_t cmdlist[] = {
     { "help", "This is a description text string for help command.", usrcmd_help },
     { "info", "This is a description text string for info command.", usrcmd_info },
     { "view", "This is a description text string for info command.", usrcmd_view },
+    { "cls", "Clear display", usrcmd_cls },
 };
 
 
@@ -230,7 +232,8 @@ static int usrcmd_view(int argc, char **argv)
 		uart_puts("info ver\r\n");
 		return 0;
 	}
-	if (ntlibc_strcmp(argv[1], "resource") == 0) {
+	if(ntlibc_strcmp(argv[1], "resource") == 0)
+	{
 		// View of interrupt resource
 
 		printf("\r\n");
@@ -246,29 +249,30 @@ static int usrcmd_view(int argc, char **argv)
 			HS_timestamp = sanran.syncHS_timestamp;
 
 			printf("         |  start |   end  | period | percent \r\n");
-			printf("--------------------------------------------- \r\n");
+			printf("---------+--------+--------+--------+-------- \r\n");
 			//     "*********| ****** | ****** | ****** | ******
 			printf("HS Cycle | %6d | %6d | %6d | %6d%% \r\n",
 					HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period,
 					(HS_timestamp.end_count - HS_timestamp.start_count) * 100 / sanran.htim_HS_cycle->Init.Period);
-			printf("LS Cycle | %6d | %6d | %6d | %6d%% \r\n",
+			printf("LS Cycle | %6d | %6d | %6d | %6d%% ",
 					LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period,
 					(LS_timestamp.end_count - LS_timestamp.start_count) * 100 / sanran.htim_LS_cycle->Init.Period);
 
 			if(checkSuspens()) break;
 
 
-			printf("\e[4A");
+			uart_puts("\e[4A");
 
 			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
 
 			//printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period);
 
-
-
 		}
 
-		return 0;
+	}
+	else
+	{
+		//printf("\e[%s", argv[1]);
 	}
 
 
@@ -277,6 +281,11 @@ static int usrcmd_view(int argc, char **argv)
 }
 
 
+static int usrcmd_cls(int argc, char **argv)
+{
+	uart_puts("\e[2J");
+	uart_puts("\e[1;1H");
+}
 
 
 
