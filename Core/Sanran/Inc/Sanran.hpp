@@ -49,9 +49,6 @@ public:
 
 
 
-private:
-
-
 	int count;
 
 	TIM_HandleTypeDef *htim_HS_cycle;

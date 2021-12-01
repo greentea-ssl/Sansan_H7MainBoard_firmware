@@ -39,11 +39,14 @@
 
 #include "main.h"
 
+#include "Sanran.hpp"
+
 
 extern UART_HandleTypeDef huart6;
 
 #define UartHandler (huart6)
 
+#define delay_ms(ms) HAL_Delay(ms)
 
 #define uart_puts(str) puts(str)
 
@@ -76,6 +79,13 @@ static const cmd_table_t cmdlist[] = {
     { "info", "This is a description text string for info command.", usrcmd_info },
     { "view", "This is a description text string for info command.", usrcmd_view },
 };
+
+
+
+
+
+extern Sanran sanran;
+
 
 
 
@@ -141,6 +151,17 @@ static char ntshell_serial_getc_timeout(int timeout_ms)
 }
 
 
+static int checkSuspens()
+{
+	char c;
+	c = ntshell_serial_getc_timeout(1);
+	if(c == 0x03)
+	{
+		puts("\r\n^C\r\n");
+		return 1;
+	}
+	return 0;
+}
 
 
 /*
@@ -204,22 +225,53 @@ static int usrcmd_info(int argc, char **argv)
 
 static int usrcmd_view(int argc, char **argv)
 {
-	char c;
+	if (argc != 2) {
+		uart_puts("info sys\r\n");
+		uart_puts("info ver\r\n");
+		return 0;
+	}
+	if (ntlibc_strcmp(argv[1], "resource") == 0) {
+		// View of interrupt resource
 
-	while(1)
-	{
-		HAL_Delay(10);
-		c = ntshell_serial_getc_timeout(1);
-		//printf("recv:0x%02x\r\n", c);
-		printf("recv:%c\r\n", c);
-		if(c == 0x03)
+		printf("\r\n");
+
+		while(1)
 		{
-			puts("\r\n^C\r\n");
-			break;
+			delay_ms(100);
+
+			Sanran::Sync_loop_timestamp_t LS_timestamp;
+			LS_timestamp = sanran.syncLS_timestamp;
+
+			Sanran::Sync_loop_timestamp_t HS_timestamp;
+			HS_timestamp = sanran.syncHS_timestamp;
+
+			printf("         |  start |   end  | period | percent \r\n");
+			printf("--------------------------------------------- \r\n");
+			//     "*********| ****** | ****** | ****** | ******
+			printf("HS Cycle | %6d | %6d | %6d | %6d%% \r\n",
+					HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period,
+					(HS_timestamp.end_count - HS_timestamp.start_count) * 100 / sanran.htim_HS_cycle->Init.Period);
+			printf("LS Cycle | %6d | %6d | %6d | %6d%% \r\n",
+					LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period,
+					(LS_timestamp.end_count - LS_timestamp.start_count) * 100 / sanran.htim_LS_cycle->Init.Period);
+
+			if(checkSuspens()) break;
+
+
+			printf("\e[4A");
+
+			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
+
+			//printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period);
+
+
+
 		}
 
-
+		return 0;
 	}
+
+
 
 	return 0;
 }
