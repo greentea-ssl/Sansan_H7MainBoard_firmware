@@ -228,8 +228,9 @@ static int usrcmd_info(int argc, char **argv)
 static int usrcmd_view(int argc, char **argv)
 {
 	if (argc != 2) {
-		uart_puts("info sys\r\n");
-		uart_puts("info ver\r\n");
+		uart_puts("view resource\r\n");
+		uart_puts("view motor\r\n");
+		uart_puts("view gyro\r\n");
 		return 0;
 	}
 	if(ntlibc_strcmp(argv[1], "resource") == 0)
@@ -282,12 +283,6 @@ static int usrcmd_view(int argc, char **argv)
 		{
 			delay_ms(100);
 
-			Sanran::Sync_loop_timestamp_t LS_timestamp;
-			LS_timestamp = sanran.syncLS_timestamp;
-
-			Sanran::Sync_loop_timestamp_t HS_timestamp;
-			HS_timestamp = sanran.syncHS_timestamp;
-
 			printf("              | Motor1 | Motor2 | Motor3 | Motor4 \r\n");
 			printf("--------------+--------+--------+--------+-------- \r\n");
 			//     "***********| ****** | ****** | ****** | ******
@@ -324,6 +319,39 @@ static int usrcmd_view(int argc, char **argv)
 
 
 			uart_puts("\e[7A");
+
+			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
+
+			//printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period);
+
+		}
+
+	}
+	else if(ntlibc_strcmp(argv[1], "gyro") == 0)
+	{
+		// View of gyro status
+
+		printf("\r\n");
+
+		while(1)
+		{
+			delay_ms(100);
+
+			printf("         |  Roll [deg] | Pitch [deg] |   Yaw [deg] \r\n");
+			printf("---------+-------------+-------------+------------ \r\n");
+			//     "***********| ****** | ****** | ****** | ******
+			printf("Gyro     ");
+
+			printf("| %11.2f ", sanran.bno055.get_IMU_roll() * 180 / M_PI);
+			printf("| %11.2f ", sanran.bno055.get_IMU_pitch() * 180 / M_PI);
+			printf("| %11.2f ", sanran.bno055.get_IMU_yaw() * 180 / M_PI);
+
+			printf("\r\n");
+
+			if(checkSuspens()) break;
+
+
+			uart_puts("\e[4A");
 
 			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
 
