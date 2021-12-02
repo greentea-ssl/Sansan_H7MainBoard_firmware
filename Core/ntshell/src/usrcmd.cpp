@@ -266,10 +266,6 @@ static int usrcmd_view(int argc, char **argv)
 
 			uart_puts("\e[5A");
 
-			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
-
-			//printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period);
-
 		}
 
 	}
@@ -283,46 +279,21 @@ static int usrcmd_view(int argc, char **argv)
 		{
 			delay_ms(100);
 
-			printf("              | Motor1 | Motor2 | Motor3 | Motor4 \r\n");
-			printf("--------------+--------+--------+--------+-------- \r\n");
-			//     "***********| ****** | ****** | ****** | ******
-			//     "Iq_ref    [A] "
-			//     "Iq        [A] "
-			//     "Angle   [deg] "
-			//     "Speed [rad/s] "
-			printf("Iq_ref    [A] ");
+			printf("        | Iq_ref [A] | Iq [A] | Angle [deg] | Speed [rad/s] \r\n");
+			printf("--------+------------+--------+-------------+-------------- \r\n");
 			for(int i = 0; i < 4; i++)
 			{
-				printf("| %6.2f ", sanran.canMotorIF.motor[i].get_Iq_ref());
-			}
-			printf("\r\n");
-			printf("Iq        [A] ");
-			for(int i = 0; i < 4; i++)
-			{
+				printf("Motor %d ", i + 1);
+				printf("| %10.2f ", sanran.canMotorIF.motor[i].get_Iq_ref());
 				printf("| %6.2f ", sanran.canMotorIF.motor[i].get_Iq());
+				printf("| %11.2f ", sanran.canMotorIF.motor[i].get_theta() * 180 / M_PI);
+				printf("| %13.1f ", sanran.canMotorIF.motor[i].get_omega());
+				printf("\r\n");
 			}
-			printf("\r\n");
-			printf("Angle   [deg] ");
-			for(int i = 0; i < 4; i++)
-			{
-				printf("| %6.2f ", sanran.canMotorIF.motor[i].get_theta() * 180 / M_PI);
-			}
-			printf("\r\n");
-			printf("Speed [rad/s] ");
-			for(int i = 0; i < 4; i++)
-			{
-				printf("| %6.1f ", sanran.canMotorIF.motor[i].get_omega());
-			}
-			printf("\r\n");
 
 			if(checkSuspens()) break;
 
-
 			uart_puts("\e[7A");
-
-			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
-
-			//printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period);
 
 		}
 
@@ -352,11 +323,6 @@ static int usrcmd_view(int argc, char **argv)
 
 
 			uart_puts("\e[4A");
-
-			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
-
-			//printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period);
-
 		}
 
 	}
