@@ -258,10 +258,72 @@ static int usrcmd_view(int argc, char **argv)
 					LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period,
 					(LS_timestamp.end_count - LS_timestamp.start_count) * 100 / sanran.htim_LS_cycle->Init.Period);
 
+			printf("\r\n");
+
 			if(checkSuspens()) break;
 
 
-			uart_puts("\e[4A");
+			uart_puts("\e[5A");
+
+			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
+
+			//printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period);
+
+		}
+
+	}
+	else if(ntlibc_strcmp(argv[1], "motor") == 0)
+	{
+		// View of motor status
+
+		printf("\r\n");
+
+		while(1)
+		{
+			delay_ms(100);
+
+			Sanran::Sync_loop_timestamp_t LS_timestamp;
+			LS_timestamp = sanran.syncLS_timestamp;
+
+			Sanran::Sync_loop_timestamp_t HS_timestamp;
+			HS_timestamp = sanran.syncHS_timestamp;
+
+			printf("              | Motor1 | Motor2 | Motor3 | Motor4 \r\n");
+			printf("--------------+--------+--------+--------+-------- \r\n");
+			//     "***********| ****** | ****** | ****** | ******
+			//     "Iq_ref    [A] "
+			//     "Iq        [A] "
+			//     "Angle   [deg] "
+			//     "Speed [rad/s] "
+			printf("Iq_ref    [A] ");
+			for(int i = 0; i < 4; i++)
+			{
+				printf("| %6.2f ", sanran.canMotorIF.motor[i].get_Iq_ref());
+			}
+			printf("\r\n");
+			printf("Iq        [A] ");
+			for(int i = 0; i < 4; i++)
+			{
+				printf("| %6.2f ", sanran.canMotorIF.motor[i].get_Iq());
+			}
+			printf("\r\n");
+			printf("Angle   [deg] ");
+			for(int i = 0; i < 4; i++)
+			{
+				printf("| %6.2f ", sanran.canMotorIF.motor[i].get_theta() * 180 / M_PI);
+			}
+			printf("\r\n");
+			printf("Speed [rad/s] ");
+			for(int i = 0; i < 4; i++)
+			{
+				printf("| %6.1f ", sanran.canMotorIF.motor[i].get_omega());
+			}
+			printf("\r\n");
+
+			if(checkSuspens()) break;
+
+
+			uart_puts("\e[7A");
 
 			//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period);
 
