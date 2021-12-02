@@ -227,12 +227,15 @@ static int usrcmd_info(int argc, char **argv)
 
 static int usrcmd_view(int argc, char **argv)
 {
+
 	if (argc != 2) {
 		uart_puts("view resource\r\n");
 		uart_puts("view motor\r\n");
 		uart_puts("view gyro\r\n");
+		uart_puts("view command\r\n");
 		return 0;
 	}
+
 	if(ntlibc_strcmp(argv[1], "resource") == 0)
 	{
 		// View of interrupt resource
@@ -325,6 +328,52 @@ static int usrcmd_view(int argc, char **argv)
 			uart_puts("\e[4A");
 		}
 
+	}
+	else if(ntlibc_strcmp(argv[1], "command") == 0)
+	{
+		// View of command from matcha
+
+		printf("\r\n");
+
+		while(1)
+		{
+			delay_ms(100);
+
+			printf("         | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | theta_fb [rad] \r\n");
+			printf("---------+-------------+-------------+---------------|--------------- \r\n");
+			printf("Command  ");
+
+			printf("| %11.2f ", sanran.matcha.cmd.vel_x);
+			printf("| %11.2f ", sanran.matcha.cmd.vel_y);
+			printf("| %13.2f ", sanran.matcha.cmd.omega);
+			printf("| %14.2f ", sanran.matcha.cmd.theta_fb);
+
+			printf("\r\n\r\n");
+
+			/*
+			 * 	bool dribble;
+				bool kick;
+				bool chip;
+				uint8_t dribblePower;
+				uint8_t kickPower;
+			 */
+
+			printf("         | Dribble | Kick | Chip | DribblePower | KickPower \r\n");
+			printf("---------+---------+------+------|--------------|---------- \r\n");
+			printf("Command  ");
+
+			printf("| %7d ", sanran.matcha.cmd.dribble);
+			printf("| %4d ", sanran.matcha.cmd.kick);
+			printf("| %4d ", sanran.matcha.cmd.chip);
+			printf("| %12d ", sanran.matcha.cmd.dribblePower);
+			printf("| %9d ", sanran.matcha.cmd.kickPower);
+
+			printf("\r\n");
+
+			if(checkSuspens()) break;
+
+			uart_puts("\e[8A");
+		}
 	}
 	else
 	{
