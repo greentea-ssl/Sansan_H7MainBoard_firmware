@@ -218,9 +218,18 @@ void Sanran::UpdateSyncHS()
 #endif
 
 
-	omniCmd.world_vel_x = matcha.cmd.vel_x;
-	omniCmd.world_vel_y = matcha.cmd.vel_y;
-	omniCmd.omega = matcha.cmd.omega;
+	if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_P_DOB)
+	{
+		omniCmd.world_vel_x = matcha.cmd.vel_x;
+		omniCmd.world_vel_y = matcha.cmd.vel_y;
+		omniCmd.omega = matcha.cmd.omega;
+	}
+	else if(this->omni.get_controlType() == OmniWheel::TYPE_ROBOT_P_DOB)
+	{
+		omniCmd.robot_vel_x = matcha.cmd.vel_x;
+		omniCmd.robot_vel_y = matcha.cmd.vel_y;
+		omniCmd.omega = matcha.cmd.omega;
+	}
 
 
 	omega_w = canMotorIF.motor[0].get_omega();

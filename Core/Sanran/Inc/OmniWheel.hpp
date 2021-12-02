@@ -82,6 +82,10 @@ public:
 	WheelState_t m_wheelState[4];
 
 
+	ControlType_t get_controlType(){return m_type;}
+
+
+
 private:
 
 	void calcKinematics();
