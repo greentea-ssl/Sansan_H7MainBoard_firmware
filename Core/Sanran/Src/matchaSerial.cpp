@@ -63,8 +63,11 @@ bool MatchaSerial::Update()
 
 	readAllBytes();
 
+	int idx_offset = readNum - MATCHA_DATA_LENGTH;
+
+
 	// Check header
-	if(m_rxBytes[0] != 0xFF || m_rxBytes[1] != 0xC3)
+	if(m_rxBytes[idx_offset + 0] != 0xFF || m_rxBytes[idx_offset + 1] != 0xC3)
 	{
 		m_prev_error_code = MatchaSerial::PARSE_ERROR_HEADER;
 		return false;
@@ -73,36 +76,36 @@ bool MatchaSerial::Update()
 	uint8_t checkSum = 0;
 	for(int i = 2; i <= 20; i++)
 	{
-		checkSum = checkSum ^ m_rxBytes[i];
+		checkSum = checkSum ^ m_rxBytes[idx_offset + i];
 	}
-	if(m_rxBytes[21] != checkSum)
+	if(m_rxBytes[idx_offset + 21] != checkSum)
 	{
 		m_prev_error_code = MatchaSerial::PARSE_ERROR_CHECK_SUM;
 		return false;
 	}
-	if(m_rxBytes[22] != (checkSum ^ 0xFF))
+	if(m_rxBytes[idx_offset + 22] != (checkSum ^ 0xFF))
 	{
 		m_prev_error_code = PARSE_ERROR_CHECK_SUM;
 		return false;
 	}
 
 
-	uint32_t vel_x_int = ((uint32_t)m_rxBytes[6] << 24) | ((uint32_t)m_rxBytes[5] << 16) | ((uint32_t)m_rxBytes[4] << 8) | (uint32_t)m_rxBytes[3];
-	uint32_t vel_y_int = ((uint32_t)m_rxBytes[10] << 24) | ((uint32_t)m_rxBytes[9] << 16) | ((uint32_t)m_rxBytes[8] << 8) | (uint32_t)m_rxBytes[7];
-	uint32_t omega_int = ((uint32_t)m_rxBytes[14] << 24) | ((uint32_t)m_rxBytes[13] << 16) | ((uint32_t)m_rxBytes[12] << 8) | (uint32_t)m_rxBytes[11];
-	uint32_t theta_fb_int = ((uint32_t)m_rxBytes[18] << 24) | ((uint32_t)m_rxBytes[17] << 16) | ((uint32_t)m_rxBytes[16] << 8) | (uint32_t)m_rxBytes[15];
+	uint32_t vel_x_int = ((uint32_t)m_rxBytes[idx_offset + 6] << 24) | ((uint32_t)m_rxBytes[idx_offset + 5] << 16) | ((uint32_t)m_rxBytes[idx_offset + 4] << 8) | (uint32_t)m_rxBytes[idx_offset + 3];
+	uint32_t vel_y_int = ((uint32_t)m_rxBytes[idx_offset + 10] << 24) | ((uint32_t)m_rxBytes[idx_offset + 9] << 16) | ((uint32_t)m_rxBytes[idx_offset + 8] << 8) | (uint32_t)m_rxBytes[idx_offset + 7];
+	uint32_t omega_int = ((uint32_t)m_rxBytes[idx_offset + 14] << 24) | ((uint32_t)m_rxBytes[idx_offset + 13] << 16) | ((uint32_t)m_rxBytes[idx_offset + 12] << 8) | (uint32_t)m_rxBytes[idx_offset + 11];
+	uint32_t theta_fb_int = ((uint32_t)m_rxBytes[idx_offset + 18] << 24) | ((uint32_t)m_rxBytes[idx_offset + 17] << 16) | ((uint32_t)m_rxBytes[idx_offset + 16] << 8) | (uint32_t)m_rxBytes[idx_offset + 15];
 
 	cmd.vel_x = *(float*)(&vel_x_int);
 	cmd.vel_y = *(float*)(&vel_y_int);
 	cmd.omega = *(float*)(&omega_int);
 	cmd.theta_fb = *(float*)(&theta_fb_int);
 
-	cmd.dribble = (m_rxBytes[19] & 0b10000000) != 0;
-	cmd.kick = (m_rxBytes[19] & 0b00010000) != 0;
-	cmd.chip = (m_rxBytes[19] & 0b00001000) != 0;
+	cmd.dribble = (m_rxBytes[idx_offset + 19] & 0b10000000) != 0;
+	cmd.kick = (m_rxBytes[idx_offset + 19] & 0b00010000) != 0;
+	cmd.chip = (m_rxBytes[idx_offset + 19] & 0b00001000) != 0;
 
-	cmd.dribblePower = m_rxBytes[20] >> 4;
-	cmd.kickPower = m_rxBytes[20] & 0x0f;
+	cmd.dribblePower = m_rxBytes[idx_offset + 20] >> 4;
+	cmd.kickPower = m_rxBytes[idx_offset + 20] & 0x0f;
 
 	//printf("%6f, %6f, %6f, %6f\n", cmd.vel_x, cmd.vel_y, cmd.omega, cmd.theta_fb);
 
