@@ -376,6 +376,34 @@ static int usrcmd_view(int argc, char **argv)
 			uart_puts("\e[8A");
 		}
 	}
+	else if(ntlibc_strcmp(argv[1], "rxbuf") == 0)
+	{
+
+
+		printf("\r\n");
+
+		while(1)
+		{
+			delay_ms(10);
+
+			for(int i = 0; i < 32; i++)
+			{
+				printf("%02x ", sanran.matcha.m_rxBytes[i]);
+				//printf("%02x ", sanran.matcha.m_rxBuf[i]);
+			}
+			printf(" | ");
+			for(int i = 0; i < 32; i++)
+			{
+				//printf("%02x ", sanran.matcha.m_rxBytes[i]);
+				printf("%02x ", sanran.matcha.m_rxBuf[i]);
+			}
+
+			printf("\r\n");
+
+			if(checkSuspens()) break;
+
+		}
+	}
 	else
 	{
 		//printf("\e[%s", argv[1]);

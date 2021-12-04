@@ -53,7 +53,11 @@ public:
 		PARSE_ERROR_HEADER		= 2,
 		PARSE_ERROR_CHECK_SUM	= 3,
 		PARSE_ERROR_VALUE_RANGE	= 4,
+		PARSE_ERROR_NO_DATA		= 10,
 	}parse_error_t;
+
+	uint8_t m_rxBuf[UART_BUF_SIZE];
+	uint8_t m_rxBytes[UART_BUF_SIZE];
 
 
 private:
@@ -74,9 +78,7 @@ private:
 	uint16_t m_nextWriteIndex;
 	uint16_t m_nextReadIndex;
 
-	uint8_t m_rxBuf[UART_BUF_SIZE];
 
-	uint8_t m_rxBytes[UART_BUF_SIZE];
 
 	uint16_t m_readByteCount;
 
