@@ -30,6 +30,8 @@ public:
 
 	bool Update();
 
+	bool getPrevErrorCode(){ return m_prev_error_code; }
+
 	struct Reference_TypeDef{
 		float vel_x;
 		float vel_y;
@@ -43,6 +45,15 @@ public:
 	};
 
 	Reference_TypeDef cmd;
+
+
+	typedef enum{
+		PARSE_ERROR_NONE		= 0,
+		PARSE_ERROR_PACKET_SIZE	= 1,
+		PARSE_ERROR_HEADER		= 2,
+		PARSE_ERROR_CHECK_SUM	= 3,
+		PARSE_ERROR_VALUE_RANGE	= 4,
+	}parse_error_t;
 
 
 private:
@@ -69,6 +80,7 @@ private:
 
 	uint16_t m_readByteCount;
 
+	parse_error_t m_prev_error_code;
 
 };
 
