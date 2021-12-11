@@ -4,7 +4,8 @@
 #define _MATCHA_SERIAL_HPP_
 
 
-#define UART_BUF_SIZE	(32)
+// Mast be power of 2
+#define UART_BUF_SIZE	(64)
 #define UART_BUF_MASK	(UART_BUF_SIZE-1)
 
 
@@ -62,13 +63,13 @@ public:
 
 private:
 
-	uint8_t readByte();
 
-	uint16_t readAllBytes();
+	uint16_t readBytes(int16_t head_index, int16_t length);
 
-	uint16_t available();
+	bool parse();
 
 	void UpdateBuffer();
+
 
 	UART_HandleTypeDef *m_huart;
 
@@ -76,11 +77,9 @@ private:
 	uint16_t m_rxBufMask;
 
 	uint16_t m_nextWriteIndex;
-	uint16_t m_nextReadIndex;
 
-
-
-	uint16_t m_readByteCount;
+	uint16_t m_prev_head_index;
+	uint16_t m_parse_error_counter;
 
 	parse_error_t m_prev_error_code;
 

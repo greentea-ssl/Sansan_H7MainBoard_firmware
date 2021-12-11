@@ -32,7 +32,9 @@ bool MatchaSerial::setup()
 	m_rxBufMask = m_rxBufSize - 1;
 
 	m_nextWriteIndex = 0;
-	m_nextReadIndex = 0;
+
+	m_prev_head_index = 0;
+	m_parse_error_counter = 0;
 
 	cmd.vel_x = 0.0;
 	cmd.vel_y = 0.0;
@@ -52,19 +54,49 @@ bool MatchaSerial::Update()
 
 	UpdateBuffer();
 
-	int readNum = available();
+	//int readNum = available();
 
-	if(readNum < MATCHA_DATA_LENGTH)
+	int16_t head_index = 0;
+
+	int16_t updated_size = ((m_nextWriteIndex - MATCHA_DATA_LENGTH) - m_prev_head_index) & m_rxBufMask;
+
+	if(updated_size >= MATCHA_DATA_LENGTH)
 	{
-		m_prev_error_code = MatchaSerial::PARSE_ERROR_PACKET_SIZE;
-		return false;
+		head_index = ((updated_size / MATCHA_DATA_LENGTH) * MATCHA_DATA_LENGTH + m_prev_head_index) & m_rxBufMask;
+	}
+	else
+	{
+		head_index = m_prev_head_index;
 	}
 
+	readBytes(head_index, MATCHA_DATA_LENGTH);
+	m_prev_head_index = head_index;
 
-	readAllBytes();
 
-	int idx_offset = readNum - MATCHA_DATA_LENGTH;
+	if(parse())
+	{
+		m_parse_error_counter = 0;
+	}
+	else
+	{
+		// Parse Failed
+		m_parse_error_counter += 1;
+		if(m_parse_error_counter >= 3)
+		{
+			m_prev_head_index = (m_nextWriteIndex - MATCHA_DATA_LENGTH) & m_rxBufMask;
+		}
+	}
 
+	return true;
+
+}
+
+
+
+bool MatchaSerial::parse()
+{
+
+	int idx_offset = 0;
 
 	// Check header
 	if(m_rxBytes[idx_offset + 0] != 0xFF || m_rxBytes[idx_offset + 1] != 0xC3)
@@ -89,6 +121,7 @@ bool MatchaSerial::Update()
 		return false;
 	}
 
+#if 1
 
 	uint32_t vel_x_int = ((uint32_t)m_rxBytes[idx_offset + 6] << 24) | ((uint32_t)m_rxBytes[idx_offset + 5] << 16) | ((uint32_t)m_rxBytes[idx_offset + 4] << 8) | (uint32_t)m_rxBytes[idx_offset + 3];
 	uint32_t vel_y_int = ((uint32_t)m_rxBytes[idx_offset + 10] << 24) | ((uint32_t)m_rxBytes[idx_offset + 9] << 16) | ((uint32_t)m_rxBytes[idx_offset + 8] << 8) | (uint32_t)m_rxBytes[idx_offset + 7];
@@ -107,21 +140,14 @@ bool MatchaSerial::Update()
 	cmd.dribblePower = m_rxBytes[idx_offset + 20] >> 4;
 	cmd.kickPower = m_rxBytes[idx_offset + 20] & 0x0f;
 
-	//printf("%6f, %6f, %6f, %6f\n", cmd.vel_x, cmd.vel_y, cmd.omega, cmd.theta_fb);
-
-	/*
-	printf("%3d > ", readNum);
-	for(int i = 0; i < readNum; i++)
-	{
-		printf("%02x ", m_rxBytes[i]);
-	}
-	printf("\n");
-	*/
+#endif
 
 	m_prev_error_code = MatchaSerial::PARSE_ERROR_NONE;
+
 	return true;
 
 }
+
 
 
 void MatchaSerial::UpdateBuffer()
@@ -132,47 +158,12 @@ void MatchaSerial::UpdateBuffer()
 }
 
 
-
-uint8_t MatchaSerial::readByte()
+uint16_t MatchaSerial::readBytes(int16_t head_index, int16_t length)
 {
-
-	uint8_t byte = m_rxBuf[m_rxBufMask & (m_nextReadIndex)];
-
-	if((m_rxBufMask & (m_nextWriteIndex - m_nextReadIndex)) == 0) return byte;
-
-	m_nextReadIndex++;
-	if(m_nextReadIndex > m_rxBufSize - 1) m_nextReadIndex -= m_rxBufSize;
-
-	return byte;
-}
-
-
-
-uint16_t MatchaSerial::readAllBytes()
-{
-
-	int readNum = available();
-	int i;
-	for(i = 0; i < readNum; i++)
+	for(int i = 0; i < length; i++)
 	{
-		m_rxBytes[i] = readByte();
+		m_rxBytes[i] = m_rxBuf[m_rxBufMask & (i + head_index)];
 	}
-
-	return readNum;
-
-}
-
-
-
-uint16_t MatchaSerial::available()
-{
-
-	int16_t newByteCount = (int16_t)m_nextWriteIndex - (int16_t)m_nextReadIndex;
-
-	if(newByteCount < 0) newByteCount += m_rxBufSize;
-
-	return newByteCount;
-
 }
 
 
