@@ -21,6 +21,8 @@ Kicker::Kicker(float cycleTime, float kickTime) : kickState(KICKSTATE_CHARGE)
 void Kicker::kickStraight()
 {
 
+	if(kickState != KICKSTATE_CPLT) return;
+
 	HAL_GPIO_WritePin(KICKMODE_GPIO_Port, KICKMODE_Pin, GPIO_PIN_RESET);
 
 	HAL_GPIO_WritePin(BOOST_GPIO_Port, BOOST_Pin, GPIO_PIN_RESET);
@@ -34,6 +36,11 @@ void Kicker::kickStraight()
 
 void Kicker::kickChip()
 {
+
+	if(kickState != KICKSTATE_CPLT)
+	{
+		return;
+	}
 
 	HAL_GPIO_WritePin(KICKMODE_GPIO_Port, KICKMODE_Pin, GPIO_PIN_SET);
 
@@ -53,6 +60,7 @@ void Kicker::update()
 	switch(kickState)
 	{
 	case KICKSTATE_CHARGE:
+		HAL_GPIO_WritePin(KICKMODE_GPIO_Port, KICKMODE_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(BOOST_GPIO_Port, BOOST_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(KICK_GPIO_Port, KICK_Pin, GPIO_PIN_RESET);
 		if(charge_cplt == 0)
