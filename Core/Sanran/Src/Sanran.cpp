@@ -220,15 +220,15 @@ void Sanran::UpdateSyncHS()
 
 	if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_P_DOB)
 	{
-		omniCmd.world_vel_x = matcha.cmd.vel_x;
-		omniCmd.world_vel_y = matcha.cmd.vel_y;
-		omniCmd.omega = matcha.cmd.omega;
+		omniCmd.world_vel_x = matcha.cmd.cmd_vx;
+		omniCmd.world_vel_y = matcha.cmd.cmd_vy;
+		omniCmd.omega = matcha.cmd.cmd_omega;
 	}
 	else if(this->omni.get_controlType() == OmniWheel::TYPE_ROBOT_P_DOB)
 	{
-		omniCmd.robot_vel_x = matcha.cmd.vel_x;
-		omniCmd.robot_vel_y = matcha.cmd.vel_y;
-		omniCmd.omega = matcha.cmd.omega;
+		omniCmd.robot_vel_x = matcha.cmd.cmd_vx;
+		omniCmd.robot_vel_y = matcha.cmd.cmd_vy;
+		omniCmd.omega = matcha.cmd.cmd_omega;
 	}
 
 

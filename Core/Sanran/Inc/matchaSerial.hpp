@@ -14,9 +14,7 @@
 #include "main.h"
 
 
-#define MATCHA_DATA_LENGTH	(23)
-
-
+#define MATCHA_DATA_LENGTH	(25)
 
 
 
@@ -34,15 +32,21 @@ public:
 	bool getPrevErrorCode(){ return m_prev_error_code; }
 
 	struct Reference_TypeDef{
-		float vel_x;
-		float vel_y;
-		float omega;
-		float theta_fb;
+		float fb_x;
+		float fb_y;
+		float fb_theta;
+		float cmd_x;
+		float cmd_y;
+		float cmd_theta;
+		float cmd_vx;
+		float cmd_vy;
+		float cmd_omega;
 		bool dribble;
 		bool kick;
 		bool chip;
 		uint8_t dribblePower;
 		uint8_t kickPower;
+		bool vision_error;
 	};
 
 	Reference_TypeDef cmd;

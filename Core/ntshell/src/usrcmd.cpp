@@ -339,14 +339,32 @@ static int usrcmd_view(int argc, char **argv)
 		{
 			delay_ms(10);
 
-			printf("         | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | theta_fb [rad] \r\n");
-			printf("---------+-------------+-------------+---------------|--------------- \r\n");
-			printf("Command  ");
+			printf("         |   pos_x [m] |   pos_y [m] |   theta[deg.] | Vision Error |\r\n");
+			printf("---------+-------------+-------------+---------------|--------------| \r\n");
 
-			printf("| %11.2f ", sanran.matcha.cmd.vel_x);
-			printf("| %11.2f ", sanran.matcha.cmd.vel_y);
-			printf("| %13.2f ", sanran.matcha.cmd.omega);
-			printf("| %14.2f ", sanran.matcha.cmd.theta_fb);
+			printf("FeedBack ");
+			printf("| %11.2f ", sanran.matcha.cmd.fb_x);
+			printf("| %11.2f ", sanran.matcha.cmd.fb_y);
+			printf("| %13.2f ", sanran.matcha.cmd.fb_theta / M_PI * 180.0f);
+			printf("| %12d ", sanran.matcha.cmd.vision_error);
+
+			printf("\r\n\r\n");
+
+			printf("Command  ");
+			printf("| %11.2f ", sanran.matcha.cmd.cmd_x);
+			printf("| %11.2f ", sanran.matcha.cmd.cmd_y);
+			printf("| %13.2f ", sanran.matcha.cmd.cmd_theta / M_PI * 180.0f);
+
+			printf("\r\n\r\n");
+
+		  //printf("         |   pos_x [m] |   pos_y [m] |   theta[rad]  | \r\n");
+			printf("         | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | \r\n");
+			printf("---------+-------------+-------------+---------------| \r\n");
+
+			printf("Command  ");
+			printf("| %11.2f ", sanran.matcha.cmd.cmd_vx);
+			printf("| %11.2f ", sanran.matcha.cmd.cmd_vy);
+			printf("| %13.2f ", sanran.matcha.cmd.cmd_omega);
 
 			printf("\r\n\r\n");
 
@@ -373,7 +391,7 @@ static int usrcmd_view(int argc, char **argv)
 
 			if(checkSuspens()) break;
 
-			uart_puts("\e[8A");
+			uart_puts("\e[14A");
 		}
 	}
 	else if(ntlibc_strcmp(argv[1], "rxframe") == 0)

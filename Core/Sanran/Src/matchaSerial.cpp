@@ -36,14 +36,23 @@ bool MatchaSerial::setup()
 	m_prev_head_index = 0;
 	m_parse_error_counter = 0;
 
-	cmd.vel_x = 0.0;
-	cmd.vel_y = 0.0;
-	cmd.omega = 0.0;
+	cmd.fb_x = 0.0;
+	cmd.fb_y = 0.0;
+	cmd.fb_theta = 0.0;
+	cmd.cmd_x = 0.0;
+	cmd.cmd_y = 0.0;
+	cmd.cmd_theta = 0.0;
+	cmd.cmd_vx = 0.0;
+	cmd.cmd_vy = 0.0;
+	cmd.cmd_omega = 0.0;
+
 	cmd.dribble = false;
 	cmd.kick = false;
 	cmd.chip = false;
 	cmd.dribblePower = 0;
 	cmd.kickPower = 0;
+
+	cmd.vision_error = true;
 
 	return (status == HAL_OK);
 }
@@ -106,16 +115,16 @@ bool MatchaSerial::parse()
 	}
 
 	uint8_t checkSum = 0;
-	for(int i = 2; i <= 20; i++)
+	for(int i = 2; i <= 22; i++)
 	{
 		checkSum = checkSum ^ m_rxBytes[idx_offset + i];
 	}
-	if(m_rxBytes[idx_offset + 21] != checkSum)
+	if(m_rxBytes[idx_offset + 23] != checkSum)
 	{
 		m_prev_error_code = MatchaSerial::PARSE_ERROR_CHECK_SUM;
 		return false;
 	}
-	if(m_rxBytes[idx_offset + 22] != (checkSum ^ 0xFF))
+	if(m_rxBytes[idx_offset + 24] != (checkSum ^ 0xFF))
 	{
 		m_prev_error_code = PARSE_ERROR_CHECK_SUM;
 		return false;
@@ -123,15 +132,42 @@ bool MatchaSerial::parse()
 
 #if 1
 
-	uint32_t vel_x_int = ((uint32_t)m_rxBytes[idx_offset + 6] << 24) | ((uint32_t)m_rxBytes[idx_offset + 5] << 16) | ((uint32_t)m_rxBytes[idx_offset + 4] << 8) | (uint32_t)m_rxBytes[idx_offset + 3];
-	uint32_t vel_y_int = ((uint32_t)m_rxBytes[idx_offset + 10] << 24) | ((uint32_t)m_rxBytes[idx_offset + 9] << 16) | ((uint32_t)m_rxBytes[idx_offset + 8] << 8) | (uint32_t)m_rxBytes[idx_offset + 7];
-	uint32_t omega_int = ((uint32_t)m_rxBytes[idx_offset + 14] << 24) | ((uint32_t)m_rxBytes[idx_offset + 13] << 16) | ((uint32_t)m_rxBytes[idx_offset + 12] << 8) | (uint32_t)m_rxBytes[idx_offset + 11];
-	uint32_t theta_fb_int = ((uint32_t)m_rxBytes[idx_offset + 18] << 24) | ((uint32_t)m_rxBytes[idx_offset + 17] << 16) | ((uint32_t)m_rxBytes[idx_offset + 16] << 8) | (uint32_t)m_rxBytes[idx_offset + 15];
 
-	cmd.vel_x = *(float*)(&vel_x_int);
-	cmd.vel_y = *(float*)(&vel_y_int);
-	cmd.omega = *(float*)(&omega_int);
-	cmd.theta_fb = *(float*)(&theta_fb_int);
+	int16_t fb_x_int      = ((int16_t)m_rxBytes[idx_offset + 4] << 8) | (int16_t)m_rxBytes[idx_offset + 3];
+	int16_t fb_y_int      = ((int16_t)m_rxBytes[idx_offset + 6] << 8) | (int16_t)m_rxBytes[idx_offset + 5];
+	int16_t fb_theta_int  = ((int16_t)m_rxBytes[idx_offset + 8] << 8) | (int16_t)m_rxBytes[idx_offset + 7];
+
+	int16_t cmd_x_int     = ((int16_t)m_rxBytes[idx_offset + 10] << 8) | (int16_t)m_rxBytes[idx_offset + 9];
+	int16_t cmd_y_int     = ((int16_t)m_rxBytes[idx_offset + 12] << 8) | (int16_t)m_rxBytes[idx_offset + 11];
+	int16_t cmd_theta_int = ((int16_t)m_rxBytes[idx_offset + 14] << 8) | (int16_t)m_rxBytes[idx_offset + 13];
+
+	int16_t cmd_vx_int    = ((int16_t)m_rxBytes[idx_offset + 16] << 8) | (int16_t)m_rxBytes[idx_offset + 15];
+	int16_t cmd_vy_int    = ((int16_t)m_rxBytes[idx_offset + 18] << 8) | (int16_t)m_rxBytes[idx_offset + 17];
+	int16_t cmd_omega_int = ((int16_t)m_rxBytes[idx_offset + 20] << 8) | (int16_t)m_rxBytes[idx_offset + 19];
+
+
+	if(fb_x_int == 0x7FFF || fb_y_int == 0x7FFF || fb_theta_int == 0x7FFF)
+	{
+
+		cmd.vision_error = true;
+	}
+	else
+	{
+		cmd.fb_x = fb_x_int * 0.001;
+		cmd.fb_y = fb_y_int * 0.001;
+		cmd.fb_theta = fb_theta_int * 2*M_PI/65536;
+
+		cmd.vision_error = false;
+	}
+
+
+	cmd.cmd_x = cmd_x_int * 0.001;
+	cmd.cmd_y = cmd_y_int * 0.001;
+	cmd.cmd_theta = cmd_theta_int * 2*M_PI/65536;
+
+	cmd.cmd_vx = cmd_vx_int * 0.001;
+	cmd.cmd_vy = cmd_vy_int * 0.001;
+	cmd.cmd_omega = cmd_omega_int / 1024.0f;
 
 	cmd.dribble = (m_rxBytes[idx_offset + 19] & 0b10000000) != 0;
 	cmd.kick = (m_rxBytes[idx_offset + 19] & 0b00010000) != 0;
