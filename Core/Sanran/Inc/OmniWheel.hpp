@@ -20,10 +20,13 @@ public:
 		TYPE_INDEP_P_DOB,
 		TYPE_ROBOT_P_DOB,
 		TYPE_WORLD_P_DOB,
+		TYPE_WORLD_POSITION,
 	}ControlType_t;
 
 	typedef struct
 	{
+		float world_x;
+		float world_y;
 		float world_theta;
 		float robot_vel_x;
 		float robot_vel_y;
@@ -77,6 +80,13 @@ public:
 		m_robotState.world_theta = trueAngle;
 	}
 
+	void correctPosition(float x, float y, float theta)
+	{
+		m_robotState.world_x = x;
+		m_robotState.world_y = y;
+		m_robotState.world_theta = theta;
+	}
+
 	RobotState_t m_robotState;
 
 	WheelState_t m_wheelState[4];
@@ -99,6 +109,9 @@ private:
 	ControlType_t m_type;
 
 	CanMotorIF *m_canMotorIF;
+
+	PI_Controller positon_pi_x;
+	PI_Controller positon_pi_y;
 
 	DOB dob[4];
 

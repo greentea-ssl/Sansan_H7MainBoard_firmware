@@ -32,6 +32,7 @@ public:
 	bool getPrevErrorCode(){ return m_prev_error_code; }
 
 	struct Reference_TypeDef{
+		uint8_t robot_ID;
 		float fb_x;
 		float fb_y;
 		float fb_theta;

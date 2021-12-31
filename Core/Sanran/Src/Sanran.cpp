@@ -54,7 +54,7 @@ Sanran::Sanran()
 	  ballSensor(&hadc1),
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(0.01, 0.5),
-	  omni(OmniWheel::TYPE_ROBOT_P_DOB, &canMotorIF),
+	  omni(OmniWheel::TYPE_WORLD_POSITION, &canMotorIF),
 	  matcha(&huart5)
 {
 
@@ -279,7 +279,7 @@ void Sanran::UpdateSyncLS()
 	if(ballSensor.read() > 0.15) dribbler.setSlow();
 	else dribbler.setFast();
 
-	omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
+	//omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
 
 
 	//printf("USER_SW0 = %f\n", omega_w_ref);
@@ -303,8 +303,24 @@ void Sanran::UpdateSyncLS()
 
 	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
-	matcha.Update();
-
+	if(matcha.Update())
+	{
+		if(matcha.cmd.robot_ID == 0x0F)
+		{
+			power.disableSupply();
+		}
+		if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_POSITION)
+		{
+			omniCmd.world_x = matcha.cmd.cmd_x;
+			omniCmd.world_y = matcha.cmd.cmd_y;
+			omniCmd.world_theta = matcha.cmd.cmd_theta;
+		}
+		if(matcha.cmd.vision_error == false)
+		{
+			//omni.correctAngle(matcha.cmd.fb_theta);
+			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta);
+		}
+	}
 
 
 	syncLS_timestamp.end_count = htim13.Instance->CNT;

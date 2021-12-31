@@ -36,6 +36,8 @@ bool MatchaSerial::setup()
 	m_prev_head_index = 0;
 	m_parse_error_counter = 0;
 
+	cmd.robot_ID = 0;
+
 	cmd.fb_x = 0.0;
 	cmd.fb_y = 0.0;
 	cmd.fb_theta = 0.0;
@@ -132,6 +134,8 @@ bool MatchaSerial::parse()
 
 #if 1
 
+
+	cmd.robot_ID = m_rxBytes[idx_offset + 2] & 0x0F;
 
 	int16_t fb_x_int      = ((int16_t)m_rxBytes[idx_offset + 4] << 8) | (int16_t)m_rxBytes[idx_offset + 3];
 	int16_t fb_y_int      = ((int16_t)m_rxBytes[idx_offset + 6] << 8) | (int16_t)m_rxBytes[idx_offset + 5];
