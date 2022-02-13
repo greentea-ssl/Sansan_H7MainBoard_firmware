@@ -6,10 +6,10 @@
 #include "main.h"
 
 
-#include "Power.hpp"
+#include "power.hpp"
 #include "RGBLED.hpp"
 #include "canMotor.hpp"
-#include "Buzzer.hpp"
+#include "buzzer.hpp"
 #include "BNO055.hpp"
 #include "ballSensor.hpp"
 #include "dribbler.hpp"

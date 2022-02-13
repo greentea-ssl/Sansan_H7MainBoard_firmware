@@ -306,9 +306,6 @@ void Sanran::UpdateSyncLS()
 	if(matcha.Update())
 	{
 		if(matcha.cmd.robot_ID == 0x0F)
-		{
-			power.disableSupply();
-		}
 		if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_POSITION)
 		{
 			omniCmd.world_x = matcha.cmd.cmd_x;
