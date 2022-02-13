@@ -10,7 +10,7 @@
 #include "main.h"
 
 
-#include "DigitalIO.hpp"
+#include "digitalIO.hpp"
 
 
 
