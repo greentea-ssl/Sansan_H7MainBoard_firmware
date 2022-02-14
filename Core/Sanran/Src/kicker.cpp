@@ -4,21 +4,30 @@
 #include "kicker.hpp"
 
 
+extern TIM_HandleTypeDef htim4;
 
-Kicker::Kicker(float cycleTime, float kickTime) : kickState(KICKSTATE_CHARGE)
+
+Kicker::Kicker(TIM_HandleTypeDef *htim, uint32_t channel)
+: m_htim(htim), m_channel(channel)
 {
 
-	m_time = 0.0f;
+	kickState = KICKSTATE_CHARGE;
 
-	m_kickTime = kickTime;
-
-	m_cycleTime = cycleTime;
+	kickPower = 0;
 
 }
 
 
+bool Kicker::setup()
+{
 
-void Kicker::kickStraight()
+	HAL_TIM_PWM_Start(m_htim, m_channel);
+
+	return true;
+}
+
+
+void Kicker::kickStraight(uint16_t power)
 {
 
 	if(kickState != KICKSTATE_CPLT) return;
@@ -28,13 +37,17 @@ void Kicker::kickStraight()
 	HAL_GPIO_WritePin(BOOST_GPIO_Port, BOOST_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(KICK_GPIO_Port, KICK_Pin, GPIO_PIN_SET);
 
+	m_htim->Instance->CNT = 0xfff0;
+	kickPower = power;
+	__HAL_TIM_SET_COMPARE(m_htim, m_channel, kickPower);
+
 	kickState = KICKSTATE_KICK;
 
 }
 
 
 
-void Kicker::kickChip()
+void Kicker::kickChip(uint16_t power)
 {
 
 	if(kickState != KICKSTATE_CPLT)
@@ -47,6 +60,10 @@ void Kicker::kickChip()
 	HAL_GPIO_WritePin(BOOST_GPIO_Port, BOOST_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(KICK_GPIO_Port, KICK_Pin, GPIO_PIN_SET);
 
+	m_htim->Instance->CNT = 0xfff0;
+	kickPower = power;
+	__HAL_TIM_SET_COMPARE(m_htim, m_channel, kickPower);
+
 	kickState = KICKSTATE_KICK;
 
 }
@@ -57,12 +74,14 @@ void Kicker::update()
 
 	uint8_t charge_cplt = HAL_GPIO_ReadPin(DONE_GPIO_Port, DONE_Pin);
 
+
 	switch(kickState)
 	{
 	case KICKSTATE_CHARGE:
 		HAL_GPIO_WritePin(KICKMODE_GPIO_Port, KICKMODE_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(BOOST_GPIO_Port, BOOST_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(KICK_GPIO_Port, KICK_Pin, GPIO_PIN_RESET);
+		__HAL_TIM_SET_COMPARE(m_htim, m_channel, 0);
 		if(charge_cplt == 0)
 		{
 			kickState = KICKSTATE_CPLT;
@@ -72,23 +91,21 @@ void Kicker::update()
 	case KICKSTATE_CPLT:
 		HAL_GPIO_WritePin(BOOST_GPIO_Port, BOOST_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(KICK_GPIO_Port, KICK_Pin, GPIO_PIN_RESET);
+		__HAL_TIM_SET_COMPARE(m_htim, m_channel, 0);
 		break;
 
 	case KICKSTATE_KICK:
 		HAL_GPIO_WritePin(BOOST_GPIO_Port, BOOST_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(KICK_GPIO_Port, KICK_Pin, GPIO_PIN_SET);
-		if(m_time >= m_kickTime)
+		if(m_htim->Instance->CNT < 0xfff0 && m_htim->Instance->CNT > kickPower)
 		{
 			kickState = KICKSTATE_CHARGE;
-			m_time = 0.0f;
-		}
-		else
-		{
-			m_time += m_cycleTime;
+			__HAL_TIM_SET_COMPARE(m_htim, m_channel, 0);
 		}
 		break;
 
 	default:
+		__HAL_TIM_SET_COMPARE(m_htim, m_channel, 0);
 		break;
 	}
 

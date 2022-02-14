@@ -15,6 +15,7 @@
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim12;
 extern TIM_HandleTypeDef htim13;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -53,7 +54,7 @@ Sanran::Sanran()
 	  bno055(&hi2c2),
 	  ballSensor(&hadc1),
 	  dribbler(&htim1, TIM_CHANNEL_1),
-	  kicker(0.001, 0.001),
+	  kicker(&htim4, TIM_CHANNEL_1),
 	  omni(OmniWheel::TYPE_ROBOT_P_DOB, &canMotorIF),
 	  matcha(&huart5)
 {
@@ -108,6 +109,15 @@ void Sanran::setup()
 	printf("\n Setting Omni Wheel ... \n");
 	omni.setup();
 	printf("\t\t\t\t[Completed]\n");
+
+	/***** Setting Kicker *****/
+	printf("\n Setting Kicker ...  \n");
+	boolStatus = kicker.setup();
+	if(boolStatus){
+		printf("\t\t\t\t[OK]\n");
+	}else{
+		printf("\t\t\t\t[ERROR]\n");
+	}
 
 	/***** Setting Matcha Serial *****/
 	printf("\n Setting Matcha Serial ... \n");
@@ -217,18 +227,16 @@ void Sanran::UpdateSyncHS()
 
 	if(userButton0 == 0 && userButton0_prev == 1)
 	{
-		kicker.kickStraight();
+		kicker.kickStraight(1);
 	}
 	if(userButton1 == 0 && userButton1_prev == 1)
 	{
-		kicker.kickChip();
+		kicker.kickChip(1);
 	}
 	userButton0_prev = userButton0;
 	userButton1_prev = userButton1;
 
 	kicker.update();
-
-
 
 
 #if 0
