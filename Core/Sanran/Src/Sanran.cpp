@@ -15,6 +15,7 @@
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim12;
 extern TIM_HandleTypeDef htim13;
 extern FDCAN_HandleTypeDef hfdcan2;
@@ -53,7 +54,7 @@ Sanran::Sanran()
 	  bno055(&hi2c2),
 	  ballSensor(&hadc1),
 	  dribbler(&htim1, TIM_CHANNEL_1),
-	  kicker(0.01, 0.5),
+	  kicker(&htim4, TIM_CHANNEL_1),
 	  omni(OmniWheel::TYPE_WORLD_POSITION, &canMotorIF),
 	  matcha(&huart5)
 {
@@ -108,6 +109,15 @@ void Sanran::setup()
 	printf("\n Setting Omni Wheel ... \n");
 	omni.setup();
 	printf("\t\t\t\t[Completed]\n");
+
+	/***** Setting Kicker *****/
+	printf("\n Setting Kicker ...  \n");
+	boolStatus = kicker.setup();
+	if(boolStatus){
+		printf("\t\t\t\t[OK]\n");
+	}else{
+		printf("\t\t\t\t[ERROR]\n");
+	}
 
 	/***** Setting Matcha Serial *****/
 	printf("\n Setting Matcha Serial ... \n");
@@ -211,6 +221,24 @@ void Sanran::UpdateSyncHS()
 	syncHS_timestamp.start_count = htim12.Instance->CNT;
 
 
+
+	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
+	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
+
+	if(userButton0 == 0 && userButton0_prev == 1)
+	{
+		kicker.kickStraight(1);
+	}
+	if(userButton1 == 0 && userButton1_prev == 1)
+	{
+		kicker.kickChip(1);
+	}
+	userButton0_prev = userButton0;
+	userButton1_prev = userButton1;
+
+	kicker.update();
+
+
 #if 0
 	omniCmd.world_vel_x = simulink.m_data[0];
 	omniCmd.world_vel_y = simulink.m_data[1];
@@ -284,22 +312,9 @@ void Sanran::UpdateSyncLS()
 
 	//printf("USER_SW0 = %f\n", omega_w_ref);
 
-	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
-	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
-
-	if(userButton0 == 0 && userButton1_prev == 1)
-	{
-		kicker.kickStraight();
-	}
-	if(userButton1 == 0 && userButton1_prev == 1)
-	{
-		kicker.kickChip();
-	}
-	userButton0_prev = userButton0;
-	userButton1_prev = userButton1;
 
 
-	kicker.update();
+
 
 	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
