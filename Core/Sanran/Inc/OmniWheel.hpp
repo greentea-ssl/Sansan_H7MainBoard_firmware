@@ -30,6 +30,7 @@ public:
 		float world_theta;
 		float robot_vel_x;
 		float robot_vel_y;
+		float robot_omega;
 		float world_vel_x;
 		float world_vel_y;
 		float omega;
@@ -94,6 +95,7 @@ public:
 
 	ControlType_t get_controlType(){return m_type;}
 
+	Cmd_t m_cmd;
 
 
 private:
@@ -114,8 +116,6 @@ private:
 	PI_Controller positon_pi_y;
 
 	DOB dob[4];
-
-	Cmd_t m_cmd;
 
 	Param_t m_param;
 
