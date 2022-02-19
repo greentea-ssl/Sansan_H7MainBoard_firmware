@@ -51,8 +51,9 @@ void OmniWheel::setup()
 
 	calcKinematics();
 
-	positon_pi_x.setParam(3.0, 0.0, 1E-3);
-	positon_pi_y.setParam(3.0, 0.0, 1E-3);
+	position_pi_x.setParam(3.0, 0.0, 1E-3);
+	position_pi_y.setParam(3.0, 0.0, 1E-3);
+	position_pi_theta.setParam(2.0, 0.0, 1E-3);
 
 	for(int i = 0; i < 4; i++)
 		dob[i].setParam(m_param.Ktn, m_param.Jmn, m_param.g_dis, m_param.Ts);
@@ -83,8 +84,10 @@ void OmniWheel::update(Cmd_t *cmd)
 
 	float world_vx_ref_lim = 0.0;
 	float world_vy_ref_lim = 0.0;
+	float world_omega_ref_lim = 0.0;
 
-	const float Vmax = 1.0;
+	const float Vmax = 0.5;
+	const float Omega_max = 10.0;
 
 	if(!m_canMotorIF->motor[0].resIsUpdated() || !m_canMotorIF->motor[1].resIsUpdated() || !m_canMotorIF->motor[2].resIsUpdated() || !m_canMotorIF->motor[3].resIsUpdated())
 	{
@@ -162,7 +165,7 @@ void OmniWheel::update(Cmd_t *cmd)
 			m_cmd.omega_w[i] =
 					m_convMat_robot2motor[i][0] * cmd->robot_vel_x +
 					m_convMat_robot2motor[i][1] * cmd->robot_vel_y +
-					m_convMat_robot2motor[i][2] * cmd->omega;
+					m_convMat_robot2motor[i][2] * cmd->robot_omega;
 			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
@@ -175,7 +178,7 @@ void OmniWheel::update(Cmd_t *cmd)
 	case TYPE_WORLD_P_DOB:
 		m_cmd.robot_vel_x = cmd->world_vel_x * cos(m_robotState.world_theta) + cmd->world_vel_y * sin(m_robotState.world_theta);
 		m_cmd.robot_vel_y = cmd->world_vel_x * -sin(m_robotState.world_theta) + cmd->world_vel_y * cos(m_robotState.world_theta);
-		m_cmd.world_theta += cmd->omega * m_param.Ts;
+		m_cmd.world_theta += cmd->world_omega * m_param.Ts;
 		theta_error = m_cmd.world_theta - m_robotState.world_theta;
 		if(theta_error < -M_PI) theta_error += 2 * M_PI;
 		else if(theta_error > M_PI) theta_error -= 2 * M_PI;
@@ -184,7 +187,7 @@ void OmniWheel::update(Cmd_t *cmd)
 			m_cmd.omega_w[i] =
 					m_convMat_robot2motor[i][0] * m_cmd.robot_vel_x +
 					m_convMat_robot2motor[i][1] * m_cmd.robot_vel_y +
-					m_convMat_robot2motor[i][2] * (cmd->omega + 5.0 * theta_error);
+					m_convMat_robot2motor[i][2] * (cmd->robot_omega + 5.0 * theta_error);
 			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
@@ -196,22 +199,32 @@ void OmniWheel::update(Cmd_t *cmd)
 
 	case TYPE_WORLD_POSITION:
 
-		world_vx_ref = positon_pi_x.update(cmd->world_x - m_robotState.world_x) + cmd->world_vel_x;
-		world_vy_ref = positon_pi_x.update(cmd->world_y - m_robotState.world_y) + cmd->world_vel_y;
+		m_cmd.world_vel_x = cmd->world_vel_x;
+		m_cmd.world_vel_y = cmd->world_vel_y;
+		m_cmd.world_omega = cmd->world_omega;
+		m_cmd.world_x = cmd->world_x;
+		m_cmd.world_y = cmd->world_y;
+		m_cmd.world_theta = cmd->world_theta;
 
-		world_vx_ref_lim = limitter(world_vx_ref, -Vmax, Vmax);
-		world_vy_ref_lim = limitter(world_vy_ref, -Vmax, Vmax);
-
-		positon_pi_x.set_limitError(world_vx_ref - world_vx_ref_lim);
-		positon_pi_y.set_limitError(world_vy_ref - world_vy_ref_lim);
-
-		m_cmd.robot_vel_x = world_vx_ref_lim * cos(m_robotState.world_theta) + world_vy_ref_lim * sin(m_robotState.world_theta);
-		m_cmd.robot_vel_y = world_vx_ref_lim * -sin(m_robotState.world_theta) + world_vy_ref_lim * cos(m_robotState.world_theta);
-		m_cmd.world_theta += world_omega_ref * m_param.Ts;
 		theta_error = m_cmd.world_theta - m_robotState.world_theta;
 		if(theta_error < -M_PI) theta_error += 2 * M_PI;
 		else if(theta_error > M_PI) theta_error -= 2 * M_PI;
-		m_cmd.robot_omega = 2.0 * theta_error;
+
+		world_vx_ref = position_pi_x.update(m_cmd.world_x - m_robotState.world_x) + m_cmd.world_vel_x;
+		world_vy_ref = position_pi_x.update(m_cmd.world_y - m_robotState.world_y) + m_cmd.world_vel_y;
+		world_omega_ref = position_pi_theta.update(theta_error) + m_cmd.world_omega;
+
+		world_vx_ref_lim = limitter(world_vx_ref, -Vmax, Vmax);
+		world_vy_ref_lim = limitter(world_vy_ref, -Vmax, Vmax);
+		world_omega_ref_lim = limitter(world_omega_ref, -Omega_max, Omega_max);
+
+		position_pi_x.set_limitError(world_vx_ref - world_vx_ref_lim);
+		position_pi_y.set_limitError(world_vy_ref - world_vy_ref_lim);
+		position_pi_theta.set_limitError(world_omega_ref - world_omega_ref_lim);
+
+		m_cmd.robot_vel_x = world_vx_ref_lim * cos(m_robotState.world_theta) + world_vy_ref_lim * sin(m_robotState.world_theta);
+		m_cmd.robot_vel_y = world_vx_ref_lim * -sin(m_robotState.world_theta) + world_vy_ref_lim * cos(m_robotState.world_theta);
+		m_cmd.robot_omega = world_omega_ref_lim;
 		for(int i = 0; i < 4; i++)
 		{
 			m_cmd.omega_w[i] =

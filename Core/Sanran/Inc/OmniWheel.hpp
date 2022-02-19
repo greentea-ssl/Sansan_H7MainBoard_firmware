@@ -33,7 +33,7 @@ public:
 		float robot_omega;
 		float world_vel_x;
 		float world_vel_y;
-		float omega;
+		float world_omega;
 		float accel_x;
 		float accel_y;
 		float accel_theta;
@@ -112,8 +112,9 @@ private:
 
 	CanMotorIF *m_canMotorIF;
 
-	PI_Controller positon_pi_x;
-	PI_Controller positon_pi_y;
+	PI_Controller position_pi_x;
+	PI_Controller position_pi_y;
+	PI_Controller position_pi_theta;
 
 	DOB dob[4];
 

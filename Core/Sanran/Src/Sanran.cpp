@@ -253,13 +253,13 @@ void Sanran::UpdateSyncHS()
 	{
 		omniCmd.world_vel_x = matcha.cmd.cmd_vx;
 		omniCmd.world_vel_y = matcha.cmd.cmd_vy;
-		omniCmd.omega = matcha.cmd.cmd_omega;
+		omniCmd.world_omega = matcha.cmd.cmd_omega;
 	}
 	else if(this->omni.get_controlType() == OmniWheel::TYPE_ROBOT_P_DOB)
 	{
 		omniCmd.robot_vel_x = matcha.cmd.cmd_vx;
 		omniCmd.robot_vel_y = matcha.cmd.cmd_vy;
-		omniCmd.omega = matcha.cmd.cmd_omega;
+		omniCmd.robot_omega = matcha.cmd.cmd_omega;
 	}
 
 
@@ -328,17 +328,20 @@ void Sanran::UpdateSyncLS()
 
 	if(matcha.Update())
 	{
-		if(matcha.cmd.robot_ID == 0x0F)
+
 		if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_POSITION)
 		{
 			omniCmd.world_x = matcha.cmd.cmd_x;
 			omniCmd.world_y = matcha.cmd.cmd_y;
 			omniCmd.world_theta = matcha.cmd.cmd_theta;
+			omniCmd.world_vel_x = matcha.cmd.cmd_vx;
+			omniCmd.world_vel_y = matcha.cmd.cmd_vy;
+			omniCmd.world_omega = matcha.cmd.cmd_omega;
 		}
 		if(matcha.cmd.vision_error == false)
 		{
 			//omni.correctAngle(matcha.cmd.fb_theta);
-			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta);
+			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta - M_PI*0.5f);
 		}
 	}
 
@@ -400,13 +403,13 @@ void Sanran::dump_update()
 	dump.setValue(19, omni.m_cmd.omega_w[2]);
 	dump.setValue(20, omni.m_cmd.omega_w[3]);
 
-	dump.setValue(21, omni.m_cmd.world_vel_x);
-	dump.setValue(22, omni.m_cmd.world_vel_y);
-	dump.setValue(23, omni.m_cmd.robot_omega);
+	dump.setValue(21, omniCmd.world_vel_x);
+	dump.setValue(22, omniCmd.world_vel_y);
+	dump.setValue(23, omniCmd.robot_omega);
 
-	dump.setValue(24, omni.m_cmd.world_x);
-	dump.setValue(25, omni.m_cmd.world_y);
-	dump.setValue(26, omni.m_cmd.world_theta);
+	dump.setValue(24, omniCmd.world_x);
+	dump.setValue(25, omniCmd.world_y);
+	dump.setValue(26, omniCmd.world_theta);
 
 	dump.setValue(27, omni.m_robotState.world_x);
 	dump.setValue(28, omni.m_robotState.world_y);
