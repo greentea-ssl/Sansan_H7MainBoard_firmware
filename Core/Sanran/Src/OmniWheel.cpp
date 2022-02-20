@@ -19,10 +19,10 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 {
 
 	m_param.Jmn = 5.2E-5;
-	m_param.Kp = 0.1;
+	m_param.Kp = 0.2;
 	m_param.Ktn = (60.0f / (320 * 2 * M_PI));
 	m_param.Ts = 1E-3;
-	m_param.g_dis = 20;
+	m_param.g_dis = 30;
 
 	for(int i = 0; i < 4; i++)
 	{
@@ -86,8 +86,8 @@ void OmniWheel::update(Cmd_t *cmd)
 	float world_vy_ref_lim = 0.0;
 	float world_omega_ref_lim = 0.0;
 
-	const float Vmax = 0.5;
-	const float Omega_max = 10.0;
+	const float Vmax = 1.0;
+	const float Omega_max = 30.0;
 
 	if(!m_canMotorIF->motor[0].resIsUpdated() || !m_canMotorIF->motor[1].resIsUpdated() || !m_canMotorIF->motor[2].resIsUpdated() || !m_canMotorIF->motor[3].resIsUpdated())
 	{
@@ -113,8 +113,11 @@ void OmniWheel::update(Cmd_t *cmd)
 	{
 		m_wheelState[ch].theta_res_prev = m_wheelState[ch].theta_res;
 		m_wheelState[ch].theta_res = m_canMotorIF->motor[ch].get_theta();
-		m_wheelState[ch].omega_res = m_canMotorIF->motor[ch].get_omega();
 		m_wheelState[ch].Iq_res = m_canMotorIF->motor[ch].get_Iq();
+		float delta_theta = m_wheelState[ch].theta_res - m_wheelState[ch].theta_res_prev;
+		if(delta_theta >= M_PI) delta_theta -= 2 * M_PI;
+		else if(delta_theta <= -M_PI) delta_theta += 2 * M_PI;
+		m_wheelState[ch].omega_res = delta_theta / m_param.Ts;
 	}
 
 	// First sample process
@@ -123,6 +126,7 @@ void OmniWheel::update(Cmd_t *cmd)
 		for(int ch = 0; ch < 4; ch++)
 		{
 			m_wheelState[ch].theta_res_prev = m_wheelState[ch].theta_res;
+			m_wheelState[ch].omega_res = 0.0f;
 		}
 
 		firstSampleFlag = false;
@@ -231,8 +235,8 @@ void OmniWheel::update(Cmd_t *cmd)
 					m_convMat_robot2motor[i][0] * m_cmd.robot_vel_x +
 					m_convMat_robot2motor[i][1] * m_cmd.robot_vel_y +
 					m_convMat_robot2motor[i][2] * m_cmd.robot_omega;
-			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
-			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
+			float error = m_cmd.omega_w[i] - m_wheelState[i].omega_res;
+			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_wheelState[i].omega_res);
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
 			if(Iq_ref < -15.0) Iq_ref = -15.0;
 			if(Iq_ref > 15.0) Iq_ref = 15.0;
