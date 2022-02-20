@@ -82,7 +82,7 @@ public:
 
 	Power power;
 
-	DebugDump<float, 32> dump;
+	DebugDump<float, 40> dump;
 
 
 //	SimulinkSerial simulink;

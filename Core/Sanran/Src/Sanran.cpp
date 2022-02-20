@@ -397,23 +397,26 @@ void Sanran::dump_update()
 	dump.setValue(15, canMotorIF.motor[3].get_omega() );
 	dump.setValue(16, canMotorIF.motor[3].get_theta() );
 
-
 	dump.setValue(17, omni.m_cmd.omega_w[0]);
 	dump.setValue(18, omni.m_cmd.omega_w[1]);
 	dump.setValue(19, omni.m_cmd.omega_w[2]);
 	dump.setValue(20, omni.m_cmd.omega_w[3]);
 
-	dump.setValue(21, omniCmd.world_vel_x);
-	dump.setValue(22, omniCmd.world_vel_y);
-	dump.setValue(23, omniCmd.robot_omega);
+	dump.setValue(21, omni.m_cmd.robot_vel_x);
+	dump.setValue(22, omni.m_cmd.robot_vel_y);
+	dump.setValue(23, omni.m_cmd.robot_omega);
 
-	dump.setValue(24, omniCmd.world_x);
-	dump.setValue(25, omniCmd.world_y);
-	dump.setValue(26, omniCmd.world_theta);
+	dump.setValue(24, omni.m_cmd.world_x);
+	dump.setValue(25, omni.m_cmd.world_y);
+	dump.setValue(26, omni.m_cmd.world_theta);
 
-	dump.setValue(27, omni.m_robotState.world_x);
-	dump.setValue(28, omni.m_robotState.world_y);
-	dump.setValue(29, omni.m_robotState.world_theta);
+	dump.setValue(27, omni.m_cmd.world_vel_x);
+	dump.setValue(28, omni.m_cmd.world_vel_y);
+	dump.setValue(29, omni.m_cmd.world_omega);
+
+	dump.setValue(30, omni.m_robotState.world_x);
+	dump.setValue(31, omni.m_robotState.world_y);
+	dump.setValue(32, omni.m_robotState.world_theta);
 
 	dump.send();
 
