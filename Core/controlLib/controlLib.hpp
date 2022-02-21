@@ -95,6 +95,73 @@ private:
 
 
 
+class PI_Controller
+{
+
+public:
+
+	PI_Controller(float Kp, float Ki, float Ts)
+	{
+		m_et_z1 = 0.0f;
+		m_y_z1 = 0.0f;
+	}
+
+	PI_Controller()
+	{
+		m_et_z1 = 0.0f;
+		m_y_z1 = 0.0f;
+	}
+
+	void setParam(float Kp, float Ki, float Ts)
+	{
+		m_Kp = Kp;
+		m_Ki = Ki;
+		m_Ts = Ts;
+
+		m_et_z1 = 0.0f;
+		m_y_z1 = 0.0f;
+	}
+
+	float update(float e)
+	{
+		m_y = m_Kp * e + m_Ki * m_Ts * m_et_z1;
+		m_et_z1 = e + m_et_z1;
+		return m_y;
+	}
+
+	void set_limitError(float limitError)
+	{
+		m_et_z1 = m_et_z1 - 1.0/m_Kp * limitError;
+	}
+
+	float get_u(){ return m_y; }
+
+private:
+
+	float m_Kp;
+	float m_Ki;
+	float m_Ts;
+
+	float m_et_z1;
+
+	float m_y;
+	float m_y_z1;
+
+};
+
+
+
+static float limitter(float u, float min, float max)
+{
+	if(u < min) return min;
+	if(u > max) return max;
+	return u;
+}
+
+
+
+
+
 
 #endif /* _CONTROL_LIB_HPP_ */
 

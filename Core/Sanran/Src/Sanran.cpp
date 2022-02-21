@@ -20,6 +20,7 @@ extern TIM_HandleTypeDef htim12;
 extern TIM_HandleTypeDef htim13;
 extern FDCAN_HandleTypeDef hfdcan2;
 extern I2C_HandleTypeDef hi2c2;
+extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
 extern ADC_HandleTypeDef hadc1;
@@ -55,8 +56,9 @@ Sanran::Sanran()
 	  ballSensor(&hadc1),
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(&htim4, TIM_CHANNEL_1),
-	  omni(OmniWheel::TYPE_ROBOT_P_DOB, &canMotorIF),
-	  matcha(&huart5)
+	  omni(OmniWheel::TYPE_WORLD_POSITION, &canMotorIF),
+	  matcha(&huart5),
+	  dump(&huart1)
 {
 
 
@@ -128,6 +130,7 @@ void Sanran::setup()
 		printf("\t\t\t\t[ERROR]\n");
 	}
 
+	timeElapsed_hs_count = 0;
 
 	count = 0;
 
@@ -248,19 +251,22 @@ void Sanran::UpdateSyncHS()
 
 	if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_P_DOB)
 	{
-		omniCmd.world_vel_x = matcha.cmd.vel_x;
-		omniCmd.world_vel_y = matcha.cmd.vel_y;
-		omniCmd.omega = matcha.cmd.omega;
+		omniCmd.world_vel_x = matcha.cmd.cmd_vx;
+		omniCmd.world_vel_y = matcha.cmd.cmd_vy;
+		omniCmd.world_omega = matcha.cmd.cmd_omega;
 	}
 	else if(this->omni.get_controlType() == OmniWheel::TYPE_ROBOT_P_DOB)
 	{
-		omniCmd.robot_vel_x = matcha.cmd.vel_x;
-		omniCmd.robot_vel_y = matcha.cmd.vel_y;
-		omniCmd.omega = matcha.cmd.omega;
+		omniCmd.robot_vel_x = matcha.cmd.cmd_vx;
+		omniCmd.robot_vel_y = matcha.cmd.cmd_vy;
+		omniCmd.robot_omega = matcha.cmd.cmd_omega;
 	}
 
 
 	omega_w = canMotorIF.motor[0].get_omega();
+
+
+	timeElapsed_hs_count += 1;
 
 	count += 1;
 
@@ -276,6 +282,8 @@ void Sanran::UpdateSyncHS()
 
 	Iq_ref = canMotorIF.motor[0].get_Iq_ref();
 
+
+	dump_update();
 
 
 	syncHS_timestamp.end_count = htim12.Instance->CNT;
@@ -307,7 +315,7 @@ void Sanran::UpdateSyncLS()
 	if(ballSensor.read() > 0.15) dribbler.setSlow();
 	else dribbler.setFast();
 
-	omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
+	//omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
 
 
 	//printf("USER_SW0 = %f\n", omega_w_ref);
@@ -318,14 +326,30 @@ void Sanran::UpdateSyncLS()
 
 	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
-	matcha.Update();
+	if(matcha.Update())
+	{
+
+		if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_POSITION)
+		{
+			omniCmd.world_x = matcha.cmd.cmd_x;
+			omniCmd.world_y = matcha.cmd.cmd_y;
+			omniCmd.world_theta = matcha.cmd.cmd_theta;
+			omniCmd.world_vel_x = matcha.cmd.cmd_vx;
+			omniCmd.world_vel_y = matcha.cmd.cmd_vy;
+			omniCmd.world_omega = matcha.cmd.cmd_omega;
+		}
+		if(matcha.cmd.vision_error == false)
+		{
+			//omni.correctAngle(matcha.cmd.fb_theta);
+			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta - M_PI*0.5f);
+		}
+	}
 
 
 
 	syncLS_timestamp.end_count = htim13.Instance->CNT;
 
 }
-
 
 
 void Sanran::CAN_Rx_Callback(FDCAN_HandleTypeDef *hfdcan)
@@ -347,6 +371,57 @@ void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
 }
 
 
+
+void Sanran::dump_update()
+{
+
+	dump.setValue( 0, timeElapsed_hs_count * 0.001f);
+
+	dump.setValue( 1, canMotorIF.motor[0].get_Iq_ref() );
+	dump.setValue( 2, canMotorIF.motor[0].get_Iq() );
+	dump.setValue( 3, canMotorIF.motor[0].get_omega() );
+	dump.setValue( 4, canMotorIF.motor[0].get_theta() );
+
+	dump.setValue( 5, canMotorIF.motor[1].get_Iq_ref() );
+	dump.setValue( 6, canMotorIF.motor[1].get_Iq() );
+	dump.setValue( 7, canMotorIF.motor[1].get_omega() );
+	dump.setValue( 8, canMotorIF.motor[1].get_theta() );
+
+	dump.setValue( 9, canMotorIF.motor[2].get_Iq_ref() );
+	dump.setValue(10, canMotorIF.motor[2].get_Iq() );
+	dump.setValue(11, canMotorIF.motor[2].get_omega() );
+	dump.setValue(12, canMotorIF.motor[2].get_theta() );
+
+	dump.setValue(13, canMotorIF.motor[3].get_Iq_ref() );
+	dump.setValue(14, canMotorIF.motor[3].get_Iq() );
+	dump.setValue(15, canMotorIF.motor[3].get_omega() );
+	dump.setValue(16, canMotorIF.motor[3].get_theta() );
+
+	dump.setValue(17, omni.m_cmd.omega_w[0]);
+	dump.setValue(18, omni.m_cmd.omega_w[1]);
+	dump.setValue(19, omni.m_cmd.omega_w[2]);
+	dump.setValue(20, omni.m_cmd.omega_w[3]);
+
+	dump.setValue(21, omni.m_cmd.robot_vel_x);
+	dump.setValue(22, omni.m_cmd.robot_vel_y);
+	dump.setValue(23, omni.m_cmd.robot_omega);
+
+	dump.setValue(24, omni.m_cmd.world_x);
+	dump.setValue(25, omni.m_cmd.world_y);
+	dump.setValue(26, omni.m_cmd.world_theta);
+
+	dump.setValue(27, omni.m_cmd.world_vel_x);
+	dump.setValue(28, omni.m_cmd.world_vel_y);
+	dump.setValue(29, omni.m_cmd.world_omega);
+
+	dump.setValue(30, omni.m_robotState.world_x);
+	dump.setValue(31, omni.m_robotState.world_y);
+	dump.setValue(32, omni.m_robotState.world_theta);
+
+	dump.send();
+
+
+}
 
 
 
