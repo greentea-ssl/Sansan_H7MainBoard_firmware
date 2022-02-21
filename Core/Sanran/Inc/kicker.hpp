@@ -16,12 +16,13 @@ class Kicker
 
 public:
 
-	Kicker(float cycleTime, float kickTime);
+	Kicker(TIM_HandleTypeDef *htim, uint32_t channel);
 
+	bool setup();
 
-	void kickStraight();
+	void kickStraight(uint16_t power);
 
-	void kickChip();
+	void kickChip(uint16_t power);
 
 	void update();
 
@@ -29,9 +30,6 @@ public:
 
 	bool chargeCompleted(){ return (kickState == KICKSTATE_CPLT); }
 
-
-
-private:
 
 	enum KickState_e{
 			KICKSTATE_CHARGE,
@@ -41,12 +39,13 @@ private:
 
 	enum KickState_e kickState;
 
+private:
 
-	float m_time;
 
-	float m_kickTime;
+	uint32_t kickPower;
 
-	float m_cycleTime;
+	TIM_HandleTypeDef *m_htim;
+	uint32_t m_channel;
 
 
 

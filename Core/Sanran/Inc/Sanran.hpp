@@ -6,10 +6,10 @@
 #include "main.h"
 
 
-#include "Power.hpp"
+#include "power.hpp"
 #include "RGBLED.hpp"
 #include "canMotor.hpp"
-#include "Buzzer.hpp"
+#include "buzzer.hpp"
 #include "BNO055.hpp"
 #include "ballSensor.hpp"
 #include "dribbler.hpp"
@@ -18,6 +18,7 @@
 #include "controlLib.hpp"
 #include "simulinkSerial.hpp"
 #include "matchaSerial.hpp"
+#include "debugDump.hpp"
 
 
 class Sanran{
@@ -51,6 +52,11 @@ public:
 
 	int count;
 
+
+	uint32_t timeElapsed_hs_count;
+
+
+
 	TIM_HandleTypeDef *htim_HS_cycle;
 	TIM_HandleTypeDef *htim_LS_cycle;
 
@@ -76,6 +82,7 @@ public:
 
 	Power power;
 
+	DebugDump<float, 40> dump;
 
 
 //	SimulinkSerial simulink;
@@ -95,8 +102,13 @@ public:
 	Sync_loop_timestamp_t syncHS_timestamp;
 	Sync_loop_timestamp_t syncLS_timestamp;
 
-};
 
+
+	void dump_update();
+
+
+
+};
 
 
 #endif
