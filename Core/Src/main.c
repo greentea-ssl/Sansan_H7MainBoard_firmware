@@ -1086,19 +1086,19 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, KICKMODE_Pin|KICK_Pin|BOOST_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, KICKMODE_Pin|BOOST_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, ALIVE_Pin|POWER_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : DONE_Pin */
-  GPIO_InitStruct.Pin = DONE_Pin;
+  /*Configure GPIO pins : DONE_Pin KICK_Pin */
+  GPIO_InitStruct.Pin = DONE_Pin|KICK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(DONE_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : KICKMODE_Pin KICK_Pin BOOST_Pin */
-  GPIO_InitStruct.Pin = KICKMODE_Pin|KICK_Pin|BOOST_Pin;
+  /*Configure GPIO pins : KICKMODE_Pin BOOST_Pin */
+  GPIO_InitStruct.Pin = KICKMODE_Pin|BOOST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

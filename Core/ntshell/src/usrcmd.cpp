@@ -492,8 +492,8 @@ static int usrcmd_kick(int argc, char **argv)
 {
 	if (argc < 2) {
 		uart_puts("kick state [stateNumber]\r\n");
-		uart_puts("kick straight [power]\r\n");
-		uart_puts("kick chip [power]\r\n");
+		uart_puts("kick straight [on time (x100ns)]\r\n");
+		uart_puts("kick chip [on time (x100ns)]\r\n");
 		return 0;
 	}
 	if (ntlibc_strcmp(argv[1], "state") == 0 && argc == 3) {
