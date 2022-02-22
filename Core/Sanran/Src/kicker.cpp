@@ -23,6 +23,9 @@ bool Kicker::setup()
 
 	HAL_TIM_PWM_Start(m_htim, m_channel);
 
+	// Initial kick-mode : chip kick
+	HAL_GPIO_WritePin(KICKMODE_GPIO_Port, KICKMODE_Pin, GPIO_PIN_SET);
+
 	return true;
 }
 
