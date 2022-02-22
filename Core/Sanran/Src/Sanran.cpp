@@ -124,6 +124,7 @@ void Sanran::setup()
 	/***** Setting Matcha Serial *****/
 	printf("\n Setting Matcha Serial ... \n");
 	boolStatus = matcha.setup();
+	matcha.settingTimeout(0.1, 0.01);
 	if(boolStatus){
 		printf("\t\t\t\t[OK]\n");
 	}else{
@@ -326,8 +327,10 @@ void Sanran::UpdateSyncLS()
 
 	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
-	if(matcha.Update())
+	matcha.Update();
+	if(matcha.getTimeoutState() == MatchaSerial::TIMEOUT_NONE)
 	{
+		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
 
 		if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_POSITION)
 		{
@@ -344,8 +347,14 @@ void Sanran::UpdateSyncLS()
 			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta - M_PI*0.5f);
 		}
 	}
-
-
+	else
+	{
+		omniCmd.omega_w[0] = 0.0f;
+		omniCmd.omega_w[1] = 0.0f;
+		omniCmd.omega_w[2] = 0.0f;
+		omniCmd.omega_w[3] = 0.0f;
+		omni.setControlType(OmniWheel::TYPE_INDEP_P_DOB);
+	}
 
 	syncLS_timestamp.end_count = htim13.Instance->CNT;
 

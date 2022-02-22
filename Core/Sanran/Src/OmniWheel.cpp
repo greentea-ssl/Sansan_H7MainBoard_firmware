@@ -153,8 +153,8 @@ void OmniWheel::update(Cmd_t *cmd)
 		for(int i = 0; i < 4; i++)
 		{
 			m_cmd.omega_w[i] = cmd->omega_w[i];
-			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
-			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
+			float error = m_cmd.omega_w[i] - m_wheelState[i].omega_res;
+			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_wheelState[i].omega_res);
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
 			if(Iq_ref < -15.0) Iq_ref = -15.0;
 			if(Iq_ref > 15.0) Iq_ref = 15.0;

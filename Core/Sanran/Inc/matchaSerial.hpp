@@ -23,14 +23,6 @@ class MatchaSerial
 
 public:
 
-	MatchaSerial(UART_HandleTypeDef *huart);
-
-	bool setup();
-
-	bool Update();
-
-	bool getPrevErrorCode(){ return m_prev_error_code; }
-
 	struct Reference_TypeDef{
 		uint8_t robot_ID;
 		float fb_x;
@@ -62,6 +54,33 @@ public:
 		PARSE_ERROR_NO_DATA		= 10,
 	}parse_error_t;
 
+
+	typedef enum{
+		TIMEOUT_NONE	= 0,
+		TIMEOUT_OCCURED	= 1,
+	}timeout_state_t;
+
+
+
+	MatchaSerial(UART_HandleTypeDef *huart);
+
+	bool setup();
+
+	bool settingTimeout(float timeout_period, float polling_time)
+	{
+		m_timeout_threshold = (uint32_t)(timeout_period / polling_time);
+
+		m_timeout_count = 0;
+		m_timeout_state = TIMEOUT_NONE;
+		m_timeout_enable = true;
+	}
+
+	bool Update();
+
+	bool getPrevErrorCode(){ return m_prev_error_code; }
+
+	timeout_state_t getTimeoutState(){ return m_timeout_state; }
+
 	uint8_t m_rxBuf[UART_BUF_SIZE];
 	uint8_t m_rxBytes[UART_BUF_SIZE];
 
@@ -87,6 +106,11 @@ private:
 	uint16_t m_parse_error_counter;
 
 	parse_error_t m_prev_error_code;
+
+	bool m_timeout_enable;
+	uint32_t m_timeout_count;
+	uint32_t m_timeout_threshold;
+	timeout_state_t m_timeout_state;
 
 };
 

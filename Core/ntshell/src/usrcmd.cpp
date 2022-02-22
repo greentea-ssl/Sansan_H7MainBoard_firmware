@@ -379,8 +379,8 @@ static int usrcmd_view(int argc, char **argv)
 				uint8_t kickPower;
 			 */
 
-			printf("         | Dribble | Kick | Chip | DribblePower | KickPower | [ParseError]\r\n");
-			printf("---------+---------+------+------|--------------|---------- |------------\r\n");
+			printf("         | Dribble | Kick | Chip | DribblePower | KickPower | [ParseError] | [Timeout] |\r\n");
+			printf("---------+---------+------+------|--------------|-----------|--------------|-----------|\r\n");
 			printf("Command  ");
 
 			printf("| %7d ", sanran.matcha.cmd.dribble);
@@ -388,7 +388,8 @@ static int usrcmd_view(int argc, char **argv)
 			printf("| %4d ", sanran.matcha.cmd.chip);
 			printf("| %12d ", sanran.matcha.cmd.dribblePower);
 			printf("| %9d ", sanran.matcha.cmd.kickPower);
-			printf("| %11d ", sanran.matcha.getPrevErrorCode());
+			printf("| %12d ", sanran.matcha.getPrevErrorCode());
+			printf("| %9d ", sanran.matcha.getTimeoutState());
 
 			printf("\r\n");
 

@@ -74,6 +74,8 @@ public:
 
 	void setup();
 
+	void setControlType(ControlType_t type){ m_type = type; }
+
 	void update(Cmd_t *cmd);
 
 	void correctAngle(float trueAngle)
