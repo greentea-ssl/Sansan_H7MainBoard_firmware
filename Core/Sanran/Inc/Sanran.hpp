@@ -3,6 +3,7 @@
 #define _SANRAN_HPP_
 
 
+#include <controlLib.hpp>
 #include "main.h"
 
 
@@ -15,7 +16,6 @@
 #include "dribbler.hpp"
 #include "kicker.hpp"
 #include "OmniWheel.hpp"
-#include "controlLib.hpp"
 #include "simulinkSerial.hpp"
 #include "matchaSerial.hpp"
 #include "debugDump.hpp"

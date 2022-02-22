@@ -4,9 +4,9 @@
 #define _OMNI_WHEEL_HPP_
 
 
+#include "controlLib.hpp"
 #include "canMotor.hpp"
 
-#include "controlLib.hpp"
 
 
 class OmniWheel

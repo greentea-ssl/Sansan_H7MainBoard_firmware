@@ -414,6 +414,23 @@ static int usrcmd_view(int argc, char **argv)
 
 		}
 	}
+	else if(ntlibc_strcmp(argv[1], "kicker") == 0)
+	{
+
+		printf("\r\n");
+
+		while(1)
+		{
+			delay_ms(10);
+
+			printf("kickState = %d\r\n", sanran.kicker.kickState);
+
+			if(checkSuspens()) break;
+
+			uart_puts("\e[2A");
+
+		}
+	}
 	else if(ntlibc_strcmp(argv[1], "rxframe") == 0)
 	{
 
@@ -475,8 +492,8 @@ static int usrcmd_kick(int argc, char **argv)
 {
 	if (argc < 2) {
 		uart_puts("kick state [stateNumber]\r\n");
-		uart_puts("kick straight [power]\r\n");
-		uart_puts("kick chip [power]\r\n");
+		uart_puts("kick straight [on time (x100ns)]\r\n");
+		uart_puts("kick chip [on time (x100ns)]\r\n");
 		return 0;
 	}
 	if (ntlibc_strcmp(argv[1], "state") == 0 && argc == 3) {
