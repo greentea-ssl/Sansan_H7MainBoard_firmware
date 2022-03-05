@@ -557,7 +557,7 @@ static int usrcmd_dribble(int argc, char **argv)
 			return 0;
 		}
 		sanran.dribbler.write(duty);
-		printf("\r\nduty = %f \r\n");
+		printf("\r\nduty = %f \r\n", duty);
 		return 0;
 	}
 }

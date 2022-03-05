@@ -24,13 +24,13 @@ void Dribbler::setup()
 	write(0.1);
 	delay_ms(2000);
 
-	for(float rate = 0.09; rate < 0.11; rate += 0.001)
+	for(float rate = 0.00; rate < 0.06; rate += 0.0001)
 	{
 		delay_ms(10);
 		write(rate);
 	}
 
-	write(0.1318);
+	write(0.06);
 /*
 	for(float rate = 0.09; rate < 0.1323; rate += 0.0001)
 	{
