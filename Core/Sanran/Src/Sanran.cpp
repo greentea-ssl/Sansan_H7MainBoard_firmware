@@ -313,8 +313,10 @@ void Sanran::UpdateSyncLS()
 
 	//printf("ball : %f\n", ballSensor.read());
 
-	if(ballSensor.read() > 0.15) dribbler.setSlow();
-	else dribbler.setFast();
+
+//	if(ballSensor.read() > 0.15) dribbler.setSlow();
+//	else dribbler.setFast();
+
 
 	//omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
 

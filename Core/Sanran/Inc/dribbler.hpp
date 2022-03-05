@@ -20,6 +20,10 @@ public:
 
 	void write(float rate);
 
+	void setDuty(float rate){ write(rate); }
+
+	float getDuty(){ return m_outputRate; }
+
 	void setSlow();
 
 	void setFast();
