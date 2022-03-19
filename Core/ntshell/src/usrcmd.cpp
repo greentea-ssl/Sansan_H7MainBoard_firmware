@@ -547,6 +547,7 @@ static int usrcmd_dribble(int argc, char **argv)
 
 	if (argc < 2) {
 		uart_puts("dribble set [duty (0.0 ~ 1.0)]\r\n");
+		uart_puts("dribble setus [width (0 ~ 20000)]\r\n");
 		return 0;
 	}
 	if (ntlibc_strcmp(argv[1], "set") == 0 && argc == 3) {
@@ -558,6 +559,17 @@ static int usrcmd_dribble(int argc, char **argv)
 		}
 		sanran.dribbler.write(duty);
 		printf("\r\nduty = %f \r\n", duty);
+		return 0;
+	}
+	else if (ntlibc_strcmp(argv[1], "setus") == 0 && argc == 3) {
+		uint32_t us = atoi(argv[2]);
+		if(us < 0 || us > 20000)
+		{
+			printf("\"width\" must be [0-20000].\r\n");
+			return 0;
+		}
+		sanran.dribbler.write_us(us);
+		printf("\r\nwidth = %d [us]\r\n", us);
 		return 0;
 	}
 }

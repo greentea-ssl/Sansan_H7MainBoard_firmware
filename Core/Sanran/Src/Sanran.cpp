@@ -149,7 +149,7 @@ void Sanran::setup()
 	dribbler.setup();
 	//dribbler.setStop();
 	//dribbler.setFast();
-	dribbler.setSlow();
+	//dribbler.setSlow();
 
 
 	// wait for BLDC sensor calibration

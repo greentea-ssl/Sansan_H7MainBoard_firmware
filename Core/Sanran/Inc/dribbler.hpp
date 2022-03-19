@@ -20,6 +20,8 @@ public:
 
 	void write(float rate);
 
+	void write_us(uint32_t on_time_us);
+
 	void setDuty(float rate){ write(rate); }
 
 	float getDuty(){ return m_outputRate; }
