@@ -20,17 +20,19 @@ void Dribbler::setup()
 {
 
 	HAL_TIM_PWM_Start(m_htim, m_channel);
-
 	write_us(20000);
-
 	delay_ms(5000);
+
+	write_us(902);
+
+/*	delay_ms(5000);
 
 	write_us(902);
 
 	delay_ms(5000);
 
 	write_us(1090);
-
+*/
 
 //	write(0.1);
 //	delay_ms(2000);
