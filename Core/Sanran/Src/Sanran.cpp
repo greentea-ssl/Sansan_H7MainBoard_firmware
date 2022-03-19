@@ -308,7 +308,7 @@ void Sanran::UpdateSyncLS()
 
 	onBrdLED.setHSV(deg, 1.0, 1.0);
 
-	bno055.updateIMU();
+	// bno055.updateIMU();
 	ballSensor.update();
 
 	//printf("ball : %f\n", ballSensor.read());
