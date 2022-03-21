@@ -181,7 +181,7 @@ bool MatchaSerial::parse()
 	{
 		cmd.fb_x = fb_x_int * 0.001;
 		cmd.fb_y = fb_y_int * 0.001;
-		cmd.fb_theta = fb_theta_int * 2*M_PI/65536;
+		cmd.fb_theta = fb_theta_int * 2*M_PI/65536 - M_PI*0.5f;
 
 		cmd.vision_error = false;
 	}
@@ -189,7 +189,7 @@ bool MatchaSerial::parse()
 
 	cmd.cmd_x = cmd_x_int * 0.001;
 	cmd.cmd_y = cmd_y_int * 0.001;
-	cmd.cmd_theta = cmd_theta_int * 2*M_PI/65536;
+	cmd.cmd_theta = cmd_theta_int * 2*M_PI/65536 - M_PI*0.5f;
 
 	cmd.cmd_vx = cmd_vx_int * 0.001;
 	cmd.cmd_vy = cmd_vy_int * 0.001;

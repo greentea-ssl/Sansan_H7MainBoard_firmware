@@ -344,7 +344,7 @@ void Sanran::UpdateSyncLS()
 		if(matcha.cmd.vision_error == false)
 		{
 			//omni.correctAngle(matcha.cmd.fb_theta);
-			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta - M_PI*0.5f);
+			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta);
 		}
 	}
 	else if(matcha.getTimeoutState() == MatchaSerial::TIMEOUT_OCCURED)
