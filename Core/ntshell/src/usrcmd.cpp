@@ -501,8 +501,8 @@ static int usrcmd_kick(int argc, char **argv)
 {
 	if (argc < 2) {
 		uart_puts("kick state [stateNumber]\r\n");
-		uart_puts("kick straight [on time (x100ns)]\r\n");
-		uart_puts("kick chip [on time (x100ns)]\r\n");
+		uart_puts("kick straight [on time (us)]\r\n");
+		uart_puts("kick chip [on time (us)]\r\n");
 		return 0;
 	}
 	if (ntlibc_strcmp(argv[1], "state") == 0 && argc == 3) {
@@ -518,9 +518,9 @@ static int usrcmd_kick(int argc, char **argv)
 	}
 	else if (ntlibc_strcmp(argv[1], "straight") == 0 && argc == 3) {
 		int power = atoi(argv[2]);
-		if(power <= 0)
+		if(power <= 0 || power > 65000)
 		{
-			printf("\"power\" must be [1-].\r\n");
+			printf("\"power\" must be [1-65000].\r\n");
 			return 0;
 		}
 		sanran.kicker.kickStraight(power);
@@ -528,9 +528,9 @@ static int usrcmd_kick(int argc, char **argv)
 	}
 	else if (ntlibc_strcmp(argv[1], "chip") == 0 && argc == 3) {
 		int power = atoi(argv[2]);
-		if(power <= 0)
+		if(power <= 0 || power > 65000)
 		{
-			printf("\"power\" must be [1-].\r\n");
+			printf("\"power\" must be [1-65000].\r\n");
 			return 0;
 		}
 		sanran.kicker.kickChip(power);
