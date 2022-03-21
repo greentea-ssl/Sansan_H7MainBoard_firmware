@@ -53,6 +53,7 @@ dkms.conf
 
 /.settings/
 /Debug/
+/Release/
 .mxproject
 
 *.launch
