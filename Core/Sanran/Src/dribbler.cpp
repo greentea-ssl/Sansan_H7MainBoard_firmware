@@ -20,17 +20,30 @@ void Dribbler::setup()
 {
 
 	HAL_TIM_PWM_Start(m_htim, m_channel);
+	write_us(20000);
+	delay_ms(5000);
 
-	write(0.1);
-	delay_ms(2000);
+	write_us(902);
 
-	for(float rate = 0.09; rate < 0.11; rate += 0.001)
-	{
-		delay_ms(10);
-		write(rate);
-	}
+/*	delay_ms(5000);
 
-	write(0.1318);
+	write_us(902);
+
+	delay_ms(5000);
+
+	write_us(1090);
+*/
+
+//	write(0.1);
+//	delay_ms(2000);
+//
+//	for(float rate = 0.00; rate < 0.06; rate += 0.0001)
+//	{
+//		delay_ms(10);
+//		write(rate);
+//	}
+//
+//	write(0.06);
 /*
 	for(float rate = 0.09; rate < 0.1323; rate += 0.0001)
 	{
@@ -52,6 +65,15 @@ void Dribbler::write(float rate)
 
 }
 
+void Dribbler::write_us(uint32_t on_time_us)
+{
+	const uint32_t period_us = 20000;
+
+	m_outputRate = (float)on_time_us / period_us;
+
+	__HAL_TIM_SET_COMPARE(m_htim, m_channel, m_outputRate * m_htim->Init.Period);
+
+}
 
 
 void Dribbler::setSlow()

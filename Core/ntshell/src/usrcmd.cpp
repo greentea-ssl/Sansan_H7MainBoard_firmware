@@ -70,6 +70,7 @@ static int usrcmd_info(int argc, char **argv);
 static int usrcmd_view(int argc, char **argv);
 static int usrcmd_cls(int argc, char **argv);
 static int usrcmd_kick(int argc, char **argv);
+static int usrcmd_dribble(int argc, char **argv);
 
 typedef struct {
     char *cmd;
@@ -83,6 +84,7 @@ static const cmd_table_t cmdlist[] = {
     { "view", "This is a description text string for info command.", usrcmd_view },
     { "cls", "Clear display", usrcmd_cls },
     { "kick", "About kicker", usrcmd_kick },
+    { "dribble", "Dribbler control", usrcmd_dribble },
 };
 
 
@@ -236,6 +238,10 @@ static int usrcmd_view(int argc, char **argv)
 		uart_puts("view motor\r\n");
 		uart_puts("view gyro\r\n");
 		uart_puts("view command\r\n");
+		uart_puts("view kicker\r\n");
+		uart_puts("view dribbler\r\n");
+		uart_puts("view rxframe\r\n");
+		uart_puts("view rxbuf\r\n");
 		return 0;
 	}
 
@@ -415,7 +421,7 @@ static int usrcmd_view(int argc, char **argv)
 
 		}
 	}
-	else if(ntlibc_strcmp(argv[1], "kicker") == 0)
+	else if(ntlibc_strcmp(argv[1], "dribbler") == 0)
 	{
 
 		printf("\r\n");
@@ -424,11 +430,13 @@ static int usrcmd_view(int argc, char **argv)
 		{
 			delay_ms(10);
 
-			printf("kickState = %d\r\n", sanran.kicker.kickState);
+			printf("Dribbler: \r\n");
+			printf("PWM duty = %6f\r\n", sanran.dribbler.getDuty());
+			printf("Ball sensor = %6f\r\n", sanran.ballSensor.read());
 
 			if(checkSuspens()) break;
 
-			uart_puts("\e[2A");
+			uart_puts("\e[4A");
 
 		}
 	}
@@ -534,6 +542,37 @@ static int usrcmd_kick(int argc, char **argv)
 
 
 
+static int usrcmd_dribble(int argc, char **argv)
+{
+
+	if (argc < 2) {
+		uart_puts("dribble set [duty (0.0 ~ 1.0)]\r\n");
+		uart_puts("dribble setus [width (0 ~ 20000)]\r\n");
+		return 0;
+	}
+	if (ntlibc_strcmp(argv[1], "set") == 0 && argc == 3) {
+		float duty = atoff(argv[2]);
+		if(duty < 0 || duty > 1.0)
+		{
+			printf("\"duty\" must be [0.0-1.0].\r\n");
+			return 0;
+		}
+		sanran.dribbler.write(duty);
+		printf("\r\nduty = %f \r\n", duty);
+		return 0;
+	}
+	else if (ntlibc_strcmp(argv[1], "setus") == 0 && argc == 3) {
+		uint32_t us = atoi(argv[2]);
+		if(us < 0 || us > 20000)
+		{
+			printf("\"width\" must be [0-20000].\r\n");
+			return 0;
+		}
+		sanran.dribbler.write_us(us);
+		printf("\r\nwidth = %d [us]\r\n", us);
+		return 0;
+	}
+}
 
 
 
