@@ -340,6 +340,7 @@ void Sanran::UpdateSyncLS()
 		omniCmd.world_vel_x = matcha.cmd.cmd_vx;
 		omniCmd.world_vel_y = matcha.cmd.cmd_vy;
 		omniCmd.world_omega = matcha.cmd.cmd_omega;
+		omniCmd.vel_limit = matcha.cmd.vel_limit;
 
 		if(matcha.cmd.vision_error == false)
 		{

@@ -5,6 +5,9 @@
 #define _CONTROL_LIB_HPP_
 
 
+#include <math.h>
+
+
 class LPF_1order
 {
 
@@ -159,7 +162,22 @@ static float limitter(float u, float min, float max)
 }
 
 
+static void circular_limitter(float abs_limit, float src_x, float src_y, float *dst_x, float *dst_y)
+{
 
+	float r = sqrt(src_x * src_x + src_y * src_y);
+
+	if(r <= abs_limit)
+	{
+		*dst_x = src_x;
+		*dst_y = src_y;
+	}
+	else
+	{
+		*dst_x = src_x * abs_limit / r;
+		*dst_y = src_y * abs_limit / r;
+	}
+}
 
 
 
