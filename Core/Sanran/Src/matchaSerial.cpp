@@ -73,17 +73,16 @@ bool MatchaSerial::Update()
 	int16_t head_index = 0;
 
 	int16_t updated_size = ((m_nextWriteIndex - MATCHA_DATA_LENGTH) - m_prev_head_index) & m_rxBufMask;
-	bool new_data_available;
 
 	if(updated_size >= MATCHA_DATA_LENGTH)
 	{
 		head_index = ((updated_size / MATCHA_DATA_LENGTH) * MATCHA_DATA_LENGTH + m_prev_head_index) & m_rxBufMask;
-		new_data_available = true;
+		m_new_data_available = true;
 	}
 	else
 	{
 		head_index = m_prev_head_index;
-		new_data_available = false;
+		m_new_data_available = false;
 	}
 
 	readBytes(head_index, MATCHA_DATA_LENGTH);
@@ -114,7 +113,7 @@ bool MatchaSerial::Update()
 			m_timeout_state = TIMEOUT_OCCURED;
 		}
 	}
-	if(new_data_available == true && m_prev_error_code == PARSE_ERROR_NONE && cmd.vision_error == false)
+	if(m_new_data_available == true && m_prev_error_code == PARSE_ERROR_NONE && cmd.vision_error == false)
 	{
 		m_timeout_count = 0;
 		m_timeout_state = TIMEOUT_NONE;

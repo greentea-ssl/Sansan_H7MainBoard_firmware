@@ -330,26 +330,24 @@ void Sanran::UpdateSyncLS()
 	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
 	matcha.Update();
-	if(matcha.getTimeoutState() == MatchaSerial::TIMEOUT_NONE)
+	if(matcha.newDataAvailable() && matcha.getTimeoutState() == MatchaSerial::TIMEOUT_NONE)
 	{
 		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
 
-		if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_POSITION)
-		{
-			omniCmd.world_x = matcha.cmd.cmd_x;
-			omniCmd.world_y = matcha.cmd.cmd_y;
-			omniCmd.world_theta = matcha.cmd.cmd_theta;
-			omniCmd.world_vel_x = matcha.cmd.cmd_vx;
-			omniCmd.world_vel_y = matcha.cmd.cmd_vy;
-			omniCmd.world_omega = matcha.cmd.cmd_omega;
-		}
+		omniCmd.world_x = matcha.cmd.cmd_x;
+		omniCmd.world_y = matcha.cmd.cmd_y;
+		omniCmd.world_theta = matcha.cmd.cmd_theta;
+		omniCmd.world_vel_x = matcha.cmd.cmd_vx;
+		omniCmd.world_vel_y = matcha.cmd.cmd_vy;
+		omniCmd.world_omega = matcha.cmd.cmd_omega;
+
 		if(matcha.cmd.vision_error == false)
 		{
 			//omni.correctAngle(matcha.cmd.fb_theta);
 			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta - M_PI*0.5f);
 		}
 	}
-	else
+	else if(matcha.getTimeoutState() == MatchaSerial::TIMEOUT_OCCURED)
 	{
 		omniCmd.omega_w[0] = 0.0f;
 		omniCmd.omega_w[1] = 0.0f;

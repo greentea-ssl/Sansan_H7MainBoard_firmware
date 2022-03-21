@@ -77,6 +77,8 @@ public:
 
 	bool Update();
 
+	bool newDataAvailable(){ return m_new_data_available; }
+
 	bool getPrevErrorCode(){ return m_prev_error_code; }
 
 	timeout_state_t getTimeoutState(){ return m_timeout_state; }
@@ -111,6 +113,8 @@ private:
 	uint32_t m_timeout_count;
 	uint32_t m_timeout_threshold;
 	timeout_state_t m_timeout_state;
+
+	bool m_new_data_available;
 
 };
 
