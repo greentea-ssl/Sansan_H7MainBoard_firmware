@@ -44,12 +44,14 @@ bool MatchaSerial::setup()
 	cmd.fb_x = 0.0;
 	cmd.fb_y = 0.0;
 	cmd.fb_theta = 0.0;
+	cmd.fb_timestamp = 0;
 	cmd.cmd_x = 0.0;
 	cmd.cmd_y = 0.0;
 	cmd.cmd_theta = 0.0;
 	cmd.cmd_vx = 0.0;
 	cmd.cmd_vy = 0.0;
 	cmd.cmd_omega = 0.0;
+	cmd.vel_limit = 0.0;
 
 	cmd.dribble = false;
 	cmd.kick = false;
@@ -139,16 +141,16 @@ bool MatchaSerial::parse()
 	}
 
 	uint8_t checkSum = 0;
-	for(int i = 2; i <= 22; i++)
+	for(int i = 2; i <= 26; i++)
 	{
 		checkSum = checkSum ^ m_rxBytes[idx_offset + i];
 	}
-	if(m_rxBytes[idx_offset + 23] != checkSum)
+	if(m_rxBytes[idx_offset + 27] != checkSum)
 	{
 		m_prev_error_code = MatchaSerial::PARSE_ERROR_CHECK_SUM;
 		return false;
 	}
-	if(m_rxBytes[idx_offset + 24] != (checkSum ^ 0xFF))
+	if(m_rxBytes[idx_offset + 28] != (checkSum ^ 0xFF))
 	{
 		m_prev_error_code = PARSE_ERROR_CHECK_SUM;
 		return false;
@@ -163,18 +165,21 @@ bool MatchaSerial::parse()
 	int16_t fb_y_int      = ((int16_t)m_rxBytes[idx_offset + 6] << 8) | (int16_t)m_rxBytes[idx_offset + 5];
 	int16_t fb_theta_int  = ((int16_t)m_rxBytes[idx_offset + 8] << 8) | (int16_t)m_rxBytes[idx_offset + 7];
 
-	int16_t cmd_x_int     = ((int16_t)m_rxBytes[idx_offset + 10] << 8) | (int16_t)m_rxBytes[idx_offset + 9];
-	int16_t cmd_y_int     = ((int16_t)m_rxBytes[idx_offset + 12] << 8) | (int16_t)m_rxBytes[idx_offset + 11];
-	int16_t cmd_theta_int = ((int16_t)m_rxBytes[idx_offset + 14] << 8) | (int16_t)m_rxBytes[idx_offset + 13];
+	cmd.fb_timestamp      = ((int16_t)m_rxBytes[idx_offset + 10] << 8) | (int16_t)m_rxBytes[idx_offset + 9];
 
-	int16_t cmd_vx_int    = ((int16_t)m_rxBytes[idx_offset + 16] << 8) | (int16_t)m_rxBytes[idx_offset + 15];
-	int16_t cmd_vy_int    = ((int16_t)m_rxBytes[idx_offset + 18] << 8) | (int16_t)m_rxBytes[idx_offset + 17];
-	int16_t cmd_omega_int = ((int16_t)m_rxBytes[idx_offset + 20] << 8) | (int16_t)m_rxBytes[idx_offset + 19];
+	int16_t cmd_x_int     = ((int16_t)m_rxBytes[idx_offset + 12] << 8) | (int16_t)m_rxBytes[idx_offset + 11];
+	int16_t cmd_y_int     = ((int16_t)m_rxBytes[idx_offset + 14] << 8) | (int16_t)m_rxBytes[idx_offset + 13];
+	int16_t cmd_theta_int = ((int16_t)m_rxBytes[idx_offset + 16] << 8) | (int16_t)m_rxBytes[idx_offset + 15];
 
+	int16_t cmd_vx_int    = ((int16_t)m_rxBytes[idx_offset + 18] << 8) | (int16_t)m_rxBytes[idx_offset + 17];
+	int16_t cmd_vy_int    = ((int16_t)m_rxBytes[idx_offset + 20] << 8) | (int16_t)m_rxBytes[idx_offset + 19];
+	int16_t cmd_omega_int = ((int16_t)m_rxBytes[idx_offset + 22] << 8) | (int16_t)m_rxBytes[idx_offset + 21];
 
+	int16_t vel_limit_int = ((int16_t)m_rxBytes[idx_offset + 24] << 8) | (int16_t)m_rxBytes[idx_offset + 23];
+
+	// Detect vision error
 	if(fb_x_int == 0x7FFF || fb_y_int == 0x7FFF || fb_theta_int == 0x7FFF)
 	{
-
 		cmd.vision_error = true;
 	}
 	else
@@ -186,7 +191,6 @@ bool MatchaSerial::parse()
 		cmd.vision_error = false;
 	}
 
-
 	cmd.cmd_x = cmd_x_int * 0.001;
 	cmd.cmd_y = cmd_y_int * 0.001;
 	cmd.cmd_theta = cmd_theta_int * 2*M_PI/65536 - M_PI*0.5f;
@@ -194,6 +198,8 @@ bool MatchaSerial::parse()
 	cmd.cmd_vx = cmd_vx_int * 0.001;
 	cmd.cmd_vy = cmd_vy_int * 0.001;
 	cmd.cmd_omega = cmd_omega_int / 1024.0f;
+
+	cmd.vel_limit = vel_limit_int * 0.001;
 
 	cmd.dribble = (m_rxBytes[idx_offset + 19] & 0b10000000) != 0;
 	cmd.kick = (m_rxBytes[idx_offset + 19] & 0b00010000) != 0;

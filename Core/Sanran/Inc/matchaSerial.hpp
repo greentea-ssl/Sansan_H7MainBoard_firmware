@@ -14,7 +14,7 @@
 #include "main.h"
 
 
-#define MATCHA_DATA_LENGTH	(25)
+#define MATCHA_DATA_LENGTH	(29)
 
 
 
@@ -28,12 +28,14 @@ public:
 		float fb_x;
 		float fb_y;
 		float fb_theta;
+		uint16_t fb_timestamp;
 		float cmd_x;
 		float cmd_y;
 		float cmd_theta;
 		float cmd_vx;
 		float cmd_vy;
 		float cmd_omega;
+		float vel_limit;
 		bool dribble;
 		bool kick;
 		bool chip;
