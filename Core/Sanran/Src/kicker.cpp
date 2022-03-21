@@ -15,6 +15,12 @@ Kicker::Kicker(TIM_HandleTypeDef *htim, uint32_t channel)
 
 	kickPower = 0;
 
+	for(int i = 0; i < 16; i++)
+	{
+		m_width_straight[i] = i * 100;
+		m_width_chip[i] = i * 100;
+	}
+
 }
 
 
@@ -30,7 +36,25 @@ bool Kicker::setup()
 }
 
 
-void Kicker::kickStraight(uint16_t power)
+void Kicker::kickStraight(uint8_t power)
+{
+	if(power >= 16) return;
+
+	kickStraight_width(m_width_straight[power & 0x0F]);
+}
+
+
+
+void Kicker::kickChip(uint8_t power)
+{
+	if(power >= 16) return;
+
+	kickChip_width(m_width_chip[power & 0x0F]);
+}
+
+
+
+void Kicker::kickStraight_width(uint16_t width_us)
 {
 
 	if(kickState != KICKSTATE_CPLT) return;
@@ -41,16 +65,14 @@ void Kicker::kickStraight(uint16_t power)
 	//HAL_GPIO_WritePin(KICK_GPIO_Port, KICK_Pin, GPIO_PIN_SET);
 
 	m_htim->Instance->CNT = 0xfff0;
-	kickPower = power;
+	kickPower = width_us;
 	__HAL_TIM_SET_COMPARE(m_htim, m_channel, kickPower);
 
 	kickState = KICKSTATE_KICK;
 
 }
 
-
-
-void Kicker::kickChip(uint16_t power)
+void Kicker::kickChip_width(uint16_t width_us)
 {
 
 	if(kickState != KICKSTATE_CPLT)
@@ -64,12 +86,13 @@ void Kicker::kickChip(uint16_t power)
 	//HAL_GPIO_WritePin(KICK_GPIO_Port, KICK_Pin, GPIO_PIN_SET);
 
 	m_htim->Instance->CNT = 0xfff0;
-	kickPower = power;
+	kickPower = width_us;
 	__HAL_TIM_SET_COMPARE(m_htim, m_channel, kickPower);
 
 	kickState = KICKSTATE_KICK;
-
 }
+
+
 
 
 void Kicker::update()

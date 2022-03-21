@@ -311,23 +311,9 @@ void Sanran::UpdateSyncLS()
 	// bno055.updateIMU();
 	ballSensor.update();
 
-	//printf("ball : %f\n", ballSensor.read());
-
 
 //	if(ballSensor.read() > 0.15) dribbler.setSlow();
 //	else dribbler.setFast();
-
-
-	//omni.correctAngle(2*M_PI - bno055.get_IMU_yaw());
-
-
-	//printf("USER_SW0 = %f\n", omega_w_ref);
-
-
-
-
-
-	//printf("%f, %f, %f\n", simulink.m_data[0], simulink.m_data[1], simulink.m_data[2]);
 
 	matcha.Update();
 	if(matcha.newDataAvailable() && matcha.getTimeoutState() == MatchaSerial::TIMEOUT_NONE)
@@ -341,6 +327,18 @@ void Sanran::UpdateSyncLS()
 		omniCmd.world_vel_y = matcha.cmd.cmd_vy;
 		omniCmd.world_omega = matcha.cmd.cmd_omega;
 		omniCmd.vel_limit = matcha.cmd.vel_limit;
+
+		if(matcha.cmd.kick)
+		{
+			if(matcha.cmd.chip)
+			{
+				kicker.kickChip(matcha.cmd.kickPower);
+			}
+			else
+			{
+				kicker.kickStraight(matcha.cmd.kickPower);
+			}
+		}
 
 		if(matcha.cmd.vision_error == false)
 		{

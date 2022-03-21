@@ -519,23 +519,23 @@ static int usrcmd_kick(int argc, char **argv)
 		return 0;
 	}
 	else if (ntlibc_strcmp(argv[1], "straight") == 0 && argc == 3) {
-		int power = atoi(argv[2]);
-		if(power <= 0 || power > 65000)
+		int width_us = atoi(argv[2]);
+		if(width_us <= 0 || width_us > 65000)
 		{
-			printf("\"power\" must be [1-65000].\r\n");
+			printf("\"pulse_width_us\" must be [1-65000].\r\n");
 			return 0;
 		}
-		sanran.kicker.kickStraight(power);
+		sanran.kicker.kickStraight_width(width_us);
 		return 0;
 	}
 	else if (ntlibc_strcmp(argv[1], "chip") == 0 && argc == 3) {
-		int power = atoi(argv[2]);
-		if(power <= 0 || power > 65000)
+		int width_us = atoi(argv[2]);
+		if(width_us <= 0 || width_us > 65000)
 		{
-			printf("\"power\" must be [1-65000].\r\n");
+			printf("\"pulse_width_us\" must be [1-65000].\r\n");
 			return 0;
 		}
-		sanran.kicker.kickChip(power);
+		sanran.kicker.kickChip_width(width_us);
 		return 0;
 	}
 	uart_puts("Unknown sub command found\r\n");

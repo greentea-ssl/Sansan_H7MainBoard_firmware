@@ -201,12 +201,12 @@ bool MatchaSerial::parse()
 
 	cmd.vel_limit = vel_limit_int * 0.001;
 
-	cmd.dribble = (m_rxBytes[idx_offset + 19] & 0b10000000) != 0;
-	cmd.kick = (m_rxBytes[idx_offset + 19] & 0b00010000) != 0;
-	cmd.chip = (m_rxBytes[idx_offset + 19] & 0b00001000) != 0;
+	cmd.dribble = (m_rxBytes[idx_offset + 25] & 0b10000000) != 0;
+	cmd.kick = (m_rxBytes[idx_offset + 25] & 0b00010000) != 0;
+	cmd.chip = (m_rxBytes[idx_offset + 25] & 0b00001000) != 0;
 
-	cmd.dribblePower = m_rxBytes[idx_offset + 20] >> 4;
-	cmd.kickPower = m_rxBytes[idx_offset + 20] & 0x0f;
+	cmd.dribblePower = m_rxBytes[idx_offset + 26] >> 4;
+	cmd.kickPower = m_rxBytes[idx_offset + 26] & 0x0f;
 
 #endif
 

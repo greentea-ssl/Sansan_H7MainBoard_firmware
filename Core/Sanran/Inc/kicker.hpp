@@ -20,13 +20,15 @@ public:
 
 	bool setup();
 
-	void kickStraight(uint16_t power);
+	void kickStraight(uint8_t power);
 
-	void kickChip(uint16_t power);
+	void kickChip(uint8_t power);
+
+	void kickStraight_width(uint16_t width_us);
+
+	void kickChip_width(uint16_t width_us);
 
 	void update();
-
-
 
 	bool chargeCompleted(){ return (kickState == KICKSTATE_CPLT); }
 
@@ -47,7 +49,8 @@ private:
 	TIM_HandleTypeDef *m_htim;
 	uint32_t m_channel;
 
-
+	uint32_t m_width_chip[16];
+	uint32_t m_width_straight[16];
 
 
 };
