@@ -340,6 +340,15 @@ void Sanran::UpdateSyncLS()
 			}
 		}
 
+		if(matcha.cmd.dribble)
+		{
+			dribbler.setPower(matcha.cmd.dribblePower);
+		}
+		else
+		{
+			dribbler.setPower(0);
+		}
+
 		if(matcha.cmd.vision_error == false)
 		{
 			//omni.correctAngle(matcha.cmd.fb_theta);

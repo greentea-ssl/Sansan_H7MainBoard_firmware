@@ -22,6 +22,12 @@ public:
 
 	void write_us(uint32_t on_time_us);
 
+	void setPower(uint8_t power)
+	{
+		if(power >= 16) return;
+		write_us(m_width[power]);
+	}
+
 	void setDuty(float rate){ write(rate); }
 
 	float getDuty(){ return m_outputRate; }
@@ -38,6 +44,8 @@ private:
 
 	TIM_HandleTypeDef *m_htim;
 	uint32_t m_channel;
+
+	uint32_t m_width[16];
 
 	float m_outputRate;
 
