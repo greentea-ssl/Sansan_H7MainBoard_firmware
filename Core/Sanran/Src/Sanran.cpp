@@ -183,35 +183,6 @@ void Sanran::startCycle()
  */
 void Sanran::UpdateAsync()
 {
-
-
-	HAL_Delay(100);
-
-	Sync_loop_timestamp_t LS_timestamp;
-	LS_timestamp = syncLS_timestamp;
-
-	Sync_loop_timestamp_t HS_timestamp;
-	HS_timestamp = syncHS_timestamp;
-
-	//printf("start:%d,\t end:%d,\t period:%d\r\n", LS_timestamp.start_count, LS_timestamp.end_count, htim13.Init.Period);
-
-	printf("start:%d,\t end:%d,\t period:%d\r\n", HS_timestamp.start_count, HS_timestamp.end_count, htim12.Init.Period);
-
-
-
-	/*
-	uint8_t st, er;
-	bno055.read(0x39, &st);
-	bno055.read(0x3D, &er);
-
-	printf("Roll  = %f rad.\n", bno055.get_IMU_roll());
-	printf("Pitch = %f rad.\n", bno055.get_IMU_pitch());
-	printf("Yaw   = %f rad.\n", bno055.get_IMU_yaw());
-	printf("status = %d, 0x%02x, 0x%02x\n", bno055.getStatus(), st, er);
-	printf("\e[4A");
-	*/
-
-
 }
 
 /**
