@@ -360,6 +360,9 @@ static int usrcmd_view(int argc, char **argv)
 
 			printf("\r\n\r\n");
 
+			printf("         |   pos_x [m] |   pos_y [m] | theta[deg.] |\r\n");
+			printf("---------+-------------+-------------+-------------| \r\n");
+
 			printf("Command  ");
 			printf("| %11.2f ", sanran.matcha.cmd.cmd_x);
 			printf("| %11.2f ", sanran.matcha.cmd.cmd_y);
@@ -367,7 +370,6 @@ static int usrcmd_view(int argc, char **argv)
 
 			printf("\r\n\r\n");
 
-		  //printf("         |   pos_x [m] |   pos_y [m] |   theta[rad]  | \r\n");
 			printf("         | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | Vel_limit [m/s] | \r\n");
 			printf("---------+-------------+-------------+---------------+-----------------| \r\n");
 
@@ -378,14 +380,6 @@ static int usrcmd_view(int argc, char **argv)
 			printf("| %15.2f ", sanran.matcha.cmd.vel_limit);
 
 			printf("\r\n\r\n");
-
-			/*
-			 * 	bool dribble;
-				bool kick;
-				bool chip;
-				uint8_t dribblePower;
-				uint8_t kickPower;
-			 */
 
 			printf("         | Dribble | Kick | Chip | DribblePower | KickPower | [ParseError] | [Timeout] |\r\n");
 			printf("---------+---------+------+------|--------------|-----------|--------------|-----------|\r\n");
@@ -403,7 +397,7 @@ static int usrcmd_view(int argc, char **argv)
 
 			if(checkSuspens()) break;
 
-			uart_puts("\e[14A");
+			uart_puts("\e[16A");
 		}
 	}
 	else if(ntlibc_strcmp(argv[1], "kicker") == 0)
