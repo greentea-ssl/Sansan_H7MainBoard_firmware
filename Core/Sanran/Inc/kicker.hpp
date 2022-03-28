@@ -18,6 +18,8 @@ public:
 
 	Kicker(TIM_HandleTypeDef *htim, uint32_t channel);
 
+	Kicker(TIM_HandleTypeDef *htim, uint32_t channel, uint32_t select_wait_dulation);
+
 	bool setup();
 
 	void kickStraight(uint8_t power);
@@ -36,6 +38,7 @@ public:
 	enum KickState_e{
 			KICKSTATE_CHARGE,
 			KICKSTATE_CPLT,
+			KICKSTATE_SELECT,
 			KICKSTATE_KICK,
 	};
 
@@ -44,13 +47,17 @@ public:
 private:
 
 
-	uint32_t kickPower;
+	bool m_kickFlag;
+	uint32_t m_kickPower;
 
 	TIM_HandleTypeDef *m_htim;
 	uint32_t m_channel;
 
 	uint32_t m_width_chip[16];
 	uint32_t m_width_straight[16];
+
+	uint32_t m_select_wait_dulation;
+	uint32_t m_select_wait_counter;
 
 
 };
