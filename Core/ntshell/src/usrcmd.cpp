@@ -477,7 +477,8 @@ static int usrcmd_view(int argc, char **argv)
 	}
 	else
 	{
-		//printf("\e[%s", argv[1]);
+		printf("Command Not Found.\r\n");
+		return 0;
 	}
 
 
@@ -532,6 +533,11 @@ static int usrcmd_kick(int argc, char **argv)
 		sanran.kicker.kickChip_width(width_us);
 		return 0;
 	}
+	else
+	{
+		printf("Command Not Found.\r\n");
+		return 0;
+	}
 	uart_puts("Unknown sub command found\r\n");
 	return -1;
 }
@@ -566,6 +572,11 @@ static int usrcmd_dribble(int argc, char **argv)
 		}
 		sanran.dribbler.write_us(us);
 		printf("\r\nwidth = %d [us]\r\n", us);
+		return 0;
+	}
+	else
+	{
+		printf("Command Not Found.\r\n");
 		return 0;
 	}
 }
