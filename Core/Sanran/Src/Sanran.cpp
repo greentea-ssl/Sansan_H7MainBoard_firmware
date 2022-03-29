@@ -406,6 +406,11 @@ void Sanran::dump_update()
 	dump.setValue(31, omni.m_robotState.world_y);
 	dump.setValue(32, omni.m_robotState.world_theta);
 
+	dump.setValue(33, matcha.cmd.fb_x);
+	dump.setValue(34, matcha.cmd.fb_y);
+	dump.setValue(35, matcha.cmd.fb_theta);
+	dump.setValue(36, matcha.cmd.fb_timestamp * 1E-3);
+
 	dump.send();
 
 
