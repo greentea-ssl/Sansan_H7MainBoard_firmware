@@ -326,7 +326,6 @@ void Sanran::UpdateSyncLS()
 	else if(matcha.getTimeoutState() == MatchaSerial::TIMEOUT_OCCURED)
 	{
 		omniCmd.vel_limit = 0.0f;
-		dribbler.setPower(0);
 	}
 
 	syncLS_timestamp.end_count = htim13.Instance->CNT;
