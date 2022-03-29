@@ -289,8 +289,6 @@ void Sanran::UpdateSyncLS()
 	matcha.Update();
 	if(matcha.newDataAvailable() && matcha.getTimeoutState() == MatchaSerial::TIMEOUT_NONE)
 	{
-		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
-
 		omniCmd.world_x = matcha.cmd.cmd_x;
 		omniCmd.world_y = matcha.cmd.cmd_y;
 		omniCmd.world_theta = matcha.cmd.cmd_theta;
@@ -322,17 +320,13 @@ void Sanran::UpdateSyncLS()
 
 		if(matcha.cmd.vision_error == false)
 		{
-			//omni.correctAngle(matcha.cmd.fb_theta);
 			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta);
 		}
 	}
 	else if(matcha.getTimeoutState() == MatchaSerial::TIMEOUT_OCCURED)
 	{
-		omniCmd.omega_w[0] = 0.0f;
-		omniCmd.omega_w[1] = 0.0f;
-		omniCmd.omega_w[2] = 0.0f;
-		omniCmd.omega_w[3] = 0.0f;
-		omni.setControlType(OmniWheel::TYPE_INDEP_P_DOB);
+		omniCmd.vel_limit = 0.0f;
+		dribbler.setPower(0);
 	}
 
 	syncLS_timestamp.end_count = htim13.Instance->CNT;
