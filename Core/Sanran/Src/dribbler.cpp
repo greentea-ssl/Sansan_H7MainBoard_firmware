@@ -15,7 +15,8 @@ Dribbler::Dribbler(TIM_HandleTypeDef *htim, uint32_t channel) : m_htim(htim), m_
 
 	for(int i = 0; i < 16; i++)
 	{
-		m_width[i] = i * 15 + 900;
+		// i=0:900us, i=15:1150us, Linear
+		m_width[i] = i * 16.67f + 900;
 	}
 
 }
