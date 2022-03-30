@@ -20,8 +20,8 @@ Kicker::Kicker(TIM_HandleTypeDef *htim, uint32_t channel)
 
 	for(int i = 0; i < 16; i++)
 	{
-		m_width_straight[i] = i * 200;
-		m_width_chip[i] = i * 200;
+		m_width_straight[i] = i * 2000;
+		m_width_chip[i] = i * 2000;
 	}
 
 }
