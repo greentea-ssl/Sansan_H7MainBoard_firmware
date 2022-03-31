@@ -20,7 +20,8 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 
 	m_param.Jmn = 5.2E-5;
 	m_param.Kp = 0.2;
-	m_param.Ktn = (60.0f / (320 * 2 * M_PI));
+	//m_param.Ktn = (60.0f / (320 * 2 * M_PI));
+	m_param.Ktn = (60.0f / (400 * 2 * M_PI));
 	m_param.Ts = 1E-3;
 	m_param.g_dis = 30;
 
@@ -30,7 +31,7 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 		m_param.wheel_r[i] = 55E-3 / 2.0f;
 	}
 
-#if 1
+#if 0
 	m_param.wheel_pos_theta_deg[0] = 60;
 	m_param.wheel_pos_theta_deg[1] = 135;
 	m_param.wheel_pos_theta_deg[2] = -135;
