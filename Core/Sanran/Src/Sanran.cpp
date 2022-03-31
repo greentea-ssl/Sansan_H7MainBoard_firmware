@@ -310,35 +310,35 @@ void Sanran::UpdateSyncLS()
 	else if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_MANUAL)
 	{
 
-		omniCmd.robot_vel_x = 0.0f;
-		omniCmd.robot_vel_y = 0.0f;
-		omniCmd.robot_omega = 0.0f;
+//		omniCmd.robot_vel_x = 0.0f;
+//		omniCmd.robot_vel_y = 0.0f;
+//		omniCmd.robot_omega = 0.0f;
 
-//
-//		omniCmd.robot_vel_x = matcha.manual_cmd.cmd_vx;
-//		omniCmd.robot_vel_y = matcha.manual_cmd.cmd_vy;
-//		omniCmd.robot_omega = matcha.manual_cmd.cmd_omega;
-//
-//		if(matcha.manual_cmd.kick)
-//		{
-//			if(matcha.manual_cmd.chip)
-//			{
-//				kicker.kickChip(matcha.manual_cmd.kickPower);
-//			}
-//			else
-//			{
-//				kicker.kickStraight(matcha.manual_cmd.kickPower);
-//			}
-//		}
-//
-//		if(matcha.manual_cmd.dribble)
-//		{
-//			dribbler.setPower(matcha.manual_cmd.dribblePower);
-//		}
-//		else
-//		{
-//			dribbler.setPower(0);
-//		}
+
+		omniCmd.robot_vel_x = matcha.manual_cmd.cmd_vx;
+		omniCmd.robot_vel_y = matcha.manual_cmd.cmd_vy;
+		omniCmd.robot_omega = matcha.manual_cmd.cmd_omega;
+
+		if(matcha.manual_cmd.kick)
+		{
+			if(matcha.manual_cmd.chip)
+			{
+				kicker.kickChip(matcha.manual_cmd.kickPower);
+			}
+			else
+			{
+				kicker.kickStraight(matcha.manual_cmd.kickPower);
+			}
+		}
+
+		if(matcha.manual_cmd.dribble)
+		{
+			dribbler.setPower(matcha.manual_cmd.dribblePower);
+		}
+		else
+		{
+			dribbler.setPower(0);
+		}
 
 		omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
 
