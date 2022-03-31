@@ -61,6 +61,8 @@ Sanran::Sanran()
 	  dump(&huart1)
 {
 
+	// Operation mode is normal mode
+	opeMode = OPE_MODE_NORMAL;
 
 }
 
@@ -123,8 +125,7 @@ void Sanran::setup()
 
 	/***** Setting Matcha Serial *****/
 	printf("\n Setting Matcha Serial ... \n");
-	boolStatus = matcha.setup();
-	matcha.settingTimeout(0.1, 0.01);
+	boolStatus = matcha.setup(0.1, 5.0, 0.01);
 	if(boolStatus){
 		printf("\t\t\t\t[OK]\n");
 	}else{
@@ -132,8 +133,6 @@ void Sanran::setup()
 	}
 
 	timeElapsed_hs_count = 0;
-
-	count = 0;
 
 	onBrdLED.setRGB(0, 0, 0);
 
@@ -221,27 +220,7 @@ void Sanran::UpdateSyncHS()
 #endif
 
 
-	if(this->omni.get_controlType() == OmniWheel::TYPE_WORLD_P_DOB)
-	{
-		omniCmd.world_vel_x = matcha.cmd.cmd_vx;
-		omniCmd.world_vel_y = matcha.cmd.cmd_vy;
-		omniCmd.world_omega = matcha.cmd.cmd_omega;
-	}
-	else if(this->omni.get_controlType() == OmniWheel::TYPE_ROBOT_P_DOB)
-	{
-		omniCmd.robot_vel_x = matcha.cmd.cmd_vx;
-		omniCmd.robot_vel_y = matcha.cmd.cmd_vy;
-		omniCmd.robot_omega = matcha.cmd.cmd_omega;
-	}
-
-
-	omega_w = canMotorIF.motor[0].get_omega();
-
-
 	timeElapsed_hs_count += 1;
-
-	count += 1;
-
 
 	omni.update(&omniCmd);
 
@@ -287,45 +266,90 @@ void Sanran::UpdateSyncLS()
 //	else dribbler.setFast();
 
 	matcha.Update();
-	if(matcha.newDataAvailable() && matcha.getTimeoutState() == MatchaSerial::TIMEOUT_NONE)
-	{
-		omniCmd.world_x = matcha.cmd.cmd_x;
-		omniCmd.world_y = matcha.cmd.cmd_y;
-		omniCmd.world_theta = matcha.cmd.cmd_theta;
-		omniCmd.world_vel_x = matcha.cmd.cmd_vx;
-		omniCmd.world_vel_y = matcha.cmd.cmd_vy;
-		omniCmd.world_omega = matcha.cmd.cmd_omega;
-		omniCmd.vel_limit = matcha.cmd.vel_limit;
 
-		if(matcha.cmd.kick)
+	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)
+	{
+
+		omniCmd.world_x = matcha.normal_cmd.cmd_x;
+		omniCmd.world_y = matcha.normal_cmd.cmd_y;
+		omniCmd.world_theta = matcha.normal_cmd.cmd_theta;
+		omniCmd.world_vel_x = matcha.normal_cmd.cmd_vx;
+		omniCmd.world_vel_y = matcha.normal_cmd.cmd_vy;
+		omniCmd.world_omega = matcha.normal_cmd.cmd_omega;
+		omniCmd.vel_limit = matcha.normal_cmd.vel_limit;
+
+		if(matcha.normal_cmd.kick)
 		{
-			if(matcha.cmd.chip)
+			if(matcha.normal_cmd.chip)
 			{
-				kicker.kickChip(matcha.cmd.kickPower);
+				kicker.kickChip(matcha.normal_cmd.kickPower);
 			}
 			else
 			{
-				kicker.kickStraight(matcha.cmd.kickPower);
+				kicker.kickStraight(matcha.normal_cmd.kickPower);
 			}
 		}
 
-		if(matcha.cmd.dribble)
+		if(matcha.normal_cmd.dribble)
 		{
-			dribbler.setPower(matcha.cmd.dribblePower);
+			dribbler.setPower(matcha.normal_cmd.dribblePower);
 		}
 		else
 		{
 			dribbler.setPower(0);
 		}
 
-		if(matcha.cmd.vision_error == false)
+		if(matcha.normal_cmd.vision_error == false)
 		{
-			omni.correctPosition(matcha.cmd.fb_x, matcha.cmd.fb_y, matcha.cmd.fb_theta);
+			omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta);
 		}
+
+		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
+
 	}
-	else if(matcha.getTimeoutState() == MatchaSerial::TIMEOUT_OCCURED)
+	else if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_MANUAL)
 	{
+
+		omniCmd.robot_vel_x = 0.0f;
+		omniCmd.robot_vel_y = 0.0f;
+		omniCmd.robot_omega = 0.0f;
+
+//
+//		omniCmd.robot_vel_x = matcha.manual_cmd.cmd_vx;
+//		omniCmd.robot_vel_y = matcha.manual_cmd.cmd_vy;
+//		omniCmd.robot_omega = matcha.manual_cmd.cmd_omega;
+//
+//		if(matcha.manual_cmd.kick)
+//		{
+//			if(matcha.manual_cmd.chip)
+//			{
+//				kicker.kickChip(matcha.manual_cmd.kickPower);
+//			}
+//			else
+//			{
+//				kicker.kickStraight(matcha.manual_cmd.kickPower);
+//			}
+//		}
+//
+//		if(matcha.manual_cmd.dribble)
+//		{
+//			dribbler.setPower(matcha.manual_cmd.dribblePower);
+//		}
+//		else
+//		{
+//			dribbler.setPower(0);
+//		}
+
+		omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
+
+	}
+	else if(matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_TIMEOUT)
+	{
+
 		omniCmd.vel_limit = 0.0f;
+
+		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
+
 	}
 
 	syncLS_timestamp.end_count = htim13.Instance->CNT;
@@ -399,10 +423,10 @@ void Sanran::dump_update()
 	dump.setValue(31, omni.m_robotState.world_y);
 	dump.setValue(32, omni.m_robotState.world_theta);
 
-	dump.setValue(33, matcha.cmd.fb_x);
-	dump.setValue(34, matcha.cmd.fb_y);
-	dump.setValue(35, matcha.cmd.fb_theta);
-	dump.setValue(36, matcha.cmd.fb_timestamp * 1E-3);
+	dump.setValue(33, matcha.normal_cmd.fb_x);
+	dump.setValue(34, matcha.normal_cmd.fb_y);
+	dump.setValue(35, matcha.normal_cmd.fb_theta);
+	dump.setValue(36, matcha.normal_cmd.fb_timestamp * 1E-3);
 
 	dump.send();
 
