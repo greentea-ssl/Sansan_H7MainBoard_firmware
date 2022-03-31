@@ -382,7 +382,7 @@ static int usrcmd_view(int argc, char **argv)
 			printf("\r\n\r\n");
 
 			printf(" Normal  | Dribble | Kick | Chip | DribblePower | KickPower | [ParseError] | [Receive State] |\r\n");
-			printf("---------+---------+------+------|--------------|-----------|--------------|-----------------|\r\n");
+			printf("---------+---------+------+------+--------------+-----------+--------------+-----------------|\r\n");
 			printf("Command  ");
 
 			printf("| %7d ", sanran.matcha.normal_cmd.dribble);
@@ -400,21 +400,21 @@ static int usrcmd_view(int argc, char **argv)
 			printf("---------+-------------+-------------+---------------| \r\n");
 
 			printf("Command  ");
-			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_vx);
-			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_vy);
-			printf("| %13.2f ", sanran.matcha.normal_cmd.cmd_omega);
+			printf("| %11.2f ", sanran.matcha.manual_cmd.cmd_vx);
+			printf("| %11.2f ", sanran.matcha.manual_cmd.cmd_vy);
+			printf("| %13.2f ", sanran.matcha.manual_cmd.cmd_omega);
 
 			printf("\r\n\r\n");
 
 			printf(" Manual  | Dribble | Kick | Chip | DribblePower | KickPower | [ParseError] | [Receive State] |\r\n");
-			printf("---------+---------+------+------|--------------|-----------|--------------|-----------------|\r\n");
+			printf("---------+---------+------+------|--------------+-----------+--------------+-----------------|\r\n");
 			printf("Command  ");
 
-			printf("| %7d ", sanran.matcha.normal_cmd.dribble);
-			printf("| %4d ", sanran.matcha.normal_cmd.kick);
-			printf("| %4d ", sanran.matcha.normal_cmd.chip);
-			printf("| %12d ", sanran.matcha.normal_cmd.dribblePower);
-			printf("| %9d ", sanran.matcha.normal_cmd.kickPower);
+			printf("| %7d ", sanran.matcha.manual_cmd.dribble);
+			printf("| %4d ", sanran.matcha.manual_cmd.kick);
+			printf("| %4d ", sanran.matcha.manual_cmd.chip);
+			printf("| %12d ", sanran.matcha.manual_cmd.dribblePower);
+			printf("| %9d ", sanran.matcha.manual_cmd.kickPower);
 			printf("| %12d ", sanran.matcha.getPrevErrorCode());
 			printf("| %15d ", sanran.matcha.getReceiveState());
 
