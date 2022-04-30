@@ -44,8 +44,8 @@ public:
 		bool vision_error;
 	};
 
-	Reference_TypeDef cmd;
-
+	Reference_TypeDef normal_cmd;
+	Reference_TypeDef manual_cmd;
 
 	typedef enum{
 		PARSE_ERROR_NONE		= 0,
@@ -56,26 +56,21 @@ public:
 		PARSE_ERROR_NO_DATA		= 10,
 	}parse_error_t;
 
+	typedef enum{
+		RECEIVE_STATE_NORMAL,
+		RECEIVE_STATE_TIMEOUT,
+		RECEIVE_STATE_MANUAL,
+	}ReceiveState_TypeDef;
 
 	typedef enum{
-		TIMEOUT_NONE	= 0,
-		TIMEOUT_OCCURED	= 1,
-	}timeout_state_t;
-
+		CMD_TYPE_NORMAL,
+		CMD_TYPE_MANUAL,
+	}CommandType_TypeDef;
 
 
 	MatchaSerial(UART_HandleTypeDef *huart);
 
-	bool setup();
-
-	bool settingTimeout(float timeout_period, float polling_time)
-	{
-		m_timeout_threshold = (uint32_t)(timeout_period / polling_time);
-
-		m_timeout_count = 0;
-		m_timeout_state = TIMEOUT_NONE;
-		m_timeout_enable = true;
-	}
+	bool setup(float timeout_period, float manual_timeout_period, float polling_time);
 
 	bool Update();
 
@@ -83,7 +78,9 @@ public:
 
 	bool getPrevErrorCode(){ return m_prev_error_code; }
 
-	timeout_state_t getTimeoutState(){ return m_timeout_state; }
+	CommandType_TypeDef getLatestCommandType(){ return m_cmdType; }
+
+	ReceiveState_TypeDef getReceiveState(){ return m_receiveState; }
 
 	uint8_t m_rxBuf[UART_BUF_SIZE];
 	uint8_t m_rxBytes[UART_BUF_SIZE];
@@ -101,22 +98,28 @@ private:
 
 	UART_HandleTypeDef *m_huart;
 
+	// Ring buffer
 	uint16_t m_rxBufSize;
 	uint16_t m_rxBufMask;
-
 	uint16_t m_nextWriteIndex;
-
 	uint16_t m_prev_head_index;
 	uint16_t m_parse_error_counter;
 
 	parse_error_t m_prev_error_code;
 
+	// Timeout & Receive state
 	bool m_timeout_enable;
 	uint32_t m_timeout_count;
 	uint32_t m_timeout_threshold;
-	timeout_state_t m_timeout_state;
+	uint32_t m_manual_timeout_count;
+	uint32_t m_manual_timeout_threshold;
+	ReceiveState_TypeDef m_receiveState;
 
 	bool m_new_data_available;
+
+	// Type of latest received data
+	CommandType_TypeDef m_cmdType;
+
 
 };
 

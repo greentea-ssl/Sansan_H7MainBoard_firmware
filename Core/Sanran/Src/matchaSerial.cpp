@@ -13,10 +13,12 @@ MatchaSerial::MatchaSerial(UART_HandleTypeDef *huart) : m_huart(huart)
 
 	m_timeout_enable = false;
 
+	m_receiveState = RECEIVE_STATE_TIMEOUT;
+
 }
 
 
-bool MatchaSerial::setup()
+bool MatchaSerial::setup(float timeout_period, float manual_timeout_period, float polling_time)
 {
 
 	HAL_StatusTypeDef status;
@@ -39,27 +41,54 @@ bool MatchaSerial::setup()
 	m_prev_head_index = 0;
 	m_parse_error_counter = 0;
 
-	cmd.robot_ID = 0;
+	normal_cmd.robot_ID = 0;
+	normal_cmd.fb_x = 0.0;
+	normal_cmd.fb_y = 0.0;
+	normal_cmd.fb_theta = 0.0;
+	normal_cmd.fb_timestamp = 0;
+	normal_cmd.cmd_x = 0.0;
+	normal_cmd.cmd_y = 0.0;
+	normal_cmd.cmd_theta = 0.0;
+	normal_cmd.cmd_vx = 0.0;
+	normal_cmd.cmd_vy = 0.0;
+	normal_cmd.cmd_omega = 0.0;
+	normal_cmd.vel_limit = 0.0;
+	normal_cmd.dribble = false;
+	normal_cmd.kick = false;
+	normal_cmd.chip = false;
+	normal_cmd.dribblePower = 0;
+	normal_cmd.kickPower = 0;
+	normal_cmd.vision_error = true;
 
-	cmd.fb_x = 0.0;
-	cmd.fb_y = 0.0;
-	cmd.fb_theta = 0.0;
-	cmd.fb_timestamp = 0;
-	cmd.cmd_x = 0.0;
-	cmd.cmd_y = 0.0;
-	cmd.cmd_theta = 0.0;
-	cmd.cmd_vx = 0.0;
-	cmd.cmd_vy = 0.0;
-	cmd.cmd_omega = 0.0;
-	cmd.vel_limit = 0.0;
 
-	cmd.dribble = false;
-	cmd.kick = false;
-	cmd.chip = false;
-	cmd.dribblePower = 0;
-	cmd.kickPower = 0;
+	manual_cmd.robot_ID = 0;
+	manual_cmd.fb_x = 0.0;
+	manual_cmd.fb_y = 0.0;
+	manual_cmd.fb_theta = 0.0;
+	manual_cmd.fb_timestamp = 0;
+	manual_cmd.cmd_x = 0.0;
+	manual_cmd.cmd_y = 0.0;
+	manual_cmd.cmd_theta = 0.0;
+	manual_cmd.cmd_vx = 0.0;
+	manual_cmd.cmd_vy = 0.0;
+	manual_cmd.cmd_omega = 0.0;
+	manual_cmd.vel_limit = 0.0;
+	manual_cmd.dribble = false;
+	manual_cmd.kick = false;
+	manual_cmd.chip = false;
+	manual_cmd.dribblePower = 0;
+	manual_cmd.kickPower = 0;
+	manual_cmd.vision_error = true;
 
-	cmd.vision_error = true;
+
+	m_timeout_threshold = (uint32_t)(timeout_period / polling_time);
+	m_timeout_count = 0;
+	m_timeout_enable = true;
+
+	m_manual_timeout_threshold = (uint32_t)(manual_timeout_period / polling_time);
+	m_manual_timeout_count = 0;
+
+	m_receiveState = RECEIVE_STATE_NORMAL;
 
 	return (status == HAL_OK);
 }
@@ -106,19 +135,54 @@ bool MatchaSerial::Update()
 	}
 
 
-	// update timeout
-	if(m_timeout_enable && m_timeout_state == TIMEOUT_NONE)
+	// Update Receive State
+	switch(m_receiveState)
 	{
-		m_timeout_count += 1;
+	case RECEIVE_STATE_NORMAL:
+		if(m_timeout_enable)
+		{
+			m_timeout_count += 1;
+		}
+		if(m_new_data_available == true && m_prev_error_code == PARSE_ERROR_NONE \
+				&& m_cmdType == CMD_TYPE_NORMAL && normal_cmd.vision_error == false)
+		{
+			m_timeout_count = 0;
+		}
+
+		// Change State
 		if(m_timeout_count > m_timeout_threshold)
 		{
-			m_timeout_state = TIMEOUT_OCCURED;
+			m_receiveState = RECEIVE_STATE_TIMEOUT;
 		}
-	}
-	if(m_new_data_available == true && m_prev_error_code == PARSE_ERROR_NONE && cmd.vision_error == false)
-	{
-		m_timeout_count = 0;
-		m_timeout_state = TIMEOUT_NONE;
+		if(m_new_data_available == true && m_prev_error_code == PARSE_ERROR_NONE && m_cmdType == CMD_TYPE_MANUAL)
+		{
+			m_receiveState = RECEIVE_STATE_MANUAL;
+		}
+		break;
+
+	case RECEIVE_STATE_TIMEOUT:
+		if(m_new_data_available == true && m_prev_error_code == PARSE_ERROR_NONE && normal_cmd.vision_error == false)
+		{
+			m_timeout_count = 0;
+			m_receiveState = RECEIVE_STATE_NORMAL;
+		}
+		if(m_new_data_available == true && m_prev_error_code == PARSE_ERROR_NONE && m_cmdType == CMD_TYPE_MANUAL)
+		{
+			m_receiveState = RECEIVE_STATE_MANUAL;
+		}
+		break;
+
+	case RECEIVE_STATE_MANUAL:
+		m_manual_timeout_count += 1;
+		if(m_new_data_available == true && m_prev_error_code == PARSE_ERROR_NONE && m_cmdType == CMD_TYPE_MANUAL)
+		{
+			m_manual_timeout_count = 0;
+		}
+		if(m_manual_timeout_count > m_manual_timeout_threshold)
+		{
+			m_receiveState = RECEIVE_STATE_NORMAL;
+		}
+		break;
 	}
 
 
@@ -133,13 +197,24 @@ bool MatchaSerial::parse()
 
 	int idx_offset = 0;
 
+	CommandType_TypeDef cmdType;
+
 	// Check header
-	if(m_rxBytes[idx_offset + 0] != 0xFF || m_rxBytes[idx_offset + 1] != 0xC3)
+	if(m_rxBytes[idx_offset + 0] == 0xFF && m_rxBytes[idx_offset + 1] == 0xC3)
+	{
+		cmdType = CMD_TYPE_NORMAL;
+	}
+	else if(m_rxBytes[idx_offset + 0] == 0xFF && m_rxBytes[idx_offset + 1] == 0xCC)
+	{
+		cmdType = CMD_TYPE_MANUAL;
+	}
+	else
 	{
 		m_prev_error_code = MatchaSerial::PARSE_ERROR_HEADER;
 		return false;
 	}
 
+	// Checksum
 	uint8_t checkSum = 0;
 	for(int i = 2; i <= 26; i++)
 	{
@@ -156,61 +231,85 @@ bool MatchaSerial::parse()
 		return false;
 	}
 
-#if 1
 
-
-	cmd.robot_ID = m_rxBytes[idx_offset + 2] & 0x0F;
-
-	int16_t fb_x_int      = ((int16_t)m_rxBytes[idx_offset + 4] << 8) | (int16_t)m_rxBytes[idx_offset + 3];
-	int16_t fb_y_int      = ((int16_t)m_rxBytes[idx_offset + 6] << 8) | (int16_t)m_rxBytes[idx_offset + 5];
-	int16_t fb_theta_int  = ((int16_t)m_rxBytes[idx_offset + 8] << 8) | (int16_t)m_rxBytes[idx_offset + 7];
-
-	cmd.fb_timestamp      = ((int16_t)m_rxBytes[idx_offset + 10] << 8) | (int16_t)m_rxBytes[idx_offset + 9];
-
-	int16_t cmd_x_int     = ((int16_t)m_rxBytes[idx_offset + 12] << 8) | (int16_t)m_rxBytes[idx_offset + 11];
-	int16_t cmd_y_int     = ((int16_t)m_rxBytes[idx_offset + 14] << 8) | (int16_t)m_rxBytes[idx_offset + 13];
-	int16_t cmd_theta_int = ((int16_t)m_rxBytes[idx_offset + 16] << 8) | (int16_t)m_rxBytes[idx_offset + 15];
-
-	int16_t cmd_vx_int    = ((int16_t)m_rxBytes[idx_offset + 18] << 8) | (int16_t)m_rxBytes[idx_offset + 17];
-	int16_t cmd_vy_int    = ((int16_t)m_rxBytes[idx_offset + 20] << 8) | (int16_t)m_rxBytes[idx_offset + 19];
-	int16_t cmd_omega_int = ((int16_t)m_rxBytes[idx_offset + 22] << 8) | (int16_t)m_rxBytes[idx_offset + 21];
-
-	int16_t vel_limit_int = ((int16_t)m_rxBytes[idx_offset + 24] << 8) | (int16_t)m_rxBytes[idx_offset + 23];
-
-	// Detect vision error
-	if(fb_x_int == 0x7FFF || fb_y_int == 0x7FFF || fb_theta_int == 0x7FFF)
+	if(cmdType == CMD_TYPE_NORMAL)
 	{
-		cmd.vision_error = true;
+
+		normal_cmd.robot_ID = m_rxBytes[idx_offset + 2] & 0x0F;
+
+		int16_t fb_x_int      = ((int16_t)m_rxBytes[idx_offset + 4] << 8) | (int16_t)m_rxBytes[idx_offset + 3];
+		int16_t fb_y_int      = ((int16_t)m_rxBytes[idx_offset + 6] << 8) | (int16_t)m_rxBytes[idx_offset + 5];
+		int16_t fb_theta_int  = ((int16_t)m_rxBytes[idx_offset + 8] << 8) | (int16_t)m_rxBytes[idx_offset + 7];
+
+		normal_cmd.fb_timestamp      = ((int16_t)m_rxBytes[idx_offset + 10] << 8) | (int16_t)m_rxBytes[idx_offset + 9];
+
+		int16_t cmd_x_int     = ((int16_t)m_rxBytes[idx_offset + 12] << 8) | (int16_t)m_rxBytes[idx_offset + 11];
+		int16_t cmd_y_int     = ((int16_t)m_rxBytes[idx_offset + 14] << 8) | (int16_t)m_rxBytes[idx_offset + 13];
+		int16_t cmd_theta_int = ((int16_t)m_rxBytes[idx_offset + 16] << 8) | (int16_t)m_rxBytes[idx_offset + 15];
+
+		int16_t cmd_vx_int    = ((int16_t)m_rxBytes[idx_offset + 18] << 8) | (int16_t)m_rxBytes[idx_offset + 17];
+		int16_t cmd_vy_int    = ((int16_t)m_rxBytes[idx_offset + 20] << 8) | (int16_t)m_rxBytes[idx_offset + 19];
+		int16_t cmd_omega_int = ((int16_t)m_rxBytes[idx_offset + 22] << 8) | (int16_t)m_rxBytes[idx_offset + 21];
+
+		int16_t vel_limit_int = ((int16_t)m_rxBytes[idx_offset + 24] << 8) | (int16_t)m_rxBytes[idx_offset + 23];
+
+		// Detect vision error
+		if(fb_x_int == 0x7FFF || fb_y_int == 0x7FFF || fb_theta_int == 0x7FFF)
+		{
+			normal_cmd.vision_error = true;
+		}
+		else
+		{
+			normal_cmd.fb_x = fb_x_int * 0.001;
+			normal_cmd.fb_y = fb_y_int * 0.001;
+			normal_cmd.fb_theta = fb_theta_int * 2*M_PI/65536 - M_PI*0.5f;
+
+			normal_cmd.vision_error = false;
+		}
+
+		normal_cmd.cmd_x = cmd_x_int * 0.001;
+		normal_cmd.cmd_y = cmd_y_int * 0.001;
+		normal_cmd.cmd_theta = cmd_theta_int * 2*M_PI/65536 - M_PI*0.5f;
+
+		normal_cmd.cmd_vx = cmd_vx_int * 0.001;
+		normal_cmd.cmd_vy = cmd_vy_int * 0.001;
+		normal_cmd.cmd_omega = cmd_omega_int / 1024.0f;
+
+		normal_cmd.vel_limit = vel_limit_int * 0.001;
+
+		normal_cmd.dribble = (m_rxBytes[idx_offset + 25] & 0b10000000) != 0;
+		normal_cmd.kick = (m_rxBytes[idx_offset + 25] & 0b00010000) != 0;
+		normal_cmd.chip = (m_rxBytes[idx_offset + 25] & 0b00001000) != 0;
+
+		normal_cmd.dribblePower = m_rxBytes[idx_offset + 26] >> 4;
+		normal_cmd.kickPower = m_rxBytes[idx_offset + 26] & 0x0f;
+
 	}
-	else
+	else if(cmdType == CMD_TYPE_MANUAL)
 	{
-		cmd.fb_x = fb_x_int * 0.001;
-		cmd.fb_y = fb_y_int * 0.001;
-		cmd.fb_theta = fb_theta_int * 2*M_PI/65536 - M_PI*0.5f;
 
-		cmd.vision_error = false;
+		manual_cmd.robot_ID = m_rxBytes[idx_offset + 2] & 0x0F;
+
+		int16_t cmd_vx_int    = ((int16_t)m_rxBytes[idx_offset + 4] << 8) | (int16_t)m_rxBytes[idx_offset + 3];
+		int16_t cmd_vy_int    = ((int16_t)m_rxBytes[idx_offset + 6] << 8) | (int16_t)m_rxBytes[idx_offset + 5];
+		int16_t cmd_omega_int = ((int16_t)m_rxBytes[idx_offset + 8] << 8) | (int16_t)m_rxBytes[idx_offset + 7];
+
+		manual_cmd.cmd_vx = cmd_vx_int * 0.001;
+		manual_cmd.cmd_vy = cmd_vy_int * 0.001;
+		manual_cmd.cmd_omega = cmd_omega_int / 1024.0f;
+
+		manual_cmd.dribble = (m_rxBytes[idx_offset + 9] & 0b10000000) != 0;
+		manual_cmd.kick = (m_rxBytes[idx_offset + 9] & 0b00010000) != 0;
+		manual_cmd.chip = (m_rxBytes[idx_offset + 9] & 0b00001000) != 0;
+
+		manual_cmd.dribblePower = m_rxBytes[idx_offset + 10] >> 4;
+		manual_cmd.kickPower = m_rxBytes[idx_offset + 10] & 0x0f;
+
 	}
-
-	cmd.cmd_x = cmd_x_int * 0.001;
-	cmd.cmd_y = cmd_y_int * 0.001;
-	cmd.cmd_theta = cmd_theta_int * 2*M_PI/65536 - M_PI*0.5f;
-
-	cmd.cmd_vx = cmd_vx_int * 0.001;
-	cmd.cmd_vy = cmd_vy_int * 0.001;
-	cmd.cmd_omega = cmd_omega_int / 1024.0f;
-
-	cmd.vel_limit = vel_limit_int * 0.001;
-
-	cmd.dribble = (m_rxBytes[idx_offset + 25] & 0b10000000) != 0;
-	cmd.kick = (m_rxBytes[idx_offset + 25] & 0b00010000) != 0;
-	cmd.chip = (m_rxBytes[idx_offset + 25] & 0b00001000) != 0;
-
-	cmd.dribblePower = m_rxBytes[idx_offset + 26] >> 4;
-	cmd.kickPower = m_rxBytes[idx_offset + 26] & 0x0f;
-
-#endif
 
 	m_prev_error_code = MatchaSerial::PARSE_ERROR_NONE;
+
+	m_cmdType = cmdType;
 
 	return true;
 
@@ -232,6 +331,7 @@ uint16_t MatchaSerial::readBytes(int16_t head_index, int16_t length)
 	{
 		m_rxBytes[i] = m_rxBuf[m_rxBufMask & (i + head_index)];
 	}
+	return length;
 }
 
 

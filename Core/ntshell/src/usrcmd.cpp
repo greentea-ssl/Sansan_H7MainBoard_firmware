@@ -348,56 +348,81 @@ static int usrcmd_view(int argc, char **argv)
 		{
 			delay_ms(10);
 
-			printf("         |   pos_x [m] |   pos_y [m] | theta[deg.] | time_stamp[ms] | Vision Error |\r\n");
+			printf(" Normal  |   pos_x [m] |   pos_y [m] | theta[deg.] | time_stamp[ms] | Vision Error |\r\n");
 			printf("---------+-------------+-------------+-------------+----------------+--------------| \r\n");
 
 			printf("FeedBack ");
-			printf("| %11.2f ", sanran.matcha.cmd.fb_x);
-			printf("| %11.2f ", sanran.matcha.cmd.fb_y);
-			printf("| %11.2f ", sanran.matcha.cmd.fb_theta / M_PI * 180.0f);
-			printf("| %14d ", sanran.matcha.cmd.fb_timestamp);
-			printf("| %12d ", sanran.matcha.cmd.vision_error);
+			printf("| %11.2f ", sanran.matcha.normal_cmd.fb_x);
+			printf("| %11.2f ", sanran.matcha.normal_cmd.fb_y);
+			printf("| %11.2f ", sanran.matcha.normal_cmd.fb_theta / M_PI * 180.0f);
+			printf("| %14d ", sanran.matcha.normal_cmd.fb_timestamp);
+			printf("| %12d ", sanran.matcha.normal_cmd.vision_error);
 
 			printf("\r\n\r\n");
 
-			printf("         |   pos_x [m] |   pos_y [m] | theta[deg.] |\r\n");
+			printf(" Normal  |   pos_x [m] |   pos_y [m] | theta[deg.] |\r\n");
 			printf("---------+-------------+-------------+-------------| \r\n");
 
 			printf("Command  ");
-			printf("| %11.2f ", sanran.matcha.cmd.cmd_x);
-			printf("| %11.2f ", sanran.matcha.cmd.cmd_y);
-			printf("| %11.2f ", sanran.matcha.cmd.cmd_theta / M_PI * 180.0f);
+			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_x);
+			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_y);
+			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_theta / M_PI * 180.0f);
 
 			printf("\r\n\r\n");
 
-			printf("         | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | Vel_limit [m/s] | \r\n");
+			printf(" Normal  | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | Vel_limit [m/s] | \r\n");
 			printf("---------+-------------+-------------+---------------+-----------------| \r\n");
 
 			printf("Command  ");
-			printf("| %11.2f ", sanran.matcha.cmd.cmd_vx);
-			printf("| %11.2f ", sanran.matcha.cmd.cmd_vy);
-			printf("| %13.2f ", sanran.matcha.cmd.cmd_omega);
-			printf("| %15.2f ", sanran.matcha.cmd.vel_limit);
+			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_vx);
+			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_vy);
+			printf("| %13.2f ", sanran.matcha.normal_cmd.cmd_omega);
+			printf("| %15.2f ", sanran.matcha.normal_cmd.vel_limit);
 
 			printf("\r\n\r\n");
 
-			printf("         | Dribble | Kick | Chip | DribblePower | KickPower | [ParseError] | [Timeout] |\r\n");
-			printf("---------+---------+------+------|--------------|-----------|--------------|-----------|\r\n");
+			printf(" Normal  | Dribble | Kick | Chip | DribblePower | KickPower | [ParseError] | [Receive State] |\r\n");
+			printf("---------+---------+------+------+--------------+-----------+--------------+-----------------|\r\n");
 			printf("Command  ");
 
-			printf("| %7d ", sanran.matcha.cmd.dribble);
-			printf("| %4d ", sanran.matcha.cmd.kick);
-			printf("| %4d ", sanran.matcha.cmd.chip);
-			printf("| %12d ", sanran.matcha.cmd.dribblePower);
-			printf("| %9d ", sanran.matcha.cmd.kickPower);
+			printf("| %7d ", sanran.matcha.normal_cmd.dribble);
+			printf("| %4d ", sanran.matcha.normal_cmd.kick);
+			printf("| %4d ", sanran.matcha.normal_cmd.chip);
+			printf("| %12d ", sanran.matcha.normal_cmd.dribblePower);
+			printf("| %9d ", sanran.matcha.normal_cmd.kickPower);
 			printf("| %12d ", sanran.matcha.getPrevErrorCode());
-			printf("| %9d ", sanran.matcha.getTimeoutState());
+			printf("| %15d ", sanran.matcha.getReceiveState());
+
+			printf("\r\n\r\n");
+			printf("==============================================================================================\r\n\r\n");
+
+			printf(" Manual  | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | \r\n");
+			printf("---------+-------------+-------------+---------------| \r\n");
+
+			printf("Command  ");
+			printf("| %11.2f ", sanran.matcha.manual_cmd.cmd_vx);
+			printf("| %11.2f ", sanran.matcha.manual_cmd.cmd_vy);
+			printf("| %13.2f ", sanran.matcha.manual_cmd.cmd_omega);
+
+			printf("\r\n\r\n");
+
+			printf(" Manual  | Dribble | Kick | Chip | DribblePower | KickPower | [ParseError] | [Receive State] |\r\n");
+			printf("---------+---------+------+------|--------------+-----------+--------------+-----------------|\r\n");
+			printf("Command  ");
+
+			printf("| %7d ", sanran.matcha.manual_cmd.dribble);
+			printf("| %4d ", sanran.matcha.manual_cmd.kick);
+			printf("| %4d ", sanran.matcha.manual_cmd.chip);
+			printf("| %12d ", sanran.matcha.manual_cmd.dribblePower);
+			printf("| %9d ", sanran.matcha.manual_cmd.kickPower);
+			printf("| %12d ", sanran.matcha.getPrevErrorCode());
+			printf("| %15d ", sanran.matcha.getReceiveState());
 
 			printf("\r\n");
 
 			if(checkSuspens()) break;
 
-			uart_puts("\e[16A");
+			uart_puts("\e[26A");
 		}
 	}
 	else if(ntlibc_strcmp(argv[1], "kicker") == 0)
