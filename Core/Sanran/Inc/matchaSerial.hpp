@@ -5,7 +5,7 @@
 
 
 // Mast be power of 2
-#define UART_BUF_SIZE	(64)
+#define UART_BUF_SIZE	(128)
 #define UART_BUF_MASK	(UART_BUF_SIZE-1)
 
 
@@ -14,7 +14,7 @@
 #include "main.h"
 
 
-#define MATCHA_DATA_LENGTH	(29)
+#define MATCHA_DATA_LENGTH	(64)
 
 
 
@@ -29,13 +29,18 @@ public:
 		float fb_y;
 		float fb_theta;
 		uint16_t fb_timestamp;
+		uint16_t cmd_timestamp;
 		float cmd_x;
 		float cmd_y;
 		float cmd_theta;
 		float cmd_vx;
 		float cmd_vy;
 		float cmd_omega;
+		float cmd_ax;
+		float cmd_ay;
+		float cmd_aomega;
 		float vel_limit;
+		float omega_limit;
 		bool dribble;
 		bool kick;
 		bool chip;
