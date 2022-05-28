@@ -370,14 +370,15 @@ static int usrcmd_view(int argc, char **argv)
 
 			printf("\r\n\r\n");
 
-			printf(" Normal  | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | Vel_limit [m/s] | \r\n");
-			printf("---------+-------------+-------------+---------------+-----------------| \r\n");
+			printf(" Normal  | Vel_x [m/s] | Vel_y [m/s] | omega [rad/s] | Vel_limit [m/s] | Omega_limit [rad/s] | \r\n");
+			printf("---------+-------------+-------------+---------------+-----------------+---------------------| \r\n");
 
 			printf("Command  ");
 			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_vx);
 			printf("| %11.2f ", sanran.matcha.normal_cmd.cmd_vy);
 			printf("| %13.2f ", sanran.matcha.normal_cmd.cmd_omega);
 			printf("| %15.2f ", sanran.matcha.normal_cmd.vel_limit);
+			printf("| %19.2f ", sanran.matcha.normal_cmd.omega_limit);
 
 			printf("\r\n\r\n");
 

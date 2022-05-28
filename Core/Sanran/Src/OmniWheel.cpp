@@ -94,9 +94,6 @@ void OmniWheel::update(Cmd_t *cmd)
 	float world_vy_ref_lim = 0.0;
 	float world_omega_ref_lim = 0.0;
 
-	const float Vmax = 1.0;
-	const float Omega_max = 30.0;
-
 	if(!m_canMotorIF->motor[0].resIsUpdated() || !m_canMotorIF->motor[1].resIsUpdated() || !m_canMotorIF->motor[2].resIsUpdated() || !m_canMotorIF->motor[3].resIsUpdated())
 	{
 		for(int ch = 0; ch < 4; ch++)
@@ -218,6 +215,7 @@ void OmniWheel::update(Cmd_t *cmd)
 		m_cmd.world_y = cmd->world_y;
 		m_cmd.world_theta = cmd->world_theta;
 		m_cmd.vel_limit = cmd->vel_limit;
+		m_cmd.omega_limit = cmd->omega_limit;
 
 		theta_error = m_cmd.world_theta - m_robotState.world_theta;
 		if(theta_error < -M_PI) theta_error += 2 * M_PI;
@@ -228,7 +226,7 @@ void OmniWheel::update(Cmd_t *cmd)
 		world_omega_ref = position_pi_theta.update(theta_error) + m_cmd.world_omega;
 
 		circular_limitter(m_cmd.vel_limit, world_vx_ref, world_vy_ref, &world_vx_ref_lim, &world_vy_ref_lim);
-		world_omega_ref_lim = limitter(world_omega_ref, -Omega_max, Omega_max);
+		world_omega_ref_lim = limitter(world_omega_ref, -m_cmd.omega_limit, m_cmd.omega_limit);
 
 		position_pi_x.set_limitError(world_vx_ref - world_vx_ref_lim);
 		position_pi_y.set_limitError(world_vy_ref - world_vy_ref_lim);

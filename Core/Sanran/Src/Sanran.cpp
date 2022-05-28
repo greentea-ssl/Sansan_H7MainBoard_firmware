@@ -64,6 +64,8 @@ Sanran::Sanran()
 	// Operation mode is normal mode
 	opeMode = OPE_MODE_NORMAL;
 
+	memset(&omniCmd, 0x00, sizeof(omniCmd));
+
 }
 
 
@@ -125,7 +127,7 @@ void Sanran::setup()
 
 	/***** Setting Matcha Serial *****/
 	printf("\n Setting Matcha Serial ... \n");
-	boolStatus = matcha.setup(0.1, 5.0, 0.01);
+	boolStatus = matcha.setup(0.2, 5.0, 0.01);
 	if(boolStatus){
 		printf("\t\t\t\t[OK]\n");
 	}else{
@@ -277,6 +279,7 @@ void Sanran::UpdateSyncLS()
 		omniCmd.world_vel_y = matcha.normal_cmd.cmd_vy;
 		omniCmd.world_omega = matcha.normal_cmd.cmd_omega;
 		omniCmd.vel_limit = matcha.normal_cmd.vel_limit;
+		omniCmd.omega_limit = matcha.normal_cmd.omega_limit;
 
 		if(matcha.normal_cmd.kick)
 		{

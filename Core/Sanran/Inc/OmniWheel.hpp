@@ -39,6 +39,7 @@ public:
 		float accel_theta;
 		float omega_w[4];
 		float vel_limit;
+		float omega_limit;
 	}Cmd_t;
 
 	typedef struct{
