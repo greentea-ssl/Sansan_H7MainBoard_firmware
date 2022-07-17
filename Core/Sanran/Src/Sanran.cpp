@@ -383,53 +383,10 @@ void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
 void Sanran::dump_update()
 {
 
-	dump.setValue( 0, timeElapsed_hs_count * 0.001f);
-
-	dump.setValue( 1, canMotorIF.motor[0].get_Iq_ref() );
-	dump.setValue( 2, canMotorIF.motor[0].get_Iq() );
-	dump.setValue( 3, canMotorIF.motor[0].get_omega() );
-	dump.setValue( 4, canMotorIF.motor[0].get_theta() );
-
-	dump.setValue( 5, canMotorIF.motor[1].get_Iq_ref() );
-	dump.setValue( 6, canMotorIF.motor[1].get_Iq() );
-	dump.setValue( 7, canMotorIF.motor[1].get_omega() );
-	dump.setValue( 8, canMotorIF.motor[1].get_theta() );
-
-	dump.setValue( 9, canMotorIF.motor[2].get_Iq_ref() );
-	dump.setValue(10, canMotorIF.motor[2].get_Iq() );
-	dump.setValue(11, canMotorIF.motor[2].get_omega() );
-	dump.setValue(12, canMotorIF.motor[2].get_theta() );
-
-	dump.setValue(13, canMotorIF.motor[3].get_Iq_ref() );
-	dump.setValue(14, canMotorIF.motor[3].get_Iq() );
-	dump.setValue(15, canMotorIF.motor[3].get_omega() );
-	dump.setValue(16, canMotorIF.motor[3].get_theta() );
-
-	dump.setValue(17, omni.m_cmd.omega_w[0]);
-	dump.setValue(18, omni.m_cmd.omega_w[1]);
-	dump.setValue(19, omni.m_cmd.omega_w[2]);
-	dump.setValue(20, omni.m_cmd.omega_w[3]);
-
-	dump.setValue(21, omni.m_cmd.robot_vel_x);
-	dump.setValue(22, omni.m_cmd.robot_vel_y);
-	dump.setValue(23, omni.m_cmd.robot_omega);
-
-	dump.setValue(24, omni.m_cmd.world_x);
-	dump.setValue(25, omni.m_cmd.world_y);
-	dump.setValue(26, omni.m_cmd.world_theta);
-
-	dump.setValue(27, omni.m_cmd.world_vel_x);
-	dump.setValue(28, omni.m_cmd.world_vel_y);
-	dump.setValue(29, omni.m_cmd.world_omega);
-
-	dump.setValue(30, omni.m_robotState.world_x);
-	dump.setValue(31, omni.m_robotState.world_y);
-	dump.setValue(32, omni.m_robotState.world_theta);
-
-	dump.setValue(33, matcha.normal_cmd.fb_x);
-	dump.setValue(34, matcha.normal_cmd.fb_y);
-	dump.setValue(35, matcha.normal_cmd.fb_theta);
-	dump.setValue(36, matcha.normal_cmd.fb_timestamp * 1E-3);
+	for(int i = 0; i < 128-2; i++)
+	{
+		dump.setValue( i, i+2);
+	}
 
 	dump.send();
 
