@@ -15,11 +15,13 @@ class DebugDump
 
 public:
 
-	DebugDump(UART_HandleTypeDef *huart)
+	DebugDump(SPI_HandleTypeDef *hspi)
 	{
-		m_huart = huart;
+
+		m_hspi = hspi;
 
 		memset(dataBuf, 0x00, sizeof(dataBuf));
+
 	}
 
 	void setValue(uint32_t index, bufType value)
@@ -42,7 +44,7 @@ public:
 
 		uint8_t* pSend = &(p[sizeof(bufType) * 2 - 2]);
 
-		HAL_UART_Transmit_IT(m_huart, pSend, sizeof(bufType) * bufLength + 2);
+		HAL_SPI_Transmit_IT(m_hspi, pSend, sizeof(bufType) * bufLength + 2);
 
 	}
 
@@ -53,7 +55,7 @@ private:
 	bufType dataBuf[bufLength + 2];
 	bufType sendBuf[bufLength + 2];
 
-	UART_HandleTypeDef *m_huart;
+	SPI_HandleTypeDef *m_hspi;
 
 };
 
