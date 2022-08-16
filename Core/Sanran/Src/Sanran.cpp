@@ -25,6 +25,7 @@ extern UART_HandleTypeDef huart5;
 extern UART_HandleTypeDef huart6;
 extern ADC_HandleTypeDef hadc1;
 extern DMA_HandleTypeDef hdma_uart5_rx;
+extern SPI_HandleTypeDef hspi4;
 
 
 /* Debug variables */
@@ -58,7 +59,7 @@ Sanran::Sanran()
 	  kicker(&htim4, TIM_CHANNEL_1),
 	  omni(OmniWheel::TYPE_WORLD_POSITION, &canMotorIF),
 	  matcha(&huart5),
-	  dump(&huart1)
+	  dump(&hspi4)
 {
 
 	// Operation mode is normal mode
