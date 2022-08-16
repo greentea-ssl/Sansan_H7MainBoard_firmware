@@ -39,8 +39,8 @@ public:
 
 		uint8_t *p = (uint8_t*)sendBuf;
 
-		p[sizeof(bufType) * 2 - 2] = 0x00;
-		p[sizeof(bufType) * 2 - 1] = 0x01;
+		p[sizeof(bufType) * 2 - 2] = 0xFF;
+		p[sizeof(bufType) * 2 - 1] = 0xAA;
 
 		uint8_t* pSend = &(p[sizeof(bufType) * 2 - 2]);
 

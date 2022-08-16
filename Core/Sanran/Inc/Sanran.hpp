@@ -91,7 +91,7 @@ public:
 
 	Power power;
 
-	DebugDump<uint8_t, 254> dump;
+	DebugDump<float, 40> dump;
 
 
 //	SimulinkSerial simulink;
