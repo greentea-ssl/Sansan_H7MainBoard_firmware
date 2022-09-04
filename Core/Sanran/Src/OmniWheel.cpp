@@ -59,8 +59,8 @@ void OmniWheel::setup()
 
 	calcKinematics();
 
-	position_pi_x.setParam(3.0, 0.0, 1E-3);
-	position_pi_y.setParam(3.0, 0.0, 1E-3);
+	position_pi_x.setParam(2.0, 0.0, 1E-3);
+	position_pi_y.setParam(2.0, 0.0, 1E-3);
 	position_pi_theta.setParam(2.0, 0.0, 1E-3);
 
 	for(int i = 0; i < 4; i++)
