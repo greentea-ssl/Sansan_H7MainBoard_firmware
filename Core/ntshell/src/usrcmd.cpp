@@ -71,6 +71,7 @@ static int usrcmd_view(int argc, char **argv);
 static int usrcmd_cls(int argc, char **argv);
 static int usrcmd_kick(int argc, char **argv);
 static int usrcmd_dribble(int argc, char **argv);
+static int usrcmd_watchdog(int argc, char **argv);
 
 typedef struct {
     char *cmd;
@@ -85,6 +86,7 @@ static const cmd_table_t cmdlist[] = {
     { "cls", "Clear display", usrcmd_cls },
     { "kick", "About kicker", usrcmd_kick },
     { "dribble", "Dribbler control", usrcmd_dribble },
+    { "watchdog", "WatchDog setting", usrcmd_watchdog },
 };
 
 
@@ -607,7 +609,29 @@ static int usrcmd_dribble(int argc, char **argv)
 	}
 }
 
-
+static int usrcmd_watchdog(int argc, char **argv)
+{
+	if (argc < 2) {
+		uart_puts("watchdog enable\r\n");
+		uart_puts("watchdog disable\r\n");
+		return 0;
+	}
+	if (ntlibc_strcmp(argv[1], "enable") == 0 && argc == 2) {
+		sanran.watchdog_enable = true;
+		printf("\r\nwatchdog_enable = true \r\n");
+		return 0;
+	}
+	else if (ntlibc_strcmp(argv[1], "disable") == 0 && argc == 2) {
+		sanran.watchdog_enable = false;
+		printf("\r\nwatchdog_enable = false \r\n");
+		return 0;
+	}
+	else
+	{
+		printf("Command Not Found.\r\n");
+		return 0;
+	}
+}
 
 
 

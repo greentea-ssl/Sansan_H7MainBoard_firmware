@@ -23,6 +23,12 @@ public:
 		TYPE_WORLD_POSITION,
 	}ControlType_t;
 
+	typedef enum
+	{
+		ERROR_NONE,
+		ERROR_CAN_PACKET_LOSS
+	}ErrorStatus_t;
+
 	typedef struct
 	{
 		float world_x;
@@ -78,7 +84,7 @@ public:
 
 	void setControlType(ControlType_t type){ m_type = type; }
 
-	void update(Cmd_t *cmd);
+	ErrorStatus_t update(Cmd_t *cmd);
 
 	void correctAngle(float trueAngle)
 	{
@@ -99,6 +105,8 @@ public:
 
 	ControlType_t get_controlType(){return m_type;}
 
+	ErrorStatus_t get_last_error_status(){return last_error_status;}
+
 	Cmd_t m_cmd;
 
 
@@ -111,6 +119,7 @@ private:
 
 	bool firstSampleFlag;
 
+	ErrorStatus_t last_error_status;
 
 	ControlType_t m_type;
 

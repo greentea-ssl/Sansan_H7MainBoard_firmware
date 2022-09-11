@@ -163,6 +163,14 @@ void Sanran::setup()
 	}
 
 
+	// WachDog(software reset) initialize
+	watchdog_enable = true;
+	watchdog_CAN_count = 0;
+	watchdog_CAN_threshold = 200;
+	watchdog_UART_count = 0;
+	watchdog_UART_threshold = 10000;
+
+
 	printf("\n********** Start ********************\n");
 
 }
@@ -198,6 +206,29 @@ void Sanran::UpdateSyncHS()
 	syncHS_timestamp.start_count = htim12.Instance->CNT;
 
 
+	// Update WatchDog
+
+	if(watchdog_enable)
+	{
+		if(watchdog_CAN_count >= watchdog_CAN_threshold)
+		{
+			power.disableSupply();
+			HAL_NVIC_SystemReset();
+		}
+		if(watchdog_UART_count >= watchdog_UART_threshold)
+		{
+			power.disableSupply();
+			HAL_NVIC_SystemReset();
+		}
+		watchdog_CAN_count++;
+		watchdog_UART_count++;
+	}
+	else
+	{
+		watchdog_CAN_count = 0;
+		watchdog_UART_count = 0;
+	}
+
 
 	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
 	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
@@ -226,6 +257,17 @@ void Sanran::UpdateSyncHS()
 	timeElapsed_hs_count += 1;
 
 	omni.update(&omniCmd);
+
+	// WatchDog Reset
+	if(omni.get_last_error_status() == OmniWheel::ERROR_NONE)
+	{
+		watchdog_CAN_count = 0;
+	}
+	if(matcha.getReceiveState() != MatchaSerial::RECEIVE_STATE_TIMEOUT)
+	{
+		watchdog_UART_count = 0;
+	}
+
 
 	odo_x = omni.m_robotState.world_x;
 	odo_y = omni.m_robotState.world_y;

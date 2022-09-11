@@ -103,6 +103,17 @@ public:
 	uint8_t userButton1_prev;
 
 
+	/***** WatchDog (software reset) *****/
+
+	bool watchdog_enable;
+	uint32_t watchdog_CAN_count;
+	uint32_t watchdog_CAN_threshold;
+	uint32_t watchdog_UART_count;
+	uint32_t watchdog_UART_threshold;
+
+
+	/***** TimeStamp *****/
+
 	typedef struct{
 		uint32_t start_count;
 		uint32_t end_count;
