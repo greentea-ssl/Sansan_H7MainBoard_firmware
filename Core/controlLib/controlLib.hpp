@@ -154,7 +154,7 @@ private:
 
 
 
-static float limitter(float u, float min, float max)
+inline float limitter(float u, float min, float max)
 {
 	if(u < min) return min;
 	if(u > max) return max;
@@ -162,7 +162,7 @@ static float limitter(float u, float min, float max)
 }
 
 
-static void circular_limitter(float abs_limit, float src_x, float src_y, float *dst_x, float *dst_y)
+inline void circular_limitter(float abs_limit, float src_x, float src_y, float *dst_x, float *dst_y)
 {
 
 	float r = sqrt(src_x * src_x + src_y * src_y);
