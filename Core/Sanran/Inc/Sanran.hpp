@@ -3,7 +3,7 @@
 #define _SANRAN_HPP_
 
 
-#include <controlLib.hpp>
+#include "controlLib.hpp"
 #include "main.h"
 
 
@@ -102,6 +102,17 @@ public:
 	uint8_t userButton0_prev;
 	uint8_t userButton1_prev;
 
+
+	/***** WatchDog (software reset) *****/
+
+	bool watchdog_enable;
+	uint32_t watchdog_CAN_count;
+	uint32_t watchdog_CAN_threshold;
+	uint32_t watchdog_UART_count;
+	uint32_t watchdog_UART_threshold;
+
+
+	/***** TimeStamp *****/
 
 	typedef struct{
 		uint32_t start_count;

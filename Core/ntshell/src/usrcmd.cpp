@@ -47,8 +47,6 @@ extern UART_HandleTypeDef huart6;
 
 #define UartHandler (huart6)
 
-#define delay_ms(ms) HAL_Delay(ms)
-
 #define uart_puts(str) puts(str)
 
 
@@ -71,6 +69,7 @@ static int usrcmd_view(int argc, char **argv);
 static int usrcmd_cls(int argc, char **argv);
 static int usrcmd_kick(int argc, char **argv);
 static int usrcmd_dribble(int argc, char **argv);
+static int usrcmd_watchdog(int argc, char **argv);
 
 typedef struct {
     char *cmd;
@@ -85,6 +84,7 @@ static const cmd_table_t cmdlist[] = {
     { "cls", "Clear display", usrcmd_cls },
     { "kick", "About kicker", usrcmd_kick },
     { "dribble", "Dribbler control", usrcmd_dribble },
+    { "watchdog", "WatchDog setting", usrcmd_watchdog },
 };
 
 
@@ -188,7 +188,7 @@ static int usrcmd_ntopt_callback(int argc, char **argv, void *extobj)
         return 0;
     }
     const cmd_table_t *p = &cmdlist[0];
-    for (int i = 0; i < sizeof(cmdlist) / sizeof(cmdlist[0]); i++) {
+    for (uint i = 0; i < sizeof(cmdlist) / sizeof(cmdlist[0]); i++) {
         if (ntlibc_strcmp((const char *)argv[0], p->cmd) == 0) {
             return p->func(argc, argv);
         }
@@ -201,7 +201,7 @@ static int usrcmd_ntopt_callback(int argc, char **argv, void *extobj)
 static int usrcmd_help(int argc, char **argv)
 {
     const cmd_table_t *p = &cmdlist[0];
-    for (int i = 0; i < sizeof(cmdlist) / sizeof(cmdlist[0]); i++) {
+    for (uint i = 0; i < sizeof(cmdlist) / sizeof(cmdlist[0]); i++) {
         uart_puts(p->cmd);
         uart_puts("\t:");
         uart_puts(p->desc);
@@ -264,10 +264,10 @@ static int usrcmd_view(int argc, char **argv)
 			printf("         |  start |   end  | period | percent \r\n");
 			printf("---------+--------+--------+--------+-------- \r\n");
 			//     "*********| ****** | ****** | ****** | ******
-			printf("HS Cycle | %6d | %6d | %6d | %6d%% \r\n",
+			printf("HS Cycle | %6ld | %6ld | %6ld | %6ld%% \r\n",
 					HS_timestamp.start_count, HS_timestamp.end_count, sanran.htim_HS_cycle->Init.Period,
 					(HS_timestamp.end_count - HS_timestamp.start_count) * 100 / sanran.htim_HS_cycle->Init.Period);
-			printf("LS Cycle | %6d | %6d | %6d | %6d%% ",
+			printf("LS Cycle | %6ld | %6ld | %6ld | %6ld%% ",
 					LS_timestamp.start_count, LS_timestamp.end_count, sanran.htim_LS_cycle->Init.Period,
 					(LS_timestamp.end_count - LS_timestamp.start_count) * 100 / sanran.htim_LS_cycle->Init.Period);
 
@@ -517,6 +517,8 @@ static int usrcmd_cls(int argc, char **argv)
 {
 	uart_puts("\e[2J");
 	uart_puts("\e[1;1H");
+
+	return 0;
 }
 
 
@@ -597,7 +599,7 @@ static int usrcmd_dribble(int argc, char **argv)
 			return 0;
 		}
 		sanran.dribbler.write_us(us);
-		printf("\r\nwidth = %d [us]\r\n", us);
+		printf("\r\nwidth = %ld [us]\r\n", us);
 		return 0;
 	}
 	else
@@ -607,7 +609,29 @@ static int usrcmd_dribble(int argc, char **argv)
 	}
 }
 
-
+static int usrcmd_watchdog(int argc, char **argv)
+{
+	if (argc < 2) {
+		uart_puts("watchdog enable\r\n");
+		uart_puts("watchdog disable\r\n");
+		return 0;
+	}
+	if (ntlibc_strcmp(argv[1], "enable") == 0 && argc == 2) {
+		sanran.watchdog_enable = true;
+		printf("\r\nwatchdog_enable = true \r\n");
+		return 0;
+	}
+	else if (ntlibc_strcmp(argv[1], "disable") == 0 && argc == 2) {
+		sanran.watchdog_enable = false;
+		printf("\r\nwatchdog_enable = false \r\n");
+		return 0;
+	}
+	else
+	{
+		printf("Command Not Found.\r\n");
+		return 0;
+	}
+}
 
 
 

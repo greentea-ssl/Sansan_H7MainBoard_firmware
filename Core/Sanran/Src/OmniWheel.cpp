@@ -76,13 +76,15 @@ void OmniWheel::setup()
 
 	firstSampleFlag = true;
 
+	last_error_status = ERROR_NONE;
+
 }
 
 
 
 
 
-void OmniWheel::update(Cmd_t *cmd)
+OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 {
 	float theta_error;
 
@@ -104,7 +106,8 @@ void OmniWheel::update(Cmd_t *cmd)
 
 		m_canMotorIF->send_Iq_ref();
 
-		return;
+		last_error_status = ERROR_CAN_PACKET_LOSS;
+		return ERROR_CAN_PACKET_LOSS;
 	}
 
 	for(int ch = 0; ch < 4; ch++)
@@ -255,6 +258,9 @@ void OmniWheel::update(Cmd_t *cmd)
 	}
 
 	m_canMotorIF->send_Iq_ref();
+
+	last_error_status = ERROR_NONE;
+	return ERROR_NONE;
 
 }
 
