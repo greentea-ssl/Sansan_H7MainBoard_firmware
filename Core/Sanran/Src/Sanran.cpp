@@ -166,7 +166,7 @@ void Sanran::setup()
 	// WachDog(software reset) initialize
 	watchdog_enable = true;
 	watchdog_CAN_count = 0;
-	watchdog_CAN_threshold = 200;
+	watchdog_CAN_threshold = 1000;
 	watchdog_UART_count = 0;
 	watchdog_UART_threshold = 10000;
 
