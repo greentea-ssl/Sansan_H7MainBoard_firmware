@@ -275,12 +275,7 @@ void Sanran::UpdateSyncHS()
 
 	for(int ch = 0; ch < 4; ch++) wheel_theta[ch] = canMotorIF.motor[ch].get_theta();
 
-
-	Iq_ref = canMotorIF.motor[0].get_Iq_ref();
-
-
 	dump_update();
-
 
 	syncHS_timestamp.end_count = htim12.Instance->CNT;
 

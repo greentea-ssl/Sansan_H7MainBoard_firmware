@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#define IQ_LIMIT (10.0f)
 
 
 OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF, Param_t *param) : m_type(type), m_canMotorIF(canMotorIF), m_param(*param)
@@ -20,8 +21,8 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 
 	m_param.Jmn = 5.2E-5;
 	m_param.Kp = 0.2;
-	//m_param.Ktn = (60.0f / (320 * 2 * M_PI));
-	m_param.Ktn = (60.0f / (400 * 2 * M_PI));
+	m_param.Ktn = (60.0f / (320 * 2 * M_PI));
+	//m_param.Ktn = (60.0f / (400 * 2 * M_PI));
 	m_param.Ts = 1E-3;
 	m_param.g_dis = 30;
 
@@ -59,8 +60,8 @@ void OmniWheel::setup()
 
 	calcKinematics();
 
-	position_pi_x.setParam(2.0, 0.0, 1E-3);
-	position_pi_y.setParam(2.0, 0.0, 1E-3);
+	position_pi_x.setParam(3.0, 0.0, 1E-3);
+	position_pi_y.setParam(3.0, 0.0, 1E-3);
 	position_pi_theta.setParam(2.0, 0.0, 1E-3);
 
 	for(int i = 0; i < 4; i++)
@@ -151,8 +152,8 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 		{
 			m_cmd.omega_w[i] = cmd->omega_w[i];
 			float Iq_ref = m_param.Kp * (m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega());
-			if(Iq_ref < -15.0) Iq_ref = -15.0;
-			if(Iq_ref > 15.0) Iq_ref = 15.0;
+			if(Iq_ref < -IQ_LIMIT) Iq_ref = -IQ_LIMIT;
+			if(Iq_ref > IQ_LIMIT) Iq_ref = IQ_LIMIT;
 			m_canMotorIF->motor[i].set_Iq_ref(Iq_ref);
 		}
 		break;
@@ -164,8 +165,8 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 			float error = m_cmd.omega_w[i] - m_wheelState[i].omega_res;
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_wheelState[i].omega_res);
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
-			if(Iq_ref < -15.0) Iq_ref = -15.0;
-			if(Iq_ref > 15.0) Iq_ref = 15.0;
+			if(Iq_ref < -IQ_LIMIT) Iq_ref = -IQ_LIMIT;
+			if(Iq_ref > IQ_LIMIT) Iq_ref = IQ_LIMIT;
 			m_canMotorIF->motor[i].set_Iq_ref(Iq_ref);
 		}
 		break;
@@ -181,8 +182,8 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
-			if(Iq_ref < -15.0) Iq_ref = -15.0;
-			if(Iq_ref > 15.0) Iq_ref = 15.0;
+			if(Iq_ref < -IQ_LIMIT) Iq_ref = -IQ_LIMIT;
+			if(Iq_ref > IQ_LIMIT) Iq_ref = IQ_LIMIT;
 			m_canMotorIF->motor[i].set_Iq_ref(Iq_ref);
 		}
 		break;
@@ -203,8 +204,8 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
-			if(Iq_ref < -15.0) Iq_ref = -15.0;
-			if(Iq_ref > 15.0) Iq_ref = 15.0;
+			if(Iq_ref < -IQ_LIMIT) Iq_ref = -IQ_LIMIT;
+			if(Iq_ref > IQ_LIMIT) Iq_ref = IQ_LIMIT;
 			m_canMotorIF->motor[i].set_Iq_ref(Iq_ref);
 		}
 		break;
@@ -247,8 +248,8 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 			float error = m_cmd.omega_w[i] - m_wheelState[i].omega_res;
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_wheelState[i].omega_res);
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
-			if(Iq_ref < -15.0) Iq_ref = -15.0;
-			if(Iq_ref > 15.0) Iq_ref = 15.0;
+			if(Iq_ref < -IQ_LIMIT) Iq_ref = -IQ_LIMIT;
+			if(Iq_ref > IQ_LIMIT) Iq_ref = IQ_LIMIT;
 			m_canMotorIF->motor[i].set_Iq_ref(Iq_ref);
 		}
 		break;
