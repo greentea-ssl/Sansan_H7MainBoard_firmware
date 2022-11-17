@@ -42,6 +42,14 @@ volatile float odo_theta = 0.0f;
 volatile float wheel_theta[4] = {0};
 
 
+#define DISP_SETUP_RESULT(FUNC, NAME) do{ \
+	printf("\n Setting %s ... \n", NAME); \
+	if(FUNC()){printf("\t\t\t\t[OK]\n"); \
+	}else{printf("\t\t\t\t[ERROR]\n");} \
+	}while(0);
+
+
+
 /**
  * @fn  Sanran()
  * @brief Constructor of Sanran class
@@ -84,17 +92,17 @@ void Sanran::setup()
 
 	printf("********** Initialize ********************\n\n");
 
-	display_result(onBrdLED.setup, "On Board LED");
+	DISP_SETUP_RESULT(onBrdLED.setup, "On Board LED");
 
-	display_result(canMotorIF.setup, "CAN motor IF");
+	DISP_SETUP_RESULT(canMotorIF.setup, "CAN motor IF");
 
-	display_result(bno055.setup, "BNO055");
+	DISP_SETUP_RESULT(bno055.setup, "BNO055");
 
-	display_result(omni.setup, "Omni Wheel");
+	DISP_SETUP_RESULT(omni.setup, "Omni Wheel");
 
-	display_result(kicker.setup, "Kicker");
+	DISP_SETUP_RESULT(kicker.setup, "Kicker");
 
-	display_result(matcha.setup, "Matcha Serial");
+	DISP_SETUP_RESULT(matcha.setup, "Matcha Serial");
 
 	timeElapsed_hs_count = 0;
 
@@ -305,7 +313,7 @@ void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
 bool Sanran::display_result(bool(*setup_func)(), char* component_name)
 {
 	printf("\n Setting %s ... \n", component_name);
-	boolStatus = setup_func();
+	bool boolStatus = setup_func();
 	if(boolStatus){
 		printf("\t\t\t\t[OK]\n");
 	}else{

@@ -54,7 +54,7 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
  * @brief Initial calculation
  *
  */
-void OmniWheel::setup()
+bool OmniWheel::setup()
 {
 
 
@@ -79,6 +79,7 @@ void OmniWheel::setup()
 
 	last_error_status = ERROR_NONE;
 
+	return true;
 }
 
 

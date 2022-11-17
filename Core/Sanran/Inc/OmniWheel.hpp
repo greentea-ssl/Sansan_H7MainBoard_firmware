@@ -80,7 +80,7 @@ public:
 
 	OmniWheel(ControlType_t type, CanMotorIF *canMotorIF);
 
-	void setup();
+	bool setup();
 
 	void setControlType(ControlType_t type){ m_type = type; }
 
