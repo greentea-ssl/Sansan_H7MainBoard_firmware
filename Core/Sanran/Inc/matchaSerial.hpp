@@ -73,9 +73,9 @@ public:
 	}CommandType_TypeDef;
 
 
-	MatchaSerial(UART_HandleTypeDef *huart);
+	MatchaSerial(UART_HandleTypeDef *huart, float timeout_period, float manual_timeout_period, float polling_time);
 
-	bool setup(float timeout_period, float manual_timeout_period, float polling_time);
+	bool setup();
 
 	bool Update();
 
@@ -114,11 +114,14 @@ private:
 
 	// Timeout & Receive state
 	bool m_timeout_enable;
+	float m_timeout_period;
 	uint32_t m_timeout_count;
 	uint32_t m_timeout_threshold;
+	float m_manual_timeout_period;
 	uint32_t m_manual_timeout_count;
 	uint32_t m_manual_timeout_threshold;
 	ReceiveState_TypeDef m_receiveState;
+	float m_polling_time;
 
 	bool m_new_data_available;
 

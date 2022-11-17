@@ -122,9 +122,13 @@ public:
 	Sync_loop_timestamp_t syncHS_timestamp;
 	Sync_loop_timestamp_t syncLS_timestamp;
 
+private:
 
+	bool display_result(bool(*func)(), char* component_name);
 
-	void dump_update();
+	void update_watchdog();
+
+	void update_dump();
 
 
 

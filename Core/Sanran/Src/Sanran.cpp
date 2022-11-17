@@ -58,7 +58,7 @@ Sanran::Sanran()
 	  dribbler(&htim1, TIM_CHANNEL_1),
 	  kicker(&htim4, TIM_CHANNEL_1),
 	  omni(OmniWheel::TYPE_WORLD_POSITION, &canMotorIF),
-	  matcha(&huart5),
+	  matcha(&huart5, 0.2, 5.0, 0.01),
 	  dump(&hspi4)
 {
 
@@ -84,61 +84,21 @@ void Sanran::setup()
 
 	printf("********** Initialize ********************\n\n");
 
+	display_result(onBrdLED.setup, "On Board LED");
 
-	/***** Setting On board LED *****/
-	printf("\n Setting On board LED ...  \n");
-	boolStatus = onBrdLED.setup();
-	if(boolStatus){
-		printf("\t\t\t\t[OK]\n");
-	}else{
-		printf("\t\t\t\t[ERROR]\n");
-	}
+	display_result(canMotorIF.setup, "CAN motor IF");
 
-	/***** Setting CAN motor IF *****/
-	printf("\n Setting CAN motor IF ...  \n");
-	boolStatus = canMotorIF.setup();
-	if(boolStatus){
-		printf("\t\t\t\t[OK]\n");
-	}else{
-		printf("\t\t\t\t[ERROR]\n");
-	}
+	display_result(bno055.setup, "BNO055");
 
-	/***** Setting BNO055 *****/
-	printf("\n Setting BNO055 ...  \n");
-	boolStatus = bno055.setup();
-	if(boolStatus){
-		printf("\t\t\t\t[OK]\n");
-	}else{
-		printf("\t\t\t\t[ERROR]\n");
-	}
+	display_result(omni.setup, "Omni Wheel");
 
-	/***** Setting Omni Wheel *****/
-	printf("\n Setting Omni Wheel ... \n");
-	omni.setup();
-	printf("\t\t\t\t[Completed]\n");
+	display_result(kicker.setup, "Kicker");
 
-	/***** Setting Kicker *****/
-	printf("\n Setting Kicker ...  \n");
-	boolStatus = kicker.setup();
-	if(boolStatus){
-		printf("\t\t\t\t[OK]\n");
-	}else{
-		printf("\t\t\t\t[ERROR]\n");
-	}
-
-	/***** Setting Matcha Serial *****/
-	printf("\n Setting Matcha Serial ... \n");
-	boolStatus = matcha.setup(0.2, 5.0, 0.01);
-	if(boolStatus){
-		printf("\t\t\t\t[OK]\n");
-	}else{
-		printf("\t\t\t\t[ERROR]\n");
-	}
+	display_result(matcha.setup, "Matcha Serial");
 
 	timeElapsed_hs_count = 0;
 
 	onBrdLED.setRGB(0, 0, 0);
-
 
 	deg = 0.0;
 
@@ -149,9 +109,6 @@ void Sanran::setup()
 
 
 	dribbler.setup();
-	//dribbler.setStop();
-	//dribbler.setFast();
-	//dribbler.setSlow();
 
 
 	// wait for BLDC sensor calibration
@@ -178,10 +135,8 @@ void Sanran::setup()
 
 void Sanran::startCycle()
 {
-
 	HAL_TIM_Base_Start_IT(htim_HS_cycle);
 	HAL_TIM_Base_Start_IT(htim_LS_cycle);
-
 }
 
 
@@ -202,81 +157,26 @@ void Sanran::UpdateAsync()
  */
 void Sanran::UpdateSyncHS()
 {
-
 	syncHS_timestamp.start_count = htim12.Instance->CNT;
-
-
-	// Update WatchDog
-
-	if(watchdog_enable)
-	{
-		if(watchdog_CAN_count >= watchdog_CAN_threshold)
-		{
-			power.disableSupply();
-			HAL_NVIC_SystemReset();
-		}
-		if(watchdog_UART_count >= watchdog_UART_threshold)
-		{
-			power.disableSupply();
-			HAL_NVIC_SystemReset();
-		}
-		watchdog_CAN_count++;
-		watchdog_UART_count++;
-	}
-	else
-	{
-		watchdog_CAN_count = 0;
-		watchdog_UART_count = 0;
-	}
-
-
-	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
-	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
-
-	if(userButton0 == 0 && userButton0_prev == 1)
-	{
-		kicker.kickStraight(1);
-	}
-	if(userButton1 == 0 && userButton1_prev == 1)
-	{
-		kicker.kickChip(1);
-	}
-	userButton0_prev = userButton0;
-	userButton1_prev = userButton1;
 
 	kicker.update();
 
-
-#if 0
-	omniCmd.world_vel_x = simulink.m_data[0];
-	omniCmd.world_vel_y = simulink.m_data[1];
-	omniCmd.omega = simulink.m_data[2];
-#endif
-
-
-	timeElapsed_hs_count += 1;
-
 	omni.update(&omniCmd);
-
-	// WatchDog Reset
-	if(omni.get_last_error_status() == OmniWheel::ERROR_NONE)
-	{
-		watchdog_CAN_count = 0;
-	}
-	if(matcha.getReceiveState() != MatchaSerial::RECEIVE_STATE_TIMEOUT)
-	{
-		watchdog_UART_count = 0;
-	}
-
 
 	odo_x = omni.m_robotState.world_x;
 	odo_y = omni.m_robotState.world_y;
 	odo_theta = omni.m_robotState.world_theta;
+	for(int ch = 0; ch < 4; ch++)
+	{
+		wheel_theta[ch] = canMotorIF.motor[ch].get_theta();
+	}
 
-	for(int ch = 0; ch < 4; ch++) wheel_theta[ch] = canMotorIF.motor[ch].get_theta();
+	// Update WatchDog
+	update_watchdog();
 
-	dump_update();
+	update_dump();
 
+	timeElapsed_hs_count += 1;
 	syncHS_timestamp.end_count = htim12.Instance->CNT;
 
 }
@@ -295,21 +195,17 @@ void Sanran::UpdateSyncLS()
 
 	deg += 0.01;
 	if(deg > 1.0) deg -= 1.0;
-
 	onBrdLED.setHSV(deg, 1.0, 1.0);
 
 	// bno055.updateIMU();
 	ballSensor.update();
 
-
 //	if(ballSensor.read() > 0.15) dribbler.setSlow();
 //	else dribbler.setFast();
 
 	matcha.Update();
-
 	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)
 	{
-
 		omniCmd.world_x = matcha.normal_cmd.cmd_x;
 		omniCmd.world_y = matcha.normal_cmd.cmd_y;
 		omniCmd.world_theta = matcha.normal_cmd.cmd_theta;
@@ -350,12 +246,6 @@ void Sanran::UpdateSyncLS()
 	}
 	else if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_MANUAL)
 	{
-
-//		omniCmd.robot_vel_x = 0.0f;
-//		omniCmd.robot_vel_y = 0.0f;
-//		omniCmd.robot_omega = 0.0f;
-
-
 		omniCmd.robot_vel_x = matcha.manual_cmd.cmd_vx;
 		omniCmd.robot_vel_y = matcha.manual_cmd.cmd_vy;
 		omniCmd.robot_omega = matcha.manual_cmd.cmd_omega;
@@ -400,25 +290,66 @@ void Sanran::UpdateSyncLS()
 
 void Sanran::CAN_Rx_Callback(FDCAN_HandleTypeDef *hfdcan)
 {
-
 	canMotorIF.update_CAN_Rx();
-
 }
 
 
 
 void Sanran::UART_Rx_Callback(UART_HandleTypeDef *huart)
 {
-
 	//simulink.dataReceivedCallback(huart);
-
 	//matcha.dataReceivedCallback(huart);
-
 }
 
 
+bool Sanran::display_result(bool(*setup_func)(), char* component_name)
+{
+	printf("\n Setting %s ... \n", component_name);
+	boolStatus = setup_func();
+	if(boolStatus){
+		printf("\t\t\t\t[OK]\n");
+	}else{
+		printf("\t\t\t\t[ERROR]\n");
+	}
+	return boolStatus;
+}
 
-void Sanran::dump_update()
+
+void Sanran::update_watchdog()
+{
+	if(watchdog_enable)
+	{
+		if(watchdog_CAN_count >= watchdog_CAN_threshold)
+		{
+			power.disableSupply();
+			HAL_NVIC_SystemReset();
+		}
+		if(watchdog_UART_count >= watchdog_UART_threshold)
+		{
+			power.disableSupply();
+			HAL_NVIC_SystemReset();
+		}
+		watchdog_CAN_count++;
+		watchdog_UART_count++;
+	}
+	else
+	{
+		watchdog_CAN_count = 0;
+		watchdog_UART_count = 0;
+	}
+
+	if(omni.get_last_error_status() == OmniWheel::ERROR_NONE)
+	{
+		watchdog_CAN_count = 0;
+	}
+	if(matcha.getReceiveState() != MatchaSerial::RECEIVE_STATE_TIMEOUT)
+	{
+		watchdog_UART_count = 0;
+	}
+}
+
+
+void Sanran::update_dump()
 {
 
 	dump.setValue( 0, timeElapsed_hs_count * 0.001f);

@@ -8,17 +8,21 @@
 #include <string.h>
 
 
-MatchaSerial::MatchaSerial(UART_HandleTypeDef *huart) : m_huart(huart)
+MatchaSerial::MatchaSerial(UART_HandleTypeDef *huart, float timeout_period, float manual_timeout_period, float polling_time): m_huart(huart)
 {
 
 	m_timeout_enable = false;
 
 	m_receiveState = RECEIVE_STATE_TIMEOUT;
 
+	m_timeout_period = timeout_period;
+	m_manual_timeout_period = manual_timeout_period;
+	m_polling_time = polling_time;
+
 }
 
 
-bool MatchaSerial::setup(float timeout_period, float manual_timeout_period, float polling_time)
+bool MatchaSerial::setup()
 {
 
 	HAL_StatusTypeDef status;
@@ -91,11 +95,11 @@ bool MatchaSerial::setup(float timeout_period, float manual_timeout_period, floa
 	manual_cmd.vision_error = true;
 
 
-	m_timeout_threshold = (uint32_t)(timeout_period / polling_time);
+	m_timeout_threshold = (uint32_t)(m_timeout_period / m_polling_time);
 	m_timeout_count = 0;
 	m_timeout_enable = true;
 
-	m_manual_timeout_threshold = (uint32_t)(manual_timeout_period / polling_time);
+	m_manual_timeout_threshold = (uint32_t)(m_manual_timeout_period / m_polling_time);
 	m_manual_timeout_count = 0;
 
 	m_receiveState = RECEIVE_STATE_NORMAL;
