@@ -148,7 +148,7 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 	// Robot velocity control
 	switch(m_type)
 	{
-	case TYPE_INDEP_P:
+	case TYPE_INDEP_P: // 車輪ごとの速度制御（P制御）
 		for(int i = 0; i < 4; i++)
 		{
 			m_cmd.omega_w[i] = cmd->omega_w[i];
@@ -159,7 +159,7 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 		}
 		break;
 
-	case TYPE_INDEP_P_DOB:
+	case TYPE_INDEP_P_DOB: // 車輪ごとの速度制御（P制御＋外乱オブザーバ）
 		for(int i = 0; i < 4; i++)
 		{
 			m_cmd.omega_w[i] = cmd->omega_w[i];
@@ -172,7 +172,7 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 		}
 		break;
 
-	case TYPE_ROBOT_P_DOB:
+	case TYPE_ROBOT_P_DOB: // ロボット座標での速度制御（P制御＋外乱オブザーバ）
 
 		for(int i = 0; i < 4; i++)
 		{
@@ -189,7 +189,7 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 		}
 		break;
 
-	case TYPE_WORLD_P_DOB:
+	case TYPE_WORLD_P_DOB: // ワールド座標での速度制御（P制御＋外乱オブザーバ）
 		m_cmd.robot_vel_x = cmd->world_vel_x * cos(m_robotState.world_theta) + cmd->world_vel_y * sin(m_robotState.world_theta);
 		m_cmd.robot_vel_y = cmd->world_vel_x * -sin(m_robotState.world_theta) + cmd->world_vel_y * cos(m_robotState.world_theta);
 		m_cmd.world_theta += cmd->world_omega * m_param.Ts;
@@ -211,8 +211,9 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 		}
 		break;
 
-	case TYPE_WORLD_POSITION:
+	case TYPE_WORLD_POSITION: // ワールド座標での位置制御（P制御）
 
+		// 指令値セット
 		m_cmd.world_vel_x = cmd->world_vel_x;
 		m_cmd.world_vel_y = cmd->world_vel_y;
 		m_cmd.world_omega = cmd->world_omega;
@@ -222,30 +223,37 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 		m_cmd.vel_limit = cmd->vel_limit;
 		m_cmd.omega_limit = cmd->omega_limit;
 
+		// 角度指令のアンラップ
 		theta_error = m_cmd.world_theta - m_robotState.world_theta;
 		if(theta_error < -M_PI) theta_error += 2 * M_PI;
 		else if(theta_error > M_PI) theta_error -= 2 * M_PI;
 
+		// 位置制御
 		world_vx_ref = position_pi_x.update(m_cmd.world_x - m_robotState.world_x) + m_cmd.world_vel_x;
 		world_vy_ref = position_pi_x.update(m_cmd.world_y - m_robotState.world_y) + m_cmd.world_vel_y;
 		world_omega_ref = position_pi_theta.update(theta_error) + m_cmd.world_omega;
 
+		// 操作量のリミッタ
 		circular_limitter(m_cmd.vel_limit, world_vx_ref, world_vy_ref, &world_vx_ref_lim, &world_vy_ref_lim);
 		world_omega_ref_lim = limitter(world_omega_ref, -m_cmd.omega_limit, m_cmd.omega_limit);
 
+		//　リミット偏差フィードバック
 		position_pi_x.set_limitError(world_vx_ref - world_vx_ref_lim);
 		position_pi_y.set_limitError(world_vy_ref - world_vy_ref_lim);
 		position_pi_theta.set_limitError(world_omega_ref - world_omega_ref_lim);
 
+		// 操作量(速度)の座標変換
 		m_cmd.robot_vel_x = world_vx_ref_lim * cos(m_robotState.world_theta) + world_vy_ref_lim * sin(m_robotState.world_theta);
 		m_cmd.robot_vel_y = world_vx_ref_lim * -sin(m_robotState.world_theta) + world_vy_ref_lim * cos(m_robotState.world_theta);
 		m_cmd.robot_omega = world_omega_ref_lim;
 		for(int i = 0; i < 4; i++)
 		{
+			// ホイール速度指令を計算
 			m_cmd.omega_w[i] =
 					m_convMat_robot2motor[i][0] * m_cmd.robot_vel_x +
 					m_convMat_robot2motor[i][1] * m_cmd.robot_vel_y +
 					m_convMat_robot2motor[i][2] * m_cmd.robot_omega;
+			// ホイール速度制御
 			float error = m_cmd.omega_w[i] - m_wheelState[i].omega_res;
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_wheelState[i].omega_res);
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn;
