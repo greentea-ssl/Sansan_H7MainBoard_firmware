@@ -197,7 +197,6 @@ void Sanran::UpdateSyncHS()
  */
 void Sanran::UpdateSyncLS()
 {
-
 	syncLS_timestamp.start_count = htim13.Instance->CNT;
 
 	power.update();
