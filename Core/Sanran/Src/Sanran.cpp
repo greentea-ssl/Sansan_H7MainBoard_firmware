@@ -130,7 +130,7 @@ void Sanran::setup()
 	ball_info_communication.init();
 
 	// WachDog(software reset) initialize
-	watchdog_enable = true;
+	watchdog_enable = false;
 	watchdog_CAN_count = 0;
 	watchdog_CAN_threshold = 1000;
 	watchdog_UART_count = 0;
