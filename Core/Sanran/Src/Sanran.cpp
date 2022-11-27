@@ -67,7 +67,8 @@ Sanran::Sanran()
 	  kicker(&htim4, TIM_CHANNEL_1),
 	  omni(OmniWheel::TYPE_WORLD_POSITION, &canMotorIF),
 	  matcha(&huart5, 0.2, 5.0, 0.01),
-	  dump(&hspi4)
+	  dump(&hspi4),
+	  ball_info_communication(&huart1)
 {
 
 	// Operation mode is normal mode
@@ -125,6 +126,8 @@ void Sanran::setup()
 		buzzer.sound_singleTone(72+12, 100);
 	}
 
+	//setup communication with raspberry pi
+	ball_info_communication.init();
 
 	// WachDog(software reset) initialize
 	watchdog_enable = true;
@@ -212,6 +215,37 @@ void Sanran::UpdateSyncLS()
 	matcha.Update();
 
 	// get ball information
+	BallInformationResult result = ball_info_communication.ReceiveBallInformation(&rx_ball_information);
+
+  switch(result){
+  case BALLINFO_SUCCESS:
+    printf("decoded:");
+    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
+    printf("\n\r");
+    break;
+  case BALLINFO_DECODE_NULL_POINTER:
+    printf("BALLINFO_DECODE_NULL_POINTER\n\r");
+    break;
+  case BALLINFO_DECODE_OUT_BUFFER_OVERFLOW:
+    printf("BALLINFO_DECODE_OUT_BUFFER_OVERFLOW\n\r");
+    break;
+  case BALLINFO_DECODE_ZERO_BYTE_IN_INPUT:
+    printf("BALLINFO_DECODE_ZERO_BYTE_IN_INPUT\n\r");
+    break;
+  case BALLINFO_DECODE_INPUT_TOO_SHORT:
+    printf("BALLINFO_DECODE_INPUT_TOO_SHORT\n\r");
+  case BALLINFO_DECODE_UNKNOWN:
+    printf("BALLINFO_DECODE_UNKNOWN\n\r");
+    break;
+  case BALLINFO_FRAME_FAIL:
+//      printf("BALLINFO_FRAME_FAIL\n\r");
+    break;
+  case BALLINFO_FRAME_INVALID_LENGTH:
+    printf("BALLINFO_FRAME_INVALID_LENGTH\n\r");
+    break;
+  default:
+    printf("unknown error\n\r");
+  }
 	// decide robot speed
 
 //	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)

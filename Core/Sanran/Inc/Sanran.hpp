@@ -115,6 +115,9 @@ public:
 	uint32_t watchdog_UART_count;
 	uint32_t watchdog_UART_threshold;
 
+	BallInfoCommunication ball_info_communication;
+	BallInformation rx_ball_information;
+
 
 	/***** TimeStamp *****/
 
