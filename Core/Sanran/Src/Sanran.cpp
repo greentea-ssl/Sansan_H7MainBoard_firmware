@@ -215,7 +215,7 @@ void Sanran::UpdateSyncLS()
 	matcha.Update();
 
 	// get ball information
-	BallInformationResult result = ball_info_communication.ReceiveBallInformation(&rx_ball_information);
+	BallInformationResult result = ball_info_communication.ReceiveBallInformation(&rx_ball);
 
   switch(result){
   case BALLINFO_SUCCESS:
