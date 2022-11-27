@@ -210,84 +210,84 @@ void Sanran::UpdateSyncLS()
 //	else dribbler.setFast();
 
 	matcha.Update();
-	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)
-	{
-		omniCmd.world_x = matcha.normal_cmd.cmd_x;
-		omniCmd.world_y = matcha.normal_cmd.cmd_y;
-		omniCmd.world_theta = matcha.normal_cmd.cmd_theta;
-		omniCmd.world_vel_x = matcha.normal_cmd.cmd_vx;
-		omniCmd.world_vel_y = matcha.normal_cmd.cmd_vy;
-		omniCmd.world_omega = matcha.normal_cmd.cmd_omega;
-		omniCmd.vel_limit = matcha.normal_cmd.vel_limit;
-		omniCmd.omega_limit = matcha.normal_cmd.omega_limit;
-
-		if(matcha.normal_cmd.kick)
-		{
-			if(matcha.normal_cmd.chip)
-			{
-				kicker.kickChip(matcha.normal_cmd.kickPower);
-			}
-			else
-			{
-				kicker.kickStraight(matcha.normal_cmd.kickPower);
-			}
-		}
-
-		if(matcha.normal_cmd.dribble)
-		{
-			dribbler.setPower(matcha.normal_cmd.dribblePower);
-		}
-		else
-		{
-			dribbler.setPower(0);
-		}
-
-		if(matcha.normal_cmd.vision_error == false)
-		{
-			omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta);
-		}
-
-		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
-
-	}
-	else if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_MANUAL)
-	{
-		omniCmd.robot_vel_x = matcha.manual_cmd.cmd_vx;
-		omniCmd.robot_vel_y = matcha.manual_cmd.cmd_vy;
-		omniCmd.robot_omega = matcha.manual_cmd.cmd_omega;
-
-		if(matcha.manual_cmd.kick)
-		{
-			if(matcha.manual_cmd.chip)
-			{
-				kicker.kickChip(matcha.manual_cmd.kickPower);
-			}
-			else
-			{
-				kicker.kickStraight(matcha.manual_cmd.kickPower);
-			}
-		}
-
-		if(matcha.manual_cmd.dribble)
-		{
-			dribbler.setPower(matcha.manual_cmd.dribblePower);
-		}
-		else
-		{
-			dribbler.setPower(0);
-		}
-
-		omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
-
-	}
-	else if(matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_TIMEOUT)
-	{
-
-		omniCmd.vel_limit = 0.0f;
-
-		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
-
-	}
+//	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)
+//	{
+//		omniCmd.world_x = matcha.normal_cmd.cmd_x;
+//		omniCmd.world_y = matcha.normal_cmd.cmd_y;
+//		omniCmd.world_theta = matcha.normal_cmd.cmd_theta;
+//		omniCmd.world_vel_x = matcha.normal_cmd.cmd_vx;
+//		omniCmd.world_vel_y = matcha.normal_cmd.cmd_vy;
+//		omniCmd.world_omega = matcha.normal_cmd.cmd_omega;
+//		omniCmd.vel_limit = matcha.normal_cmd.vel_limit;
+//		omniCmd.omega_limit = matcha.normal_cmd.omega_limit;
+//
+//		if(matcha.normal_cmd.kick)
+//		{
+//			if(matcha.normal_cmd.chip)
+//			{
+//				kicker.kickChip(matcha.normal_cmd.kickPower);
+//			}
+//			else
+//			{
+//				kicker.kickStraight(matcha.normal_cmd.kickPower);
+//			}
+//		}
+//
+//		if(matcha.normal_cmd.dribble)
+//		{
+//			dribbler.setPower(matcha.normal_cmd.dribblePower);
+//		}
+//		else
+//		{
+//			dribbler.setPower(0);
+//		}
+//
+//		if(matcha.normal_cmd.vision_error == false)
+//		{
+//			omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta);
+//		}
+//
+//		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
+//
+//	}
+//	else if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_MANUAL)
+//	{
+//		omniCmd.robot_vel_x = matcha.manual_cmd.cmd_vx;
+//		omniCmd.robot_vel_y = matcha.manual_cmd.cmd_vy;
+//		omniCmd.robot_omega = matcha.manual_cmd.cmd_omega;
+//
+//		if(matcha.manual_cmd.kick)
+//		{
+//			if(matcha.manual_cmd.chip)
+//			{
+//				kicker.kickChip(matcha.manual_cmd.kickPower);
+//			}
+//			else
+//			{
+//				kicker.kickStraight(matcha.manual_cmd.kickPower);
+//			}
+//		}
+//
+//		if(matcha.manual_cmd.dribble)
+//		{
+//			dribbler.setPower(matcha.manual_cmd.dribblePower);
+//		}
+//		else
+//		{
+//			dribbler.setPower(0);
+//		}
+//
+//		omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
+//
+//	}
+//	else if(matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_TIMEOUT)
+//	{
+//
+//		omniCmd.vel_limit = 0.0f;
+//
+//		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
+//
+//	}
 
 	syncLS_timestamp.end_count = htim13.Instance->CNT;
 
