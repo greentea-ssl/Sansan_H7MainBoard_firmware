@@ -82,8 +82,6 @@ Sanran::Sanran()
 void Sanran::setup()
 {
 
-	bool boolStatus;
-
 	printf("Hello.\n\n");
 
 	buzzer.sound_startup();

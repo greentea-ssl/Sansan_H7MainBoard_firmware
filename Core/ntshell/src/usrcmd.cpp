@@ -77,6 +77,7 @@ typedef struct {
     USRCMDFUNC func;
 }cmd_table_t;
 
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 static const cmd_table_t cmdlist[] = {
     { "help", "This is a description text string for help command.", usrcmd_help },
     { "info", "This is a description text string for info command.", usrcmd_info },
@@ -86,7 +87,7 @@ static const cmd_table_t cmdlist[] = {
     { "dribble", "Dribbler control", usrcmd_dribble },
     { "watchdog", "WatchDog setting", usrcmd_watchdog },
 };
-
+#pragma GCC diagnostic warning "-Wwrite-strings"
 
 
 
