@@ -71,7 +71,7 @@ public:
 	}
 
 	inline uint32_t getDMAWritePtr(){ // calculating the tail of the ring buffer
-		return (rx_buf_size - phuart->hdmarx->Instance->NDTR) & (rx_buf_size - 1);
+		return (rx_buf_size - __HAL_DMA_GET_COUNTER(phuart->hdmarx)) & (rx_buf_size - 1);
 	}
 
 	bool isRxbufEmpty(){

@@ -1,0 +1,3 @@
+[submodule "Core/cobs-c"]
+	path = Core/cobs-c
+	url = https://github.com/cmcqueen/cobs-c.git
