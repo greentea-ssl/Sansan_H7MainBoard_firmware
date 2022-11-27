@@ -210,6 +210,10 @@ void Sanran::UpdateSyncLS()
 //	else dribbler.setFast();
 
 	matcha.Update();
+
+	// get ball information
+	// decide robot speed
+
 //	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)
 //	{
 //		omniCmd.world_x = matcha.normal_cmd.cmd_x;

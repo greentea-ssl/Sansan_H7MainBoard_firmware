@@ -20,6 +20,10 @@
 #include "matchaSerial.hpp"
 #include "debugDump.hpp"
 
+#include "TypeDefinition.hpp"
+#include "UARTCommunication.hpp"
+
+
 
 class Sanran{
 
