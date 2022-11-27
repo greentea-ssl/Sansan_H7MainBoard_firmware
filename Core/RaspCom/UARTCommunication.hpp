@@ -113,9 +113,9 @@ public:
       return -1;
     }
 
-    printf("heading from%d to %ld: ", tx_ptr, rd_ptr);
+//    printf("heading from%d to %ld: ", tx_ptr, rd_ptr);
     for(uint8_t i = 0; i < BALLINFO_RX_BUF_SIZE; i++){ // search for delimiter from tx pointer to rx pointer(inverse)
-      printf("0x%02X ", rx_ringbuffer[(tx_ptr - i) & (rx_buf_size - 1)]);
+//      printf("0x%02X ", rx_ringbuffer[(tx_ptr - i) & (rx_buf_size - 1)]);
       if(rx_ringbuffer[(tx_ptr - i) & (rx_buf_size - 1)] == HEAD_BYTE){
         //the delimiter is found
         if(rx_ringbuffer[(tx_ptr - i - 1) & (rx_buf_size - 1)] != HEAD_BYTE){
@@ -128,19 +128,19 @@ public:
         break;
       }
     }
-    printf("\n\r");
+//    printf("\n\r");
 
     if(!is_delimiter_found){
       return -1;
     }
     length = 0;
-    printf("rx frame: ");
+//    printf("rx frame: ");
     for(uint8_t i = 0; i < BALLINFO_RX_BUF_SIZE; i++){ // search for delimiter
       if(((rd_ptr) & (rx_buf_size - 1)) == ((seek_packet_end - i) & (rx_buf_size - 1))){ // reach the head of the ring buffer
         return -1;
         break;
       }
-      printf("0x%02X ", rx_ringbuffer[(seek_packet_end - i) & (rx_buf_size - 1)]);
+//      printf("0x%02X ", rx_ringbuffer[(seek_packet_end - i) & (rx_buf_size - 1)]);
       if(rx_ringbuffer[(seek_packet_end - i) & (rx_buf_size - 1)] == HEAD_BYTE){
         seek_packet_start = (seek_packet_end - i + 1) & (rx_buf_size - 1);
         length = i;
@@ -148,8 +148,8 @@ public:
         break;
       }
     }
-    printf("\n\r");
-    printf("next rd_ptr:%ld\n\r", rd_ptr);
+//    printf("\n\r");
+//    printf("next rd_ptr:%ld\n\r", rd_ptr);
 
 //    int16_t length = seek_packet_end - seek_packet_start + 1;
     memcpy(frame_data, &rx_ringbuffer[seek_packet_start], length);
@@ -167,9 +167,9 @@ public:
 //      return BALLINFO_FRAME_INVALID_LENGTH;
     }else{
       uint8_t tmp[ball_info_length];
-      printf("rx:");
-      print_bytes(rx_frame, result);
-      printf("\n\r");
+      //printf("rx:");
+//      print_bytes(rx_frame, result);
+      //printf("\n\r");
       cobs_decode_result dec_rst = cobs_decode(tmp, BALLINFO_RX_BUF_SIZE, rx_frame, result);
       switch(dec_rst.status){
       case COBS_DECODE_OK:

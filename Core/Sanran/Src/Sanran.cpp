@@ -49,6 +49,23 @@ volatile float wheel_theta[4] = {0};
 	}while(0);
 
 
+void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWheel* omni){
+  omni->setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
+
+  float gain_w = 0.01;
+  float gain_x = 0.001;
+  float gain_y = 0.001;
+
+  omniCmd->robot_vel_x = 0;
+  omniCmd->robot_vel_y = 0;
+  omniCmd->robot_omega = -gain_w * ball_data->x;
+  printf("omniCmd.robot_vel_x: %f,   ", omniCmd->robot_vel_x);
+  printf("omniCmd.robot_vel_y: %f,   ", omniCmd->robot_vel_y);
+  printf("omniCmd.robot_omega: %f,   \n\r", omniCmd->robot_omega);
+//
+
+}
+
 
 /**
  * @fn  Sanran()
@@ -218,9 +235,10 @@ void Sanran::UpdateSyncLS()
 
   switch(result){
   case BALLINFO_SUCCESS:
-    printf("decoded:");
-    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
-    printf("\n\r");
+//    printf("decoded:");
+//    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
+//    printf("\n\r");
+    captureBall(&rx_ball, &omniCmd, &omni);
     break;
   case BALLINFO_DECODE_NULL_POINTER:
     printf("BALLINFO_DECODE_NULL_POINTER\n\r");
