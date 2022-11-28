@@ -54,11 +54,16 @@ void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWhee
 
   float gain_w = 0.01;
   float gain_x = 0.001;
-  float gain_y = 0.001;
-
+  float gain_y = 0.0015;
+  if(ball_data->status == 0){
+    omniCmd->robot_vel_x = 0;
+    omniCmd->robot_vel_y = 0;
+    omniCmd->robot_omega = 0;
+    return;
+  }
   omniCmd->robot_vel_x = 0;
-  omniCmd->robot_vel_y = 0;
-  omniCmd->robot_omega = -gain_w * ball_data->x;
+  omniCmd->robot_vel_y = fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));;
+  omniCmd->robot_omega = fminf(10, fmaxf(-10 , -gain_w * ball_data->x));
   printf("omniCmd.robot_vel_x: %f,   ", omniCmd->robot_vel_x);
   printf("omniCmd.robot_vel_y: %f,   ", omniCmd->robot_vel_y);
   printf("omniCmd.robot_omega: %f,   \n\r", omniCmd->robot_omega);
