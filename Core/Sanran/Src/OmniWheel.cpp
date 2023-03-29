@@ -312,6 +312,7 @@ void OmniWheel::calcKinematics()
 	m_convMat_motor2robot[2][3] = -0.5 * m_param.wheel_r[0] * cos(m_param.wheel_pos_theta_deg[1] * M_PI / 180.0f) / den_omega;
 
 
+#if 0
 	printf("\nm_convMat_motor2robot[][] = \n");
 	for(int i = 0; i < 3; i++)
 	{
@@ -321,6 +322,7 @@ void OmniWheel::calcKinematics()
 		}
 		printf("\n");
 	}
+#endif
 
 
 

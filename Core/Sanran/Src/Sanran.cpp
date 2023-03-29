@@ -42,11 +42,11 @@ volatile float odo_theta = 0.0f;
 volatile float wheel_theta[4] = {0};
 
 
-#define DISP_SETUP_RESULT(FUNC, NAME) do{ \
-	printf("\n Setting %s ... \n", NAME); \
-	if(FUNC()){printf("\t\t\t\t[OK]\n"); \
-	}else{printf("\t\t\t\t[ERROR]\n");} \
-	}while(0);
+#define DISP_SETUP_RESULT(FUNC, NAME)	do{ \
+											printf("\n Setting %s ... \n", NAME); \
+											if(FUNC()){printf("\t\t\t\t[OK]\n"); \
+											}else{printf("\t\t\t\t[ERROR]\n");} \
+										}while(0);
 
 
 
