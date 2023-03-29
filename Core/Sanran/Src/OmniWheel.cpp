@@ -57,6 +57,26 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 bool OmniWheel::setup()
 {
 
+	bool res = m_canMotorIF->read_motor_param();
+	if(res)
+	{
+		for(int i = 0; i < 4; i++)
+		{
+			printf("ch = %d\n", i);
+			printf("KV = %d\n", m_canMotorIF->motor[i].get_Kv());
+			printf("Irated = %f\n", m_canMotorIF->motor[i].get_Irated());
+		}
+	}
+	else
+	{
+		printf("parameters read: Timeout\n");
+		for(int i = 0; i < 4; i++)
+		{
+			printf("ch = %d\n", i);
+			printf("KV = %d\n", m_canMotorIF->motor[i].get_Kv());
+			printf("Irated = %f\n", m_canMotorIF->motor[i].get_Irated());
+		}
+	}
 
 	calcKinematics();
 

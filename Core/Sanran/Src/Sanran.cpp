@@ -86,6 +86,9 @@ void Sanran::setup()
 
 	buzzer.sound_startup();
 
+	power.enableSupply();
+
+	delay_ms(200);
 
 	printf("********** Initialize ********************\n\n");
 
@@ -110,15 +113,12 @@ void Sanran::setup()
 	userButton0_prev = 1;
 	userButton1_prev = 1;
 
-	power.enableSupply();
-
-
 	dribbler.setup();
 
 	buzzer.sound_notify();
 
 	// WachDog(software reset) initialize
-	watchdog_enable = true;
+	watchdog_enable = false;
 	watchdog_CAN_count = 0;
 	watchdog_CAN_threshold = 1000;
 	watchdog_UART_count = 0;

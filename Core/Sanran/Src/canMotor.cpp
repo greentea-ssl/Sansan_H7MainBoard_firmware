@@ -3,6 +3,7 @@
 
 #include "canMotor.hpp"
 
+#include "stdio.h"
 
 
 CanMotor::CanMotor(uint32_t motorID) : m_motorID(motorID), m_resUpdated(0)
@@ -25,8 +26,17 @@ void CanMotor::resUpdate(int16_t Iq_int16, int16_t omega_int16, uint16_t theta_u
 
 }
 
+void CanMotor::paramUpdate(uint16_t Kv, uint16_t Irated_uint16)
+{
 
+	m_Kv = Kv;
+	m_Irated_uint16 = Irated_uint16;
 
+	m_Irated = m_Irated_uint16 / 1024.0f;
+
+	m_resUpdated = 1;
+
+}
 
 
 CanMotorIF::CanMotorIF(FDCAN_HandleTypeDef *hfdcan) : motor{0, 1, 2, 3}, m_hfdcan(hfdcan)
@@ -96,15 +106,92 @@ void CanMotorIF::update_CAN_Rx()
 
 	HAL_FDCAN_GetRxMessage(m_hfdcan, FDCAN_RX_FIFO0, &canRxHeader, canRxData);
 
-	if(canRxHeader.DataLength != FDCAN_DLC_BYTES_8) return;
+	if((canRxHeader.Identifier & 0xFFFFFFFC) == 0x400
+			&& canRxHeader.DataLength == FDCAN_DLC_BYTES_8)
+	{
+		motor_channel = canRxHeader.Identifier & 0x03;
 
-	motor_channel = canRxHeader.Identifier & 0x03;
+		int16_t Iq_int16 = ((int16_t)canRxData[2] << 8) | canRxData[1];
+		int16_t omega_int16 = ((int16_t)canRxData[6] << 8) | canRxData[5];
+		uint16_t theta_uint16 = ((uint16_t)canRxData[4] << 8) | canRxData[3];
 
-	int16_t Iq_int16 = ((int16_t)canRxData[2] << 8) | canRxData[1];
-	int16_t omega_int16 = ((int16_t)canRxData[6] << 8) | canRxData[5];
-	uint16_t theta_uint16 = ((uint16_t)canRxData[4] << 8) | canRxData[3];
+		motor[motor_channel].resUpdate(Iq_int16, omega_int16, theta_uint16);
+	}
+	else if((canRxHeader.Identifier & 0xFFFFFFFC) == 0x410
+			&& canRxHeader.DataLength == FDCAN_DLC_BYTES_4)
+	{
+		motor_channel = canRxHeader.Identifier & 0x03;
 
-	motor[motor_channel].resUpdate(Iq_int16, omega_int16, theta_uint16);
+		uint16_t Kv = ((int16_t)canRxData[1] << 8) | canRxData[0];
+		uint16_t Irated_uint16 = ((uint16_t)canRxData[3] << 8) | canRxData[2];
+
+		motor[motor_channel].paramUpdate(Kv, Irated_uint16);
+	}
+
+
+}
+
+
+bool CanMotorIF::all_response_arrived()
+{
+	const int MOTOR_NUM = 4;
+	for(int i = 0; i < MOTOR_NUM; i++)
+	{
+		if(!motor[i].resIsUpdated())
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool CanMotorIF::read_motor_param()
+{
+	const int retry_time_ms = 200;
+	const int retry_timeout = 5;
+
+	for(int retry_count = 0; retry_count < retry_timeout; retry_count++)
+	{
+		for(int i = 0; i < 4; i++)
+		{
+			motor[i].clearUpdateFlag();
+		}
+		send_request_param();
+//		setCurrent(0,0,0,0);
+//		send_Iq_ref();
+		for(int i = 0; i < retry_time_ms / 10; i++)
+		{
+			HAL_Delay(10);
+			if(all_response_arrived() == true)
+			{
+				return true; // Successful
+			}
+		}
+	}
+	return false; // Timeout
+}
+
+
+void CanMotorIF::send_request_param()
+{
+
+	FDCAN_TxHeaderTypeDef fdcanTxHeader;
+	uint8_t fdcanTxData[8];
+
+	fdcanTxHeader.Identifier = 0x310;
+	fdcanTxHeader.IdType = FDCAN_STANDARD_ID;
+	fdcanTxHeader.TxFrameType = FDCAN_DATA_FRAME;
+	fdcanTxHeader.DataLength = FDCAN_DLC_BYTES_0;
+	fdcanTxHeader.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
+	fdcanTxHeader.BitRateSwitch = FDCAN_BRS_OFF;
+	fdcanTxHeader.FDFormat = FDCAN_CLASSIC_CAN;
+	fdcanTxHeader.TxEventFifoControl = FDCAN_NO_TX_EVENTS;
+	fdcanTxHeader.MessageMarker = 0;
+
+	//HAL_FDCAN_ActivateNotification(&hfdcan2, 0, FDCAN_IT_TX_COMPLETE);
+
+	HAL_FDCAN_AddMessageToTxFifoQ(m_hfdcan, &fdcanTxHeader, fdcanTxData);
+
 
 }
 
