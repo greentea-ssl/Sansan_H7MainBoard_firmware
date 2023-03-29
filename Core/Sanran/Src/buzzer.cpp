@@ -54,9 +54,6 @@ void Buzzer::off()
 	HAL_TIM_PWM_Stop(m_htim, m_channel);
 }
 
-
-
-
 void Buzzer::sound_startup()
 {
 	on();
@@ -66,6 +63,16 @@ void Buzzer::sound_startup()
 	off();
 }
 
+void Buzzer::sound_notify()
+{
+	on();
+	setNoteNumber(76+12); HAL_Delay(100);
+	off();
+	HAL_Delay(100);
+	on();
+	setNoteNumber(76+12); HAL_Delay(100);
+	off();
+}
 
 void Buzzer::sound_singleTone(uint8_t note, int period_ms)
 {

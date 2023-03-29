@@ -20,8 +20,9 @@ public:
 
 	void off();
 
-
 	void sound_startup();
+
+	void sound_notify();
 
 	void sound_singleTone(uint8_t note, int period_ms);
 

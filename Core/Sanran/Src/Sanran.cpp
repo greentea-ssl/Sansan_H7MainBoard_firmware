@@ -86,7 +86,6 @@ void Sanran::setup()
 
 	buzzer.sound_startup();
 
-	delay_ms(1000);
 
 	printf("********** Initialize ********************\n\n");
 
@@ -116,15 +115,7 @@ void Sanran::setup()
 
 	dribbler.setup();
 
-
-	// wait for BLDC sensor calibration
-	printf("\n Waiting for MD calibration ... \n");
-	for(int i = 0; i < 8; i++)
-	{
-		delay_ms(500);
-		buzzer.sound_singleTone(72+12, 100);
-	}
-
+	buzzer.sound_notify();
 
 	// WachDog(software reset) initialize
 	watchdog_enable = true;
