@@ -51,9 +51,10 @@ public:
 	typedef struct{
 		float Jmn; /* Nominal wheel inertia */
 		float g_dis; /* Disturbance observer bandwidth */
-		float Ktn; /* Nominal torque constant */
+		float Ktn[4]; /* Nominal torque constant */
 		float Kp; /* Speed control gain */
 		float Ts; /* Sampling time */
+		float Iq_limit[4]; /* Rated current value */
 
 		float wheel_pos_r[4];
 		float wheel_pos_theta_deg[4];
