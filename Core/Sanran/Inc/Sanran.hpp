@@ -130,6 +130,7 @@ private:
 
 	void update_dump();
 
+	void Error_Handler();
 
 
 };

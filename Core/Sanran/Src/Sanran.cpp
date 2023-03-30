@@ -42,11 +42,13 @@ volatile float odo_theta = 0.0f;
 volatile float wheel_theta[4] = {0};
 
 
-#define DISP_SETUP_RESULT(FUNC, NAME)	do{ \
-											printf("\n Setting %s ... \n", NAME); \
-											if(FUNC()){printf("\t\t\t\t[OK]\n"); \
-											}else{printf("\t\t\t\t[ERROR]\n");} \
-										}while(0);
+#define DISP_SETUP_RESULT(FUNC, NAME, IS_CRITICAL)	do{ \
+														printf("\n Setting %s ... \n", NAME); \
+														if(FUNC()){printf("\t\t\t\t[OK]\n"); \
+														}else{ \
+															printf("\t\t\t\t[ERROR]\n"); \
+															if(IS_CRITICAL){Error_Handler();}} \
+													}while(0);
 
 
 
@@ -92,17 +94,17 @@ void Sanran::setup()
 
 	printf("********** Initialize ********************\n\n");
 
-	DISP_SETUP_RESULT(onBrdLED.setup, "On Board LED");
+	DISP_SETUP_RESULT(onBrdLED.setup, "On Board LED", false);
 
-	DISP_SETUP_RESULT(canMotorIF.setup, "CAN motor IF");
+	DISP_SETUP_RESULT(canMotorIF.setup, "CAN motor IF", true);
 
-	DISP_SETUP_RESULT(bno055.setup, "BNO055");
+	DISP_SETUP_RESULT(bno055.setup, "BNO055", false);
 
-	DISP_SETUP_RESULT(omni.setup, "Omni Wheel");
+	DISP_SETUP_RESULT(omni.setup, "Omni Wheel", true);
 
-	DISP_SETUP_RESULT(kicker.setup, "Kicker");
+	DISP_SETUP_RESULT(kicker.setup, "Kicker", true);
 
-	DISP_SETUP_RESULT(matcha.setup, "Matcha Serial");
+	DISP_SETUP_RESULT(matcha.setup, "Matcha Serial", true);
 
 	timeElapsed_hs_count = 0;
 
@@ -399,6 +401,19 @@ void Sanran::update_dump()
 
 	dump.send();
 
+
+}
+
+
+void Sanran::Error_Handler()
+{
+	buzzer.setNoteNumber(76+12);
+	while(1){
+		buzzer.on();
+		delay_ms(100);
+		buzzer.off();
+		delay_ms(100);
+	}
 
 }
 

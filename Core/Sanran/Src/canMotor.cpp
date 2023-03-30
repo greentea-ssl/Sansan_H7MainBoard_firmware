@@ -157,8 +157,6 @@ bool CanMotorIF::read_motor_param()
 			motor[i].clearUpdateFlag();
 		}
 		send_request_param();
-//		setCurrent(0,0,0,0);
-//		send_Iq_ref();
 		for(int i = 0; i < retry_time_ms / 10; i++)
 		{
 			HAL_Delay(10);

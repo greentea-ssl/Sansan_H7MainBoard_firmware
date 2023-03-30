@@ -70,12 +70,7 @@ bool OmniWheel::setup()
 	else
 	{
 		printf("parameters read: Timeout\n");
-		for(int i = 0; i < 4; i++)
-		{
-			printf("ch = %d\n", i);
-			printf("KV = %d\n", m_canMotorIF->motor[i].get_Kv());
-			printf("Irated = %f\n", m_canMotorIF->motor[i].get_Irated());
-		}
+		return false;
 	}
 
 	calcKinematics();
