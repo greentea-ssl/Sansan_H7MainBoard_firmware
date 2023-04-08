@@ -21,6 +21,7 @@ public:
 		TYPE_ROBOT_P_DOB,
 		TYPE_WORLD_P_DOB,
 		TYPE_WORLD_POSITION,
+		TYPE_MFFC,
 	}ControlType_t;
 
 	typedef enum
@@ -112,6 +113,8 @@ public:
 
 private:
 
+	void update_MFFC();
+
 	void calcKinematics();
 
 	void updateOdometry();
@@ -136,6 +139,12 @@ private:
 	float m_convMat_robot2motor[4][3];
 	float m_convMat_motor2robot[3][4];
 
+	float Q4[4][4];
+	float Q4_inv[4][4];
+	float Kpp;
+	float Kps;
+	float Cf;
+	float Ts;
 
 };
 

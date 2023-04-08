@@ -79,6 +79,22 @@ bool OmniWheel::setup()
 
 	last_error_status = ERROR_NONE;
 
+
+	Q4[0][0] = 1; Q4[0][1] = 1; Q4[0][2] = 1; Q4[0][3] = 1;
+	Q4[1][0] = 0; Q4[1][1] = 0; Q4[1][2] = 1; Q4[1][3] =-1;
+	Q4[2][0] = 0; Q4[2][1] = 1; Q4[2][2] =-1; Q4[2][3] = 0;
+	Q4[3][0] = 1; Q4[3][1] =-1; Q4[3][2] = 0; Q4[3][3] = 0;
+
+	Q4_inv[0][0] = 1.0/4; Q4_inv[0][1] = 1.0/4; Q4_inv[0][2] = 1.0/2; Q4_inv[0][3] = 3.0/4;
+	Q4_inv[1][0] = 1.0/4; Q4_inv[1][1] = 1.0/4; Q4_inv[1][2] = 1.0/2; Q4_inv[1][3] =-1.0/4;
+	Q4_inv[2][0] = 1.0/4; Q4_inv[2][1] = 1.0/4; Q4_inv[2][2] =-1.0/2; Q4_inv[2][3] =-1.0/4;
+	Q4_inv[3][0] = 1.0/4; Q4_inv[3][1] =-3.0/4; Q4_inv[3][2] =-1.0/2; Q4_inv[3][3] =-1.0/4;
+
+	Ts = 1E-3;
+	Cf = 2.0;
+	Kps = 150;
+	Kpp = 1500;
+
 	return true;
 }
 
@@ -142,7 +158,7 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 		firstSampleFlag = false;
 	}
 
-	updateOdometry();
+	//updateOdometry();
 
 
 	// Robot velocity control
@@ -263,6 +279,10 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 		}
 		break;
 
+	case TYPE_MFFC:
+		update_MFFC();
+		break;
+
 	default:
 		break;
 	}
@@ -275,7 +295,52 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 }
 
 
+void OmniWheel::update_MFFC()
+{
+	float tau_est[4];
+	float a_mode_ext[4] = {0,0,0,0};
+	float omega_mode[4] = {0,0,0,0};
+	float theta_mode[4] = {0,0,0,0};
+	float a_mode_ref[4] = {0,0,0,0};
+	for(int i = 0; i < 4; i++)
+	{
+		tau_est[i] = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_wheelState[i].omega_res);
+		float a_ext = tau_est[i] / m_param.Jmn;
+		a_mode_ext[0] += Q4[0][i] * a_ext;
+		a_mode_ext[1] += Q4[1][i] * a_ext;
+		a_mode_ext[2] += Q4[2][i] * a_ext;
+		a_mode_ext[3] += Q4[3][i] * a_ext;
+		omega_mode[0] += Q4[0][i] * m_wheelState[i].omega_res;
+		omega_mode[1] += Q4[1][i] * m_wheelState[i].omega_res;
+		omega_mode[2] += Q4[2][i] * m_wheelState[i].omega_res;
+		omega_mode[3] += Q4[3][i] * m_wheelState[i].omega_res;
+		theta_mode[0] += Q4[0][i] * m_wheelState[i].theta_res;
+		theta_mode[1] += Q4[1][i] * m_wheelState[i].theta_res;
+		theta_mode[2] += Q4[2][i] * m_wheelState[i].theta_res;
+		theta_mode[3] += Q4[3][i] * m_wheelState[i].theta_res;
+	}
+	a_mode_ref[0] = -Cf * a_mode_ext[0];
+	for(int i = 1; i < 4; i++)
+	{
+		if(theta_mode[i] < -M_PI) theta_mode[i] += 2*M_PI;
+		else if(theta_mode[i] > M_PI) theta_mode[i] -= 2*M_PI;
+		a_mode_ref[i] = -Kpp * theta_mode[i] - Kps * omega_mode[i];
+	}
 
+	for(int i = 0; i < 4; i++)
+	{
+		float a_ref = 0;
+		a_ref += Q4_inv[i][0] * a_mode_ref[0];
+		a_ref += Q4_inv[i][1] * a_mode_ref[1];
+		a_ref += Q4_inv[i][2] * a_mode_ref[2];
+		a_ref += Q4_inv[i][3] * a_mode_ref[3];
+		float Iq_ref = (a_ref * m_param.Jmn + tau_est[i]) / m_param.Ktn;
+		if(Iq_ref < -IQ_LIMIT) Iq_ref = -IQ_LIMIT;
+		if(Iq_ref > IQ_LIMIT) Iq_ref = IQ_LIMIT;
+		m_canMotorIF->motor[i].set_Iq_ref(Iq_ref);
+	}
+
+}
 
 
 void OmniWheel::calcKinematics()
