@@ -72,9 +72,6 @@ Sanran::Sanran()
 	  dump(&hspi4)
 {
 
-	// Operation mode is normal mode
-	opeMode = OPE_MODE_NORMAL;
-
 	memset(&omniCmd, 0x00, sizeof(omniCmd));
 
 }
@@ -84,7 +81,26 @@ Sanran::Sanran()
 void Sanran::setup()
 {
 
-	printf("Hello.\n\n");
+	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
+	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
+
+	// ボタンは負論理
+	if(userButton0 == 0)
+	{
+		opeMode = OPE_MODE_DEBUG;
+		printf("Hello. <DEBUG_MODE>\n\n");
+
+	}
+	else if(userButton1 == 0)
+	{
+		opeMode = OPE_MODE_MANUAL;
+		printf("Hello. <MANUAL_MODE>\n\n");
+	}
+	else
+	{
+		opeMode = OPE_MODE_NORMAL;
+		printf("Hello. <NORMAL_MODE>\n\n");
+	}
 
 	buzzer.sound_startup();
 
@@ -120,11 +136,18 @@ void Sanran::setup()
 	buzzer.sound_notify();
 
 	// WachDog(software reset) initialize
-	watchdog_enable = false;
 	watchdog_CAN_count = 0;
 	watchdog_CAN_threshold = 1000;
 	watchdog_UART_count = 0;
 	watchdog_UART_threshold = 10000;
+	if(opeMode == OPE_MODE_NORMAL)
+	{
+		watchdog_enable = true;
+	}
+	else
+	{
+		watchdog_enable = false;
+	}
 
 
 	printf("\n********** Start ********************\n");
@@ -202,84 +225,97 @@ void Sanran::UpdateSyncLS()
 //	if(ballSensor.read() > 0.15) dribbler.setSlow();
 //	else dribbler.setFast();
 
+
 	matcha.Update();
-	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)
+	switch(opeMode)
 	{
-		omniCmd.world_x = matcha.normal_cmd.cmd_x;
-		omniCmd.world_y = matcha.normal_cmd.cmd_y;
-		omniCmd.world_theta = matcha.normal_cmd.cmd_theta;
-		omniCmd.world_vel_x = matcha.normal_cmd.cmd_vx;
-		omniCmd.world_vel_y = matcha.normal_cmd.cmd_vy;
-		omniCmd.world_omega = matcha.normal_cmd.cmd_omega;
-		omniCmd.vel_limit = matcha.normal_cmd.vel_limit;
-		omniCmd.omega_limit = matcha.normal_cmd.omega_limit;
-
-		if(matcha.normal_cmd.kick)
+	case OPE_MODE_NORMAL:
+		if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)
 		{
-			if(matcha.normal_cmd.chip)
+			omniCmd.world_x = matcha.normal_cmd.cmd_x;
+			omniCmd.world_y = matcha.normal_cmd.cmd_y;
+			omniCmd.world_theta = matcha.normal_cmd.cmd_theta;
+			omniCmd.world_vel_x = matcha.normal_cmd.cmd_vx;
+			omniCmd.world_vel_y = matcha.normal_cmd.cmd_vy;
+			omniCmd.world_omega = matcha.normal_cmd.cmd_omega;
+			omniCmd.vel_limit = matcha.normal_cmd.vel_limit;
+			omniCmd.omega_limit = matcha.normal_cmd.omega_limit;
+
+			if(matcha.normal_cmd.kick)
 			{
-				kicker.kickChip(matcha.normal_cmd.kickPower);
+				if(matcha.normal_cmd.chip)
+				{
+					kicker.kickChip(matcha.normal_cmd.kickPower);
+				}
+				else
+				{
+					kicker.kickStraight(matcha.normal_cmd.kickPower);
+				}
+			}
+
+			if(matcha.normal_cmd.dribble)
+			{
+				dribbler.setPower(matcha.normal_cmd.dribblePower);
 			}
 			else
 			{
-				kicker.kickStraight(matcha.normal_cmd.kickPower);
+				dribbler.setPower(0);
 			}
-		}
 
-		if(matcha.normal_cmd.dribble)
-		{
-			dribbler.setPower(matcha.normal_cmd.dribblePower);
-		}
-		else
-		{
-			dribbler.setPower(0);
-		}
-
-		if(matcha.normal_cmd.vision_error == false)
-		{
-			omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta);
-		}
-
-		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
-
-	}
-	else if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_MANUAL)
-	{
-		omniCmd.robot_vel_x = matcha.manual_cmd.cmd_vx;
-		omniCmd.robot_vel_y = matcha.manual_cmd.cmd_vy;
-		omniCmd.robot_omega = matcha.manual_cmd.cmd_omega;
-
-		if(matcha.manual_cmd.kick)
-		{
-			if(matcha.manual_cmd.chip)
+			if(matcha.normal_cmd.vision_error == false)
 			{
-				kicker.kickChip(matcha.manual_cmd.kickPower);
+				omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta);
+			}
+
+			omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
+
+		}
+		else if(matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_TIMEOUT)
+		{
+			omniCmd.vel_limit = 0.0f;
+			omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
+		}
+		break;
+
+	case OPE_MODE_MANUAL:
+		if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_MANUAL)
+		{
+			omniCmd.robot_vel_x = matcha.manual_cmd.cmd_vx;
+			omniCmd.robot_vel_y = matcha.manual_cmd.cmd_vy;
+			omniCmd.robot_omega = matcha.manual_cmd.cmd_omega;
+
+			if(matcha.manual_cmd.kick)
+			{
+				if(matcha.manual_cmd.chip)
+				{
+					kicker.kickChip(matcha.manual_cmd.kickPower);
+				}
+				else
+				{
+					kicker.kickStraight(matcha.manual_cmd.kickPower);
+				}
+			}
+
+			if(matcha.manual_cmd.dribble)
+			{
+				dribbler.setPower(matcha.manual_cmd.dribblePower);
 			}
 			else
 			{
-				kicker.kickStraight(matcha.manual_cmd.kickPower);
+				dribbler.setPower(0);
 			}
+			omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
 		}
-
-		if(matcha.manual_cmd.dribble)
+		else if(matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_TIMEOUT)
 		{
-			dribbler.setPower(matcha.manual_cmd.dribblePower);
+			omniCmd.vel_limit = 0.0f;
+			omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
 		}
-		else
-		{
-			dribbler.setPower(0);
-		}
+		break;
 
-		omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
+	default:
 
-	}
-	else if(matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_TIMEOUT)
-	{
-
-		omniCmd.vel_limit = 0.0f;
-
-		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
-
+		break;
 	}
 
 	syncLS_timestamp.end_count = htim13.Instance->CNT;

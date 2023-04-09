@@ -53,7 +53,7 @@ public:
 	typedef enum{
 		OPE_MODE_NORMAL = 1,
 		OPE_MODE_MANUAL = 2,
-		OPE_MODE_TEST = 3,
+		OPE_MODE_DEBUG = 3,
 	}OperationMode_TypeDef;
 
 	OperationMode_TypeDef opeMode;
