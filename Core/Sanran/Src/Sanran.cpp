@@ -84,22 +84,24 @@ void Sanran::setup()
 	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
 	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
 
+	printf("\nHello. ");
+
 	// ボタンは負論理
 	if(userButton0 == 0)
 	{
 		opeMode = OPE_MODE_DEBUG;
-		printf("Hello. <DEBUG_MODE>\n\n");
+		printf("[DEBUG_MODE]\n\n");
 
 	}
 	else if(userButton1 == 0)
 	{
 		opeMode = OPE_MODE_MANUAL;
-		printf("Hello. <MANUAL_MODE>\n\n");
+		printf("[MANUAL_MODE]\n\n");
 	}
 	else
 	{
 		opeMode = OPE_MODE_NORMAL;
-		printf("Hello. <NORMAL_MODE>\n\n");
+		printf("[NORMAL_MODE]\n\n");
 	}
 
 	buzzer.sound_startup();
@@ -110,13 +112,14 @@ void Sanran::setup()
 
 	printf("********** Initialize ********************\n\n");
 
+	printf("\n Setting %s ... \n", "On Board LED");
 	DISP_SETUP_RESULT(onBrdLED.setup, "On Board LED", false);
 
 	DISP_SETUP_RESULT(canMotorIF.setup, "CAN motor IF", true);
 
 	DISP_SETUP_RESULT(bno055.setup, "BNO055", false);
 
-	DISP_SETUP_RESULT(omni.setup, "Omni Wheel", true);
+	DISP_SETUP_RESULT(omni.setup, "Omni Wheel", (opeMode==OPE_MODE_NORMAL));
 
 	DISP_SETUP_RESULT(kicker.setup, "Kicker", true);
 
