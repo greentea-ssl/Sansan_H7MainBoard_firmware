@@ -91,20 +91,20 @@ void Sanran::setup()
 	{
 		opeMode = OPE_MODE_DEBUG;
 		printf("[DEBUG_MODE]\n\n");
-
+		buzzer.play(Buzzer::SOUND_STARTUP_DEBUG);
 	}
 	else if(userButton1 == 0)
 	{
 		opeMode = OPE_MODE_MANUAL;
 		printf("[MANUAL_MODE]\n\n");
+		buzzer.play(Buzzer::SOUND_STARTUP_MANUAL);
 	}
 	else
 	{
 		opeMode = OPE_MODE_NORMAL;
 		printf("[NORMAL_MODE]\n\n");
+		buzzer.play(Buzzer::SOUND_STARTUP_NORMAL);
 	}
-
-	buzzer.sound_startup();
 
 	power.enableSupply();
 
@@ -136,7 +136,7 @@ void Sanran::setup()
 
 	dribbler.setup();
 
-	buzzer.sound_notify();
+	buzzer.play(Buzzer::SOUND_NOTIFY);
 
 	// WachDog(software reset) initialize
 	watchdog_CAN_count = 0;
