@@ -108,6 +108,8 @@ public:
 
 	ErrorStatus_t get_last_error_status(){return last_error_status;}
 
+	bool isActive(){return m_active;}
+
 	Cmd_t m_cmd;
 
 
@@ -117,6 +119,8 @@ private:
 
 	void updateOdometry();
 
+	// セットアップが成功したらアクティブとする
+	bool m_active;
 
 	bool firstSampleFlag;
 

@@ -17,6 +17,8 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 		m_canMotorIF(canMotorIF)
 {
 
+	m_active = false;
+
 	m_param.Jmn = 5.2E-5;
 	m_param.Kp = 0.2;
 	m_param.Ts = 1E-3;
@@ -53,18 +55,24 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 bool OmniWheel::setup()
 {
 
-	bool res = m_canMotorIF->read_motor_param();
-	if(res)
+	bool paramReadSucceed = m_canMotorIF->read_motor_param();
+	if(paramReadSucceed)
 	{
 		for(int i = 0; i < 4; i++)
 		{
 			m_param.Ktn[i] = (60.0f / (m_canMotorIF->motor[i].get_Kv() * 2 * M_PI));
 			m_param.Iq_limit[i] = m_canMotorIF->motor[i].get_Irated();
 		}
+		m_active = true;
 	}
 	else
 	{
-		return false;
+		for(int i = 0; i < 4; i++)
+		{
+			m_param.Ktn[i] = 0.03;
+			m_param.Iq_limit[i] = 0;
+		}
+		m_active = false;
 	}
 
 	calcKinematics();
@@ -88,7 +96,7 @@ bool OmniWheel::setup()
 
 	last_error_status = ERROR_NONE;
 
-	return true;
+	return paramReadSucceed;
 }
 
 
