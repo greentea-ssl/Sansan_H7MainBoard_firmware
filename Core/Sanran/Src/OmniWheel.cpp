@@ -272,7 +272,7 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 					m_convMat_robot2motor[i][2] * m_cmd.robot_omega;
 			// ホイール速度制御
 			float error = m_cmd.omega_w[i] - m_wheelState[i].omega_res;
-			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_wheelState[i].omega_res);
+			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn[i];
 			if(Iq_ref < -m_param.Iq_limit[i]) Iq_ref = -m_param.Iq_limit[i];
 			if(Iq_ref > m_param.Iq_limit[i]) Iq_ref = m_param.Iq_limit[i];
