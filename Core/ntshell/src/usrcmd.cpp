@@ -527,8 +527,10 @@ static int usrcmd_kick(int argc, char **argv)
 {
 	if (argc < 2) {
 		uart_puts("kick state [stateNumber]\r\n");
-		uart_puts("kick straight [on time (us)]\r\n");
-		uart_puts("kick chip [on time (us)]\r\n");
+		uart_puts("kick straight [preset index]\r\n");
+		uart_puts("kick chip [preset index]\r\n");
+		uart_puts("kick straight-us [on time (us)]\r\n");
+		uart_puts("kick chip-us [on time (us)]\r\n");
 		return 0;
 	}
 	if (ntlibc_strcmp(argv[1], "state") == 0 && argc == 3) {
@@ -543,6 +545,26 @@ static int usrcmd_kick(int argc, char **argv)
 		return 0;
 	}
 	else if (ntlibc_strcmp(argv[1], "straight") == 0 && argc == 3) {
+		int width_idx = atoi(argv[2]);
+		if(width_idx < 0 || width_idx > 15)
+		{
+			printf("\"preset index\" must be [0-15].\r\n");
+			return 0;
+		}
+		sanran.kicker.kickStraight(width_idx);
+		return 0;
+	}
+	else if (ntlibc_strcmp(argv[1], "chip") == 0 && argc == 3) {
+		int width_idx = atoi(argv[2]);
+		if(width_idx < 0 || width_idx > 15)
+		{
+			printf("\"preset index\" must be [0-15].\r\n");
+			return 0;
+		}
+		sanran.kicker.kickChip(width_idx);
+		return 0;
+	}
+	else if (ntlibc_strcmp(argv[1], "straight-us") == 0 && argc == 3) {
 		int width_us = atoi(argv[2]);
 		if(width_us <= 0 || width_us > 65000)
 		{
@@ -552,7 +574,7 @@ static int usrcmd_kick(int argc, char **argv)
 		sanran.kicker.kickStraight_width(width_us);
 		return 0;
 	}
-	else if (ntlibc_strcmp(argv[1], "chip") == 0 && argc == 3) {
+	else if (ntlibc_strcmp(argv[1], "chip-us") == 0 && argc == 3) {
 		int width_us = atoi(argv[2]);
 		if(width_us <= 0 || width_us > 65000)
 		{
