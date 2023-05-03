@@ -577,19 +577,19 @@ static int usrcmd_dribble(int argc, char **argv)
 {
 
 	if (argc < 2) {
-		uart_puts("dribble set [duty (0.0 ~ 1.0)]\r\n");
+		uart_puts("dribble set [preset index (0 ~ 15)]\r\n");
 		uart_puts("dribble setus [width (0 ~ 20000)]\r\n");
 		return 0;
 	}
 	if (ntlibc_strcmp(argv[1], "set") == 0 && argc == 3) {
-		float duty = atoff(argv[2]);
-		if(duty < 0 || duty > 1.0)
+		uint32_t preset_idx = atoi(argv[2]);
+		if(preset_idx < 0 || preset_idx > 15)
 		{
-			printf("\"duty\" must be [0.0-1.0].\r\n");
+			printf("\"preset index\" must be [0-15].\r\n");
 			return 0;
 		}
-		sanran.dribbler.write(duty);
-		printf("\r\nduty = %f \r\n", duty);
+		sanran.dribbler.setPower(preset_idx);
+		printf("\r\npreset idx = %d \r\n", preset_idx);
 		return 0;
 	}
 	else if (ntlibc_strcmp(argv[1], "setus") == 0 && argc == 3) {
