@@ -97,6 +97,9 @@ public:
 //	SimulinkSerial simulink;
 
 
+	bool vision_first_sample;
+	float gyro_theta_offset;
+
 	float deg;
 
 	uint8_t userButton0_prev;

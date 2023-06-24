@@ -22,7 +22,7 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 	m_param.Jmn = 5.2E-5;
 	m_param.Kp = 0.2;
 	m_param.Ts = 1E-3;
-	m_param.g_dis = 30;
+	m_param.g_dis = 35;
 
 	for(int i = 0; i < 4; i++)
 	{

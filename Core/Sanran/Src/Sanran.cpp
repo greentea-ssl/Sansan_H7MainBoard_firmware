@@ -74,6 +74,9 @@ Sanran::Sanran()
 
 	memset(&omniCmd, 0x00, sizeof(omniCmd));
 
+	vision_first_sample = true;
+	gyro_theta_offset = 0;
+
 }
 
 
@@ -222,7 +225,7 @@ void Sanran::UpdateSyncLS()
 	if(deg > 1.0) deg -= 1.0;
 	onBrdLED.setHSV(deg, 1.0, 1.0);
 
-	// bno055.updateIMU();
+	bno055.updateIMU();
 	ballSensor.update();
 
 //	if(ballSensor.read() > 0.15) dribbler.setSlow();
@@ -267,7 +270,31 @@ void Sanran::UpdateSyncLS()
 
 			if(matcha.normal_cmd.vision_error == false)
 			{
-				omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta);
+				float vision_x = matcha.normal_cmd.fb_x;
+				float vision_y = matcha.normal_cmd.fb_y;
+				float vision_theta = matcha.normal_cmd.fb_theta;
+
+				float theta_feedback;
+
+#if 0
+				if(vision_first_sample == true)
+				{
+					theta_feedback = vision_theta;
+					gyro_theta_offset = vision_theta + bno055.get_IMU_yaw();
+					vision_first_sample = false;
+				}
+				else
+				{
+					theta_feedback = -bno055.get_IMU_yaw() + gyro_theta_offset;
+				}
+
+				if(theta_feedback < -M_PI) theta_feedback += 2*M_PI;
+				else if(theta_feedback > M_PI) theta_feedback -= 2*M_PI;
+#else
+				theta_feedback = vision_theta;
+#endif
+
+				omni.correctPosition(vision_x, vision_y, theta_feedback);
 			}
 
 			omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
