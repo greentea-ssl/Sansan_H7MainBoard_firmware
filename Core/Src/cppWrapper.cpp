@@ -63,7 +63,7 @@ void cppMain(void)
 
 	ntshell_usr_init(&nts);
 
-	ntshell_execute(&nts);
+//	ntshell_execute(&nts);
 
 
 	while(1)

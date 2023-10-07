@@ -54,21 +54,21 @@ volatile float wheel_theta[4] = {0};
 void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWheel* omni){
   omni->setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
 
-  float gain_w = 0.01;
-  float gain_x = 0.001;
-  float gain_y = 0.0015;
+  float gain_w = 0.2;
+  float gain_x = 0.03;
+  float gain_y = 0.02;
   if(ball_data->status == 0){
     omniCmd->robot_vel_x = 0;
     omniCmd->robot_vel_y = 0;
     omniCmd->robot_omega = 0;
     return;
   }
-  omniCmd->robot_vel_x = 0;
-  omniCmd->robot_vel_y = fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));;
-  omniCmd->robot_omega = fminf(10, fmaxf(-10 , -gain_w * ball_data->x));
-  printf("omniCmd.robot_vel_x: %f,   ", omniCmd->robot_vel_x);
-  printf("omniCmd.robot_vel_y: %f,   ", omniCmd->robot_vel_y);
-  printf("omniCmd.robot_omega: %f,   \n\r", omniCmd->robot_omega);
+  omniCmd->robot_vel_x = fminf(0.8, fmaxf(-0.5 , gain_x * ball_data->x));
+  omniCmd->robot_vel_y = 0;//fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));
+  omniCmd->robot_omega = 0;//fminf(10, fmaxf(-10 , -gain_w * ball_data->x));
+//  printf("omniCmd.robot_vel_x: %f,   ", omniCmd->robot_vel_x);
+//  printf("omniCmd.robot_vel_y: %f,   ", omniCmd->robot_vel_y);
+//  printf("omniCmd.robot_omega: %f,   \n\r", omniCmd->robot_omega);
 //
 
 }
@@ -110,7 +110,7 @@ void Sanran::setup()
 	printf("\nHello. ");
 
 	// ボタンは負論理
-	if(userButton0 == 0)
+	if(1)
 	{
 		opeMode = OPE_MODE_DEBUG;
 		printf("[DEBUG_MODE]\n\n");
@@ -261,36 +261,37 @@ void Sanran::UpdateSyncLS()
 	// get ball information
 	BallInformationResult result = ball_info_communication.ReceiveBallInformation(&rx_ball);
 
-  switch(result){
-  case BALLINFO_SUCCESS:
-    printf("decoded:");
-    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
-    printf("\n\r");
-    captureBall(&rx_ball, &omniCmd, &omni);
-    break;
-  case BALLINFO_DECODE_NULL_POINTER:
-    printf("BALLINFO_DECODE_NULL_POINTER\n\r");
-    break;
-  case BALLINFO_DECODE_OUT_BUFFER_OVERFLOW:
-    printf("BALLINFO_DECODE_OUT_BUFFER_OVERFLOW\n\r");
-    break;
-  case BALLINFO_DECODE_ZERO_BYTE_IN_INPUT:
-    printf("BALLINFO_DECODE_ZERO_BYTE_IN_INPUT\n\r");
-    break;
-  case BALLINFO_DECODE_INPUT_TOO_SHORT:
-    printf("BALLINFO_DECODE_INPUT_TOO_SHORT\n\r");
-  case BALLINFO_DECODE_UNKNOWN:
-    printf("BALLINFO_DECODE_UNKNOWN\n\r");
-    break;
-  case BALLINFO_FRAME_FAIL:
-//      printf("BALLINFO_FRAME_FAIL\n\r");
-    break;
-  case BALLINFO_FRAME_INVALID_LENGTH:
-    printf("BALLINFO_FRAME_INVALID_LENGTH\n\r");
-    break;
-  default:
-    printf("unknown error\n\r");
-  }
+//  switch(result){
+//  case BALLINFO_SUCCESS:
+////    printf("decoded:");
+////    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
+////    printf("\n\r");
+////    captureBall(&rx_ball, &omniCmd, &omni);
+//    break;
+//  case BALLINFO_DECODE_NULL_POINTER:
+////    printf("BALLINFO_DECODE_NULL_POINTER\n\r");
+//    break;
+//  case BALLINFO_DECODE_OUT_BUFFER_OVERFLOW:
+////    printf("BALLINFO_DECODE_OUT_BUFFER_OVERFLOW\n\r");
+//    break;
+//  case BALLINFO_DECODE_ZERO_BYTE_IN_INPUT:
+////    printf("BALLINFO_DECODE_ZERO_BYTE_IN_INPUT\n\r");
+//    break;
+//  case BALLINFO_DECODE_INPUT_TOO_SHORT:
+////    printf("BALLINFO_DECODE_INPUT_TOO_SHORT\n\r");
+//  case BALLINFO_DECODE_UNKNOWN:
+////    printf("BALLINFO_DECODE_UNKNOWN\n\r");
+//    break;
+//  case BALLINFO_FRAME_FAIL:
+////      printf("BALLINFO_FRAME_FAIL\n\r");
+//    break;
+//  case BALLINFO_FRAME_INVALID_LENGTH:
+////    printf("BALLINFO_FRAME_INVALID_LENGTH\n\r");
+//    break;
+//  default:
+////    printf("unknown error\n\r");
+//	  break;
+//  }
 	// decide robot speed
 
 //	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)
