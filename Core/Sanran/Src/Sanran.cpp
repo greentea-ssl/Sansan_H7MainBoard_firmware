@@ -160,23 +160,17 @@ void Sanran::setup()
 	dribbler.setup();
 
 
-	// wait for BLDC sensor calibration
-	printf("\n Waiting for MD calibration ... \n");
-	for(int i = 0; i < 8; i++)
-	{
-		delay_ms(500);
-		buzzer.sound_singleTone(72+12, 100);
-	}
-
-	//setup communication with raspberry pi
-	ball_info_communication.init();
+	buzzer.play(Buzzer::SOUND_NOTIFY);
 
 	// WachDog(software reset) initialize
-	watchdog_enable = false;
 	watchdog_CAN_count = 0;
 	watchdog_CAN_threshold = 1000;
 	watchdog_UART_count = 0;
 	watchdog_UART_threshold = 10000;
+
+	//setup communication with raspberry pi
+	ball_info_communication.init();
+
 	if(opeMode == OPE_MODE_NORMAL)
 	{
 		watchdog_enable = true;
