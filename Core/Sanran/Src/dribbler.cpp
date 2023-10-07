@@ -15,9 +15,11 @@ Dribbler::Dribbler(TIM_HandleTypeDef *htim, uint32_t channel) : m_htim(htim), m_
 
 	for(int i = 0; i < 16; i++)
 	{
-		// i=0:900us, i=15:1150us, Linear
-		m_width[i] = i * 18.67f + 900;
+		// i=1: 1000us, i=15: 1100us, Linear
+		m_width[i] = (i - 1) * 7.142 + 1000;
 	}
+	// i=0: 900us
+	m_width[0] = 900;
 
 }
 
@@ -27,7 +29,7 @@ void Dribbler::setup()
 
 	HAL_TIM_PWM_Start(m_htim, m_channel);
 	write_us(20000);
-	delay_ms(5000);
+	delay_ms(1000);
 
 	write_us(902);
 

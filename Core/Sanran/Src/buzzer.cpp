@@ -54,27 +54,49 @@ void Buzzer::off()
 	HAL_TIM_PWM_Stop(m_htim, m_channel);
 }
 
-
-
-
-void Buzzer::sound_startup()
+void Buzzer::playTone(uint8_t note, int period_ms)
 {
-	on();
-	setNoteNumber(72+12); HAL_Delay(100);
-	setNoteNumber(74+12); HAL_Delay(100);
-	setNoteNumber(76+12); HAL_Delay(100);
-	off();
-}
-
-
-void Buzzer::sound_singleTone(uint8_t note, int period_ms)
-{
-
 	on();
 	setNoteNumber(note);
 	HAL_Delay(period_ms);
 	off();
 }
+
+void Buzzer::play(enum SoundEnum sound)
+{
+	switch(sound)
+	{
+	case SOUND_STARTUP_NORMAL:
+		playTone(72+12, 100);
+		playTone(74+12, 100);
+		playTone(76+12, 100);
+		return;
+
+	case SOUND_STARTUP_MANUAL:
+		playTone(72+12, 100);
+		playTone(76+12, 100);
+		playTone(79+12, 100);
+		playTone(84+12, 100);
+		return;
+
+	case SOUND_STARTUP_DEBUG:
+		playTone(72+12, 100);
+		playTone(73+12, 100);
+		playTone(74+12, 100);
+		playTone(75+12, 100);
+		playTone(76+12, 100);
+		return;
+
+	case SOUND_NOTIFY:
+		playTone(76+12, 100);
+		HAL_Delay(100);
+		playTone(76+12, 100);
+		HAL_Delay(100);
+		return;
+	}
+	return;
+}
+
 
 
 

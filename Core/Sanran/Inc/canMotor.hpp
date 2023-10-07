@@ -20,6 +20,8 @@ public:
 
 	void resUpdate(int16_t Iq_int16, int16_t omega_int16, uint16_t theta_uint16);
 
+	void paramUpdate(uint16_t Kv, uint16_t Irated_uint16);
+
 	bool resIsUpdated(){ return m_resUpdated; }
 
 	void clearUpdateFlag(){ m_resUpdated = 0; }
@@ -31,7 +33,6 @@ public:
 	uint32_t get_motorID(){ return m_motorID; }
 
 
-
 	float get_Iq_ref(){ return m_Iq_ref; }
 
 	float get_Iq(){ return m_Iq; }
@@ -40,11 +41,19 @@ public:
 
 	float get_theta(){ return m_theta; }
 
+	uint16_t get_Kv(){ return m_Kv; }
+
+	float get_Irated(){ return m_Irated; }
+
 
 
 private:
 
 	uint32_t m_motorID;
+
+	uint16_t m_Kv;
+	uint16_t m_Irated_uint16;
+	float m_Irated;
 
 	int16_t m_Iq_int16;
 	int16_t m_omega_int16;
@@ -71,6 +80,12 @@ public:
 	bool setup();
 
 	void update_CAN_Rx();
+
+	bool all_response_arrived();
+
+	bool read_motor_param();
+
+	void send_request_param();
 
 	void send_Iq_ref();
 

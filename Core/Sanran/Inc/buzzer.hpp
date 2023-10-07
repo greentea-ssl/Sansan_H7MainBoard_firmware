@@ -12,6 +12,14 @@ class Buzzer
 
 public:
 
+	enum SoundEnum
+	{
+		SOUND_STARTUP_NORMAL,
+		SOUND_STARTUP_MANUAL,
+		SOUND_STARTUP_DEBUG,
+		SOUND_NOTIFY,
+	};
+
 	Buzzer(TIM_HandleTypeDef *htim, uint32_t Channel, float f_clock);
 
 	void setNoteNumber(uint8_t note);
@@ -20,10 +28,9 @@ public:
 
 	void off();
 
+	void playTone(uint8_t note, int period_ms);
 
-	void sound_startup();
-
-	void sound_singleTone(uint8_t note, int period_ms);
+	void play(enum SoundEnum sound);
 
 
 private:

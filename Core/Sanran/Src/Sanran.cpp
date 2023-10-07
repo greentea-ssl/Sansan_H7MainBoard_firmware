@@ -42,11 +42,13 @@ volatile float odo_theta = 0.0f;
 volatile float wheel_theta[4] = {0};
 
 
-#define DISP_SETUP_RESULT(FUNC, NAME) do{ \
-	printf("\n Setting %s ... \n", NAME); \
-	if(FUNC()){printf("\t\t\t\t[OK]\n"); \
-	}else{printf("\t\t\t\t[ERROR]\n");} \
-	}while(0);
+#define DISP_SETUP_RESULT(FUNC, NAME, IS_CRITICAL)	do{ \
+														printf("\n Setting %s ... \n", NAME); \
+														if(FUNC()){printf("\t\t\t\t[OK]\n"); \
+														}else{ \
+															printf("\t\t\t\t[ERROR]\n"); \
+															if(IS_CRITICAL){Error_Handler();}} \
+													}while(0);
 
 
 void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWheel* omni){
@@ -93,9 +95,6 @@ Sanran::Sanran()
 	  ball_info_communication(&huart1)
 {
 
-	// Operation mode is normal mode
-	opeMode = OPE_MODE_NORMAL;
-
 	memset(&omniCmd, 0x00, sizeof(omniCmd));
 
 }
@@ -105,25 +104,49 @@ Sanran::Sanran()
 void Sanran::setup()
 {
 
-	printf("Hello.\n\n");
+	uint8_t userButton0 = HAL_GPIO_ReadPin(USER_SW0_GPIO_Port, USER_SW0_Pin);
+	uint8_t userButton1 = HAL_GPIO_ReadPin(USER_SW1_GPIO_Port, USER_SW1_Pin);
 
-	buzzer.sound_startup();
+	printf("\nHello. ");
 
-	delay_ms(1000);
+	// ボタンは負論理
+	if(userButton0 == 0)
+	{
+		opeMode = OPE_MODE_DEBUG;
+		printf("[DEBUG_MODE]\n\n");
+		buzzer.play(Buzzer::SOUND_STARTUP_DEBUG);
+	}
+	else if(userButton1 == 0)
+	{
+		opeMode = OPE_MODE_MANUAL;
+		printf("[MANUAL_MODE]\n\n");
+		buzzer.play(Buzzer::SOUND_STARTUP_MANUAL);
+	}
+	else
+	{
+		opeMode = OPE_MODE_NORMAL;
+		printf("[NORMAL_MODE]\n\n");
+		buzzer.play(Buzzer::SOUND_STARTUP_NORMAL);
+	}
+
+	power.enableSupply();
+
+	delay_ms(200);
 
 	printf("********** Initialize ********************\n\n");
 
-	DISP_SETUP_RESULT(onBrdLED.setup, "On Board LED");
+	printf("\n Setting %s ... \n", "On Board LED");
+	DISP_SETUP_RESULT(onBrdLED.setup, "On Board LED", false);
 
-	DISP_SETUP_RESULT(canMotorIF.setup, "CAN motor IF");
+	DISP_SETUP_RESULT(canMotorIF.setup, "CAN motor IF", true);
 
-	DISP_SETUP_RESULT(bno055.setup, "BNO055");
+	DISP_SETUP_RESULT(bno055.setup, "BNO055", false);
 
-	DISP_SETUP_RESULT(omni.setup, "Omni Wheel");
+	DISP_SETUP_RESULT(omni.setup, "Omni Wheel", (opeMode==OPE_MODE_NORMAL));
 
-	DISP_SETUP_RESULT(kicker.setup, "Kicker");
+	DISP_SETUP_RESULT(kicker.setup, "Kicker", true);
 
-	DISP_SETUP_RESULT(matcha.setup, "Matcha Serial");
+	DISP_SETUP_RESULT(matcha.setup, "Matcha Serial", true);
 
 	timeElapsed_hs_count = 0;
 
@@ -133,9 +156,6 @@ void Sanran::setup()
 
 	userButton0_prev = 1;
 	userButton1_prev = 1;
-
-	power.enableSupply();
-
 
 	dribbler.setup();
 
@@ -157,6 +177,14 @@ void Sanran::setup()
 	watchdog_CAN_threshold = 1000;
 	watchdog_UART_count = 0;
 	watchdog_UART_threshold = 10000;
+	if(opeMode == OPE_MODE_NORMAL)
+	{
+		watchdog_enable = true;
+	}
+	else
+	{
+		watchdog_enable = false;
+	}
 
 
 	printf("\n********** Start ********************\n");
@@ -232,6 +260,7 @@ void Sanran::UpdateSyncLS()
 
 //	if(ballSensor.read() > 0.15) dribbler.setSlow();
 //	else dribbler.setFast();
+
 
 	matcha.Update();
 
@@ -468,6 +497,19 @@ void Sanran::update_dump()
 
 	dump.send();
 
+
+}
+
+
+void Sanran::Error_Handler()
+{
+	buzzer.setNoteNumber(76+12);
+	while(1){
+		buzzer.on();
+		delay_ms(100);
+		buzzer.off();
+		delay_ms(100);
+	}
 
 }
 
