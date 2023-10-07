@@ -240,9 +240,9 @@ void Sanran::UpdateSyncLS()
 
   switch(result){
   case BALLINFO_SUCCESS:
-//    printf("decoded:");
-//    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
-//    printf("\n\r");
+    printf("decoded:");
+    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
+    printf("\n\r");
     captureBall(&rx_ball, &omniCmd, &omni);
     break;
   case BALLINFO_DECODE_NULL_POINTER:
