@@ -28,7 +28,8 @@ typedef enum{
   BALLINFO_DECODE_UNKNOWN,
   BALLINFO_SUCCESS,
   BALLINFO_FRAME_FAIL,
-  BALLINFO_FRAME_INVALID_LENGTH
+  BALLINFO_FRAME_INVALID_LENGTH,
+  BALLINFO_TIMEOUT
 }BallInformationResult;
 
 
@@ -50,15 +51,22 @@ private:
 	uint8_t seek_packet_start;
 	uint8_t seek_packet_end;
 
+	uint16_t timeout_counter;
+
+	uint16_t timeout_threshold;
+
 
 	UART_HandleTypeDef* phuart;
 
 	uint32_t rd_ptr; // the pointer to the head of  rx ring buffer
 
 public:
-	BallInfoCommunication(UART_HandleTypeDef* huart): rx_buf_size(BALLINFO_RX_BUF_SIZE), ball_info_length(sizeof(BallInformation)){
+	BallInfoCommunication(UART_HandleTypeDef* huart, uint16_t timeout_threshold = 100): rx_buf_size(BALLINFO_RX_BUF_SIZE), ball_info_length(sizeof(BallInformation)){
 		phuart = huart;
 		packet_bytes_ptr = 0;
+
+		timeout_counter = 0;
+		this->timeout_threshold = timeout_threshold;
 	}
 
 	void init(){
@@ -68,6 +76,7 @@ public:
     seek_packet_start = 0;
     seek_packet_end = 0;
     HAL_UART_Receive_DMA(phuart, rx_ringbuffer, rx_buf_size);
+    timeout_counter = 0;
 	}
 
 	inline uint32_t getDMAWritePtr(){ // calculating the tail of the ring buffer
@@ -159,6 +168,12 @@ public:
 
   BallInformationResult ReceiveBallInformation(BallInformation* ball_data){
     int16_t result = ReceiveFrame(rx_frame);
+
+    if(timeout_counter >= timeout_threshold){
+    	return BALLINFO_TIMEOUT;
+    }
+    timeout_counter ++;
+
     if(result < 0){
 //      printf("ERROR: BALLINFO_FRAME_FAIL\n\r");
       return BALLINFO_FRAME_FAIL;
@@ -174,6 +189,7 @@ public:
       switch(dec_rst.status){
       case COBS_DECODE_OK:
         memcpy(ball_data, tmp, rx_buf_size);
+        timeout_counter = 0;
         return BALLINFO_SUCCESS;
         break;
       case COBS_DECODE_NULL_POINTER:

@@ -262,6 +262,13 @@ void Sanran::UpdateSyncLS()
 	BallInformationResult result = ball_info_communication.ReceiveBallInformation(&rx_ball);
 
   switch(result){
+  case BALLINFO_TIMEOUT:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
+	  // go to the next case since no break!!!!!!!!!!!!!!!
   case BALLINFO_SUCCESS:
 //    printf("decoded:");
 //    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
