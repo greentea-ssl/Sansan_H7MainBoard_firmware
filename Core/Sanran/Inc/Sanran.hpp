@@ -58,6 +58,8 @@ public:
 		OPE_MODE_NORMAL = 1,
 		OPE_MODE_MANUAL = 2,
 		OPE_MODE_DEBUG = 3,
+		OPE_MODE_KEEPER_W_LOCALCAMERA = 4
+
 	}OperationMode_TypeDef;
 
 	OperationMode_TypeDef opeMode;

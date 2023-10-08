@@ -51,25 +51,31 @@ volatile float wheel_theta[4] = {0};
 													}while(0);
 
 
-void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWheel* omni){
+void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWheel* omni, MatchaSerial& matcha){
   omni->setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
-
-  float gain_w = 0.2;
+//  omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta); // Visionから降ってくる自己位置
+  //
+  float ref_rad = 0.5 * M_PI;
+  float gain_w = 2;
   float gain_x = 0.03;
   float gain_y = 0.02;
   if(ball_data->status == 0){
     omniCmd->robot_vel_x = 0;
-    omniCmd->robot_vel_y = 0;
-    omniCmd->robot_omega = 0;
-    return;
+  } else{
+	  omniCmd->robot_vel_x = fminf(0.8, fmaxf(-0.5 , gain_x * ball_data->x));
   }
-  omniCmd->robot_vel_x = fminf(0.8, fmaxf(-0.5 , gain_x * ball_data->x));
+
+  float theta_error = matcha.normal_cmd.fb_theta - ref_rad;
+  if(theta_error < -M_PI)
+	  theta_error += 2 * M_PI;
+  else if(theta_error > M_PI)
+	  theta_error -= 2 * M_PI;
+
+  if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL){
+	  omniCmd->robot_omega = fminf(4, fmaxf(-4 , -gain_w * (theta_error)));
+  }
+  printf("%f\r\n", matcha.normal_cmd.fb_theta);
   omniCmd->robot_vel_y = 0;//fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));
-  omniCmd->robot_omega = 0;//fminf(10, fmaxf(-10 , -gain_w * ball_data->x));
-//  printf("omniCmd.robot_vel_x: %f,   ", omniCmd->robot_vel_x);
-//  printf("omniCmd.robot_vel_y: %f,   ", omniCmd->robot_vel_y);
-//  printf("omniCmd.robot_omega: %f,   \n\r", omniCmd->robot_omega);
-//
 
 }
 
@@ -110,7 +116,7 @@ void Sanran::setup()
 	printf("\nHello. ");
 
 	// ボタンは負論理
-	if(1)
+	if(userButton0 == 0)
 	{
 		opeMode = OPE_MODE_DEBUG;
 		printf("[DEBUG_MODE]\n\n");
@@ -124,9 +130,9 @@ void Sanran::setup()
 	}
 	else
 	{
-		opeMode = OPE_MODE_NORMAL;
-		printf("[NORMAL_MODE]\n\n");
-		buzzer.play(Buzzer::SOUND_STARTUP_NORMAL);
+		opeMode = OPE_MODE_KEEPER_W_LOCALCAMERA;
+		printf("[KEEPER_W_LOCALCAMERA_MODE]\n\n");
+		buzzer.play(Buzzer::SOUND_STARTUP_DEBUG);
 	}
 
 	power.enableSupply();
@@ -171,7 +177,7 @@ void Sanran::setup()
 	//setup communication with raspberry pi
 	ball_info_communication.init();
 
-	if(opeMode == OPE_MODE_NORMAL)
+	if(opeMode == OPE_MODE_NORMAL || opeMode == OPE_MODE_KEEPER_W_LOCALCAMERA)
 	{
 		watchdog_enable = true;
 	}
@@ -273,7 +279,7 @@ void Sanran::UpdateSyncLS()
 //    printf("decoded:");
 //    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
 //    printf("\n\r");
-    captureBall(&rx_ball, &omniCmd, &omni);
+    captureBall(&rx_ball, &omniCmd, &omni, matcha);
     break;
   case BALLINFO_DECODE_NULL_POINTER:
     printf("BALLINFO_DECODE_NULL_POINTER\n\r");
@@ -335,7 +341,7 @@ void Sanran::UpdateSyncLS()
 //
 //		if(matcha.normal_cmd.vision_error == false)
 //		{
-//			omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta);
+//			omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta); // Visionから降ってくる自己位置
 //		}
 //
 //		omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
