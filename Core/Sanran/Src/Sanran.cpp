@@ -283,7 +283,7 @@ void Sanran::UpdateSyncLS()
     printf("BALLINFO_DECODE_UNKNOWN\n\r");
     break;
   case BALLINFO_FRAME_FAIL:
-      printf("BALLINFO_FRAME_FAIL\n\r");
+//      printf("BALLINFO_FRAME_FAIL\n\r");
     break;
   case BALLINFO_FRAME_INVALID_LENGTH:
     printf("BALLINFO_FRAME_INVALID_LENGTH\n\r");
