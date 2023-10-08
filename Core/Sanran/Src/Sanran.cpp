@@ -261,37 +261,37 @@ void Sanran::UpdateSyncLS()
 	// get ball information
 	BallInformationResult result = ball_info_communication.ReceiveBallInformation(&rx_ball);
 
-//  switch(result){
-//  case BALLINFO_SUCCESS:
-////    printf("decoded:");
-////    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
-////    printf("\n\r");
-////    captureBall(&rx_ball, &omniCmd, &omni);
-//    break;
-//  case BALLINFO_DECODE_NULL_POINTER:
-////    printf("BALLINFO_DECODE_NULL_POINTER\n\r");
-//    break;
-//  case BALLINFO_DECODE_OUT_BUFFER_OVERFLOW:
-////    printf("BALLINFO_DECODE_OUT_BUFFER_OVERFLOW\n\r");
-//    break;
-//  case BALLINFO_DECODE_ZERO_BYTE_IN_INPUT:
-////    printf("BALLINFO_DECODE_ZERO_BYTE_IN_INPUT\n\r");
-//    break;
-//  case BALLINFO_DECODE_INPUT_TOO_SHORT:
-////    printf("BALLINFO_DECODE_INPUT_TOO_SHORT\n\r");
-//  case BALLINFO_DECODE_UNKNOWN:
-////    printf("BALLINFO_DECODE_UNKNOWN\n\r");
-//    break;
-//  case BALLINFO_FRAME_FAIL:
-////      printf("BALLINFO_FRAME_FAIL\n\r");
-//    break;
-//  case BALLINFO_FRAME_INVALID_LENGTH:
-////    printf("BALLINFO_FRAME_INVALID_LENGTH\n\r");
-//    break;
-//  default:
-////    printf("unknown error\n\r");
-//	  break;
-//  }
+  switch(result){
+  case BALLINFO_SUCCESS:
+//    printf("decoded:");
+//    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
+//    printf("\n\r");
+    captureBall(&rx_ball, &omniCmd, &omni);
+    break;
+  case BALLINFO_DECODE_NULL_POINTER:
+    printf("BALLINFO_DECODE_NULL_POINTER\n\r");
+    break;
+  case BALLINFO_DECODE_OUT_BUFFER_OVERFLOW:
+    printf("BALLINFO_DECODE_OUT_BUFFER_OVERFLOW\n\r");
+    break;
+  case BALLINFO_DECODE_ZERO_BYTE_IN_INPUT:
+    printf("BALLINFO_DECODE_ZERO_BYTE_IN_INPUT\n\r");
+    break;
+  case BALLINFO_DECODE_INPUT_TOO_SHORT:
+    printf("BALLINFO_DECODE_INPUT_TOO_SHORT\n\r");
+  case BALLINFO_DECODE_UNKNOWN:
+    printf("BALLINFO_DECODE_UNKNOWN\n\r");
+    break;
+  case BALLINFO_FRAME_FAIL:
+      printf("BALLINFO_FRAME_FAIL\n\r");
+    break;
+  case BALLINFO_FRAME_INVALID_LENGTH:
+    printf("BALLINFO_FRAME_INVALID_LENGTH\n\r");
+    break;
+  default:
+    printf("unknown error\n\r");
+	  break;
+  }
 	// decide robot speed
 
 //	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)

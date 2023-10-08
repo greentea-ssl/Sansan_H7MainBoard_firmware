@@ -61,7 +61,7 @@ void cppMain(void)
 
 	sanran.startCycle();
 
-	ntshell_usr_init(&nts);
+//	ntshell_usr_init(&nts);
 
 //	ntshell_execute(&nts);
 
