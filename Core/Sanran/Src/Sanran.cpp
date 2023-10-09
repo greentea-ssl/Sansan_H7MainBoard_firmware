@@ -55,7 +55,7 @@ void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWhee
   omni->setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
 //  omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta); // Visionから降ってくる自己位置
   //
-  float ref_rad = 0.5 * M_PI;
+  float ref_rad = -0.5 * M_PI;
   float gain_w = 2;
   float gain_x = 0.03;
   float gain_y = 0.02;
