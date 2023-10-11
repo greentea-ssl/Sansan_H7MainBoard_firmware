@@ -59,9 +59,17 @@ void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWhee
   float gain_w = 2;
   float gain_x = 0.03;
   float gain_y = 0.02;
+
+  static uint16_t lost_counter = 0;
+  const int lost_counter_threshold = 60;
   if(ball_data->status == 0){
-    omniCmd->robot_vel_x = 0;
+	lost_counter ++;
+	if(lost_counter > lost_counter_threshold){
+	    omniCmd->robot_vel_x = 0;
+	    ball_data->x= 0;
+	}
   } else{
+	  lost_counter = 0;
 	  omniCmd->robot_vel_x = fminf(0.8, fmaxf(-0.5 , gain_x * ball_data->x));
   }
 
