@@ -141,6 +141,8 @@ private:
 
 	void Error_Handler();
 
+	void captureBall(BallInformation &ball_data);
+
 
 };
 
