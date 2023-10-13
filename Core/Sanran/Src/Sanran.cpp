@@ -51,8 +51,8 @@ volatile float wheel_theta[4] = {0};
 													}while(0);
 
 
-void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWheel* omni, MatchaSerial& matcha){
-  omni->setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
+void Sanran::captureBall(BallInformation &ball_data){
+  omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
 //  omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta); // Visionから降ってくる自己位置
   //
   float ref_rad = -0.5 * M_PI;
@@ -60,30 +60,53 @@ void captureBall(BallInformation* ball_data, OmniWheel::Cmd_t* omniCmd, OmniWhee
   float gain_x = 0.03;
   float gain_y = 0.02;
 
+  if(opeMode == OPE_MODE_DEBUG){
+	  ref_rad = 0;
+  }
+
+
   static uint16_t lost_counter = 0;
-  const int lost_counter_threshold = 60;
-  if(ball_data->status == 0){
+  const int lost_counter_threshold = 200;
+  if(ball_data.status == 0){
 	lost_counter ++;
 	if(lost_counter > lost_counter_threshold){
-	    omniCmd->robot_vel_x = 0;
-	    ball_data->x= 0;
+	    omniCmd.robot_vel_x = 0;
+	    ball_data.x= 0;
 	}
   } else{
 	  lost_counter = 0;
-	  omniCmd->robot_vel_x = fminf(0.8, fmaxf(-0.5 , gain_x * ball_data->x));
+	  omniCmd.robot_vel_x = fminf(0.8, fmaxf(-0.5 , gain_x * ball_data.x));
   }
 
+
   float theta_error = matcha.normal_cmd.fb_theta - ref_rad;
+  if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL){
+	  theta_error = matcha.normal_cmd.fb_theta - ref_rad;
+
+  }else if(opeMode == OPE_MODE_DEBUG){
+	  float imu_theta = bno055.get_IMU_yaw() * -1;
+
+	  if(imu_theta > M_PI){
+		  imu_theta -=2 * M_PI;
+	  }
+	  if(imu_theta < -M_PI){
+		  imu_theta +=2 * M_PI;
+	  }
+	  printf("rad: %f\n", imu_theta);
+
+	  theta_error = imu_theta - ref_rad;
+  }else{
+	  theta_error = 0;
+  }
   if(theta_error < -M_PI)
 	  theta_error += 2 * M_PI;
   else if(theta_error > M_PI)
 	  theta_error -= 2 * M_PI;
 
-  if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL){
-	  omniCmd->robot_omega = fminf(4, fmaxf(-4 , -gain_w * (theta_error)));
-  }
+  omniCmd.robot_omega = fminf(4, fmaxf(-4 , -gain_w * (theta_error)));
+
   printf("%f\r\n", matcha.normal_cmd.fb_theta);
-  omniCmd->robot_vel_y = 0;//fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));
+  omniCmd.robot_vel_y = 0;//fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));
 
 }
 
@@ -263,7 +286,7 @@ void Sanran::UpdateSyncLS()
 	if(deg > 1.0) deg -= 1.0;
 	onBrdLED.setHSV(deg, 1.0, 1.0);
 
-	// bno055.updateIMU();
+	 bno055.updateIMU();
 	ballSensor.update();
 
 //	if(ballSensor.read() > 0.15) dribbler.setSlow();
@@ -287,7 +310,7 @@ void Sanran::UpdateSyncLS()
 //    printf("decoded:");
 //    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
 //    printf("\n\r");
-    captureBall(&rx_ball, &omniCmd, &omni, matcha);
+    captureBall(rx_ball);
     break;
   case BALLINFO_DECODE_NULL_POINTER:
     printf("BALLINFO_DECODE_NULL_POINTER\n\r");
