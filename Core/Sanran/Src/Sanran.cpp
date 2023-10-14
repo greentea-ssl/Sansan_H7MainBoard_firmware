@@ -55,20 +55,26 @@ void Sanran::captureBall(BallInformation &ball_data){
   omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
 //  omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta); // Visionから降ってくる自己位置
   //
-  float ref_rad = 0;
-  float ref_world_x = -1.6;
+  float ref_rad =  M_PI / 2;;
+  float ref_world_x = 1.5;
   static bool lost_flag = true;
   static float ball_x = 0;
   static float ball_y = 0;
 
-  float gain_w = 2.5;
-  float gain_x = 0.02;
-  float gain_y = 0.02;
+  static float world_x_error = 0;
+  static float world_y_error = 0;
+  float vel_x_for_world = 0;
+  float vel_y_for_world = 0;
 
-  float x_pos_max;
-  float x_pos_min;
-  float y_pos_max;
-  float y_pos_min;
+  static float theta_error = 0;
+
+  float gain_w = 2.5;
+  float gain_ball_x = 0.02;
+  float gain_postion_world_y = 2;
+  float gain_postion_world_x = 1.2;
+
+  float y_pos_max = 0.3;
+  float y_pos_min = -0.3;
 
   static float x_error = 0;
   omniCmd.robot_vel_x = 0;
@@ -108,14 +114,31 @@ void Sanran::captureBall(BallInformation &ball_data){
   }
 
 
-  float theta_error = matcha.normal_cmd.fb_theta - ref_rad;
+  theta_error = matcha.normal_cmd.fb_theta - ref_rad;
   if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL){
 	  theta_error = matcha.normal_cmd.fb_theta - ref_rad;
-	  auto x =  matcha.normal_cmd.fb_x;
-	  auto y =  matcha.normal_cmd.fb_y;
+	  float x =  matcha.normal_cmd.fb_x;
+	  float y =  matcha.normal_cmd.fb_y;
+
+	  if(opeMode == OPE_MODE_KEEPER_W_LOCALCAMERA){
+		  world_x_error = x - ref_world_x;
+		  if (y > y_pos_max){
+			  world_y_error = y - y_pos_max;
+		  }else if (y < y_pos_min){
+			  world_y_error = y - y_pos_min;
+		  }else if(y > 0){
+			  world_y_error = 0.009;
+		  }else{
+			  world_y_error = -0.009;
+		  }
+
+	  }
 	  printf("x:%f, y:%f\n", x, y);
 
   }else if(opeMode == OPE_MODE_DEBUG){
+	  vel_x_for_world = 0;
+	  vel_y_for_world = 0;
+
 	  float imu_theta = bno055.get_IMU_yaw() * -1;
 
 	  if(imu_theta > M_PI){
@@ -128,18 +151,24 @@ void Sanran::captureBall(BallInformation &ball_data){
 
 	  theta_error = imu_theta - ref_rad;
   }else{
-	  theta_error = 0;
+//	  theta_error = 0;
+	  vel_x_for_world = 0;
+	  vel_y_for_world = 0;
   }
+  vel_x_for_world = (-gain_postion_world_x * world_x_error) * cosf(matcha.normal_cmd.fb_theta) + (-gain_postion_world_y * world_y_error) * sinf(matcha.normal_cmd.fb_theta);
+  vel_y_for_world = (gain_postion_world_x * world_x_error) * sinf(matcha.normal_cmd.fb_theta) + (-gain_postion_world_y * world_y_error) * cosf(matcha.normal_cmd.fb_theta);
+
   if(theta_error < -M_PI)
 	  theta_error += 2 * M_PI;
   else if(theta_error > M_PI)
 	  theta_error -= 2 * M_PI;
 
   omniCmd.robot_omega = fminf(4, fmaxf(-4 , -gain_w * (theta_error)));
-  omniCmd.robot_vel_x = fminf(1, fmaxf(-1 , gain_x * x_error));
+  omniCmd.robot_vel_x = fminf(1, fmaxf(-1 , gain_ball_x * x_error + vel_x_for_world));
 
-  printf("%f\r\n", matcha.normal_cmd.fb_theta);
-  omniCmd.robot_vel_y = 0;//fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));
+//  printf("%f\r\n", matcha.normal_cmd.fb_theta);
+  printf("world_x_error: %f, world_y_error: %f\n", world_x_error, world_y_error);
+  omniCmd.robot_vel_y = vel_y_for_world;//fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));
 
 }
 
