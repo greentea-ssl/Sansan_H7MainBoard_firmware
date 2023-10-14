@@ -55,33 +55,65 @@ void Sanran::captureBall(BallInformation &ball_data){
   omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
 //  omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta); // Visionから降ってくる自己位置
   //
-  float ref_rad = -0.5 * M_PI;
-  float gain_w = 2;
-  float gain_x = 0.03;
+  float ref_rad = 0;
+  float ref_world_x = -1.6;
+  static bool lost_flag = true;
+  static float ball_x = 0;
+  static float ball_y = 0;
+
+  float gain_w = 2.5;
+  float gain_x = 0.02;
   float gain_y = 0.02;
+
+  float x_pos_max;
+  float x_pos_min;
+  float y_pos_max;
+  float y_pos_min;
+
+  static float x_error = 0;
+  omniCmd.robot_vel_x = 0;
+
 
   if(opeMode == OPE_MODE_DEBUG){
 	  ref_rad = 0;
   }
 
 
-  static uint16_t lost_counter = 0;
-  const int lost_counter_threshold = 200;
+  static int16_t lost_counter = 0;
+  const int lost_counter_threshold = 50;
   if(ball_data.status == 0){
 	lost_counter ++;
 	if(lost_counter > lost_counter_threshold){
-	    omniCmd.robot_vel_x = 0;
-	    ball_data.x= 0;
+		lost_counter = lost_counter_threshold + 1;
+		printf("ball lost\n");
+		lost_flag = true;
+	    x_error = 0;
+	    ball_x= 0;
+	    ball_y = 0;
 	}
-  } else{
-	  lost_counter = 0;
-	  omniCmd.robot_vel_x = fminf(0.8, fmaxf(-0.5 , gain_x * ball_data.x));
+  } else {
+	  ball_x = ball_data.x;
+	  ball_y = ball_data.y;
+	  if(lost_counter <= 0){
+		  lost_counter = 0;
+		  lost_flag = false;
+	  }else {
+		  lost_counter = 0;
+	  //	  printf("ball count %d\n", lost_counter);
+		}
+  }
+
+  if(!lost_flag){
+	  x_error = ball_x;
   }
 
 
   float theta_error = matcha.normal_cmd.fb_theta - ref_rad;
   if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL){
 	  theta_error = matcha.normal_cmd.fb_theta - ref_rad;
+	  auto x =  matcha.normal_cmd.fb_x;
+	  auto y =  matcha.normal_cmd.fb_y;
+	  printf("x:%f, y:%f\n", x, y);
 
   }else if(opeMode == OPE_MODE_DEBUG){
 	  float imu_theta = bno055.get_IMU_yaw() * -1;
@@ -92,7 +124,7 @@ void Sanran::captureBall(BallInformation &ball_data){
 	  if(imu_theta < -M_PI){
 		  imu_theta +=2 * M_PI;
 	  }
-	  printf("rad: %f\n", imu_theta);
+//	  printf("rad: %f\n", imu_theta);
 
 	  theta_error = imu_theta - ref_rad;
   }else{
@@ -104,6 +136,7 @@ void Sanran::captureBall(BallInformation &ball_data){
 	  theta_error -= 2 * M_PI;
 
   omniCmd.robot_omega = fminf(4, fmaxf(-4 , -gain_w * (theta_error)));
+  omniCmd.robot_vel_x = fminf(1, fmaxf(-1 , gain_x * x_error));
 
   printf("%f\r\n", matcha.normal_cmd.fb_theta);
   omniCmd.robot_vel_y = 0;//fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));
@@ -300,42 +333,83 @@ void Sanran::UpdateSyncLS()
 
   switch(result){
   case BALLINFO_TIMEOUT:
+	  printf("BALLINFO_TIMEOUT\n");
 	  rx_ball.x = 0;
 	  rx_ball.y = 0;
 	  rx_ball.vx = 0;
 	  rx_ball.vy = 0;
 	  rx_ball.status = 0;
-	  // go to the next case since no break!!!!!!!!!!!!!!!
+	  break;
   case BALLINFO_SUCCESS:
 //    printf("decoded:");
 //    printf("x:%f, y:%f, status:%ld\n\r", rx_ball.x, rx_ball.y, rx_ball.status);
 //    printf("\n\r");
-    captureBall(rx_ball);
     break;
   case BALLINFO_DECODE_NULL_POINTER:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
     printf("BALLINFO_DECODE_NULL_POINTER\n\r");
     break;
   case BALLINFO_DECODE_OUT_BUFFER_OVERFLOW:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
     printf("BALLINFO_DECODE_OUT_BUFFER_OVERFLOW\n\r");
     break;
   case BALLINFO_DECODE_ZERO_BYTE_IN_INPUT:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
     printf("BALLINFO_DECODE_ZERO_BYTE_IN_INPUT\n\r");
     break;
   case BALLINFO_DECODE_INPUT_TOO_SHORT:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
     printf("BALLINFO_DECODE_INPUT_TOO_SHORT\n\r");
   case BALLINFO_DECODE_UNKNOWN:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
     printf("BALLINFO_DECODE_UNKNOWN\n\r");
     break;
   case BALLINFO_FRAME_FAIL:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
 //      printf("BALLINFO_FRAME_FAIL\n\r");
     break;
   case BALLINFO_FRAME_INVALID_LENGTH:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
     printf("BALLINFO_FRAME_INVALID_LENGTH\n\r");
     break;
   default:
+	  rx_ball.x = 0;
+	  rx_ball.y = 0;
+	  rx_ball.vx = 0;
+	  rx_ball.vy = 0;
+	  rx_ball.status = 0;
     printf("unknown error\n\r");
 	  break;
   }
+  captureBall(rx_ball);
 	// decide robot speed
 
 //	if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL)

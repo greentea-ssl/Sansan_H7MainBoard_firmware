@@ -61,7 +61,7 @@ private:
 	uint32_t rd_ptr; // the pointer to the head of  rx ring buffer
 
 public:
-	BallInfoCommunication(UART_HandleTypeDef* huart, uint16_t timeout_threshold = 100): rx_buf_size(BALLINFO_RX_BUF_SIZE), ball_info_length(sizeof(BallInformation)){
+	BallInfoCommunication(UART_HandleTypeDef* huart, uint16_t timeout_threshold = 50): rx_buf_size(BALLINFO_RX_BUF_SIZE), ball_info_length(sizeof(BallInformation)){
 		phuart = huart;
 		packet_bytes_ptr = 0;
 
