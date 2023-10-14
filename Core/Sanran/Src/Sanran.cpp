@@ -55,91 +55,91 @@ void Sanran::captureBall(BallInformation &ball_data){
   omni.setControlType(OmniWheel::TYPE_ROBOT_P_DOB);
 //  omni.correctPosition(matcha.normal_cmd.fb_x, matcha.normal_cmd.fb_y, matcha.normal_cmd.fb_theta); // Visionから降ってくる自己位置
   //
-  float ref_rad =  M_PI / 2;;
-  float ref_world_x = 1.5;
+  float ref_rad =  M_PI / 2;
+  float ref_world_x = 1.5;	//守備位置
   static bool lost_flag = true;
-  static float ball_x = 0;
-  static float ball_y = 0;
+  static float ball_x = 0; //受信したボール位置 単位はm
+  static float ball_y = 0; //受信したボール位置 単位はm
+  static float vel_x_for_ball = 0;		//ボール追従のためのロボットの制御速度
+  static float vel_y_for_ball = 0;		//ボール追従のためのロボットの制御速度
+  static float vel_w_for_ball = 0;		//ボール追従のためのロボットの制御速度
 
-  static float world_x_error = 0;
-  static float world_y_error = 0;
-  float vel_x_for_world = 0;
-  float vel_y_for_world = 0;
+  static float world_robotpos_x = ref_world_x;
+  static float world_robotpos_y = 0;
+  static float world_robotpos_theta = 0;
+  static float world_ball_pos_x = 0;
+  static float world_ball_pos_y = 0;
+  static int16_t vision_lost_counter = 0;
+  int16_t vision_lost_threshold = 100;
+  static bool vision_lost = true;
 
-  static float theta_error = 0;
+  static float world_x_error = 0;	//ワールド座標系における守備位置誤差
+  static float world_y_error = 0;	//ワールド座標系における守備位置誤差
+  float vel_x_for_world = 0;		//守備位置誤差修正のためのロボットの制御速度
+  float vel_y_for_world = 0;		//守備位置誤差修正のためのロボットの制御速度
+  float vel_w_for_world = 0;
+
+  static float theta_error = 0;		//守備向きの誤差
 
   float gain_w = 2.5;
-  float gain_ball_x = 0.02;
+  float gain_ball_x = 1;
   float gain_postion_world_y = 2;
   float gain_postion_world_x = 1.2;
 
   float y_pos_max = 0.3;
   float y_pos_min = -0.3;
 
-  static float x_error = 0;
+  static float x_error = 0;			//ボールの位置に対する誤差
+
   omniCmd.robot_vel_x = 0;
 
-
-  if(opeMode == OPE_MODE_DEBUG){
-	  ref_rad = 0;
-  }
-
-
+  //信号処理
+  //カメラからのボール位置
   static int16_t lost_counter = 0;
   const int lost_counter_threshold = 50;
   if(ball_data.status == 0){
-	lost_counter ++;
-	if(lost_counter > lost_counter_threshold){
-		lost_counter = lost_counter_threshold + 1;
-		printf("ball lost\n");
-		lost_flag = true;
-	    x_error = 0;
-	    ball_x= 0;
-	    ball_y = 0;
-	}
-  } else {
-	  ball_x = ball_data.x;
-	  ball_y = ball_data.y;
-	  if(lost_counter <= 0){
-		  lost_counter = 0;
-		  lost_flag = false;
-	  }else {
-		  lost_counter = 0;
-	  //	  printf("ball count %d\n", lost_counter);
-		}
-  }
-
-  if(!lost_flag){
-	  x_error = ball_x;
-  }
-
-
-  theta_error = matcha.normal_cmd.fb_theta - ref_rad;
-  if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL){
-	  theta_error = matcha.normal_cmd.fb_theta - ref_rad;
-	  float x =  matcha.normal_cmd.fb_x;
-	  float y =  matcha.normal_cmd.fb_y;
-
-	  if(opeMode == OPE_MODE_KEEPER_W_LOCALCAMERA){
-		  world_x_error = x - ref_world_x;
-		  if (y > y_pos_max){
-			  world_y_error = y - y_pos_max;
-		  }else if (y < y_pos_min){
-			  world_y_error = y - y_pos_min;
-		  }else if(y > 0){
-			  world_y_error = 0.009;
-		  }else{
-			  world_y_error = -0.009;
-		  }
-
+	  lost_counter ++;
+	  if(lost_counter > lost_counter_threshold){
+		  lost_counter = lost_counter_threshold + 1;
+		  printf("ball lost\n");
+		  lost_flag = true;
+		  ball_x= 0;
+		  ball_y = 0;
 	  }
-	  printf("x:%f, y:%f\n", x, y);
+  } else {
+	  ball_x = ball_data.x / 100.0; //cm -> m
+	  ball_y = ball_data.y / 100.0; //cm -> m
 
-  }else if(opeMode == OPE_MODE_DEBUG){
-	  vel_x_for_world = 0;
-	  vel_y_for_world = 0;
+	  lost_counter = 0;
+	  lost_flag = false;
+  }
 
-	  float imu_theta = bno055.get_IMU_yaw() * -1;
+  //Visionから降ってくるやつ
+  if(matcha.newDataAvailable() && matcha.getReceiveState() == MatchaSerial::RECEIVE_STATE_NORMAL){
+	  vision_lost_counter = 0;
+	  vision_lost = false;
+	  world_robotpos_x = matcha.normal_cmd.fb_x;
+	  world_robotpos_y = matcha.normal_cmd.fb_y;
+	  world_robotpos_theta = matcha.normal_cmd.fb_theta;
+
+  }else{
+	  vision_lost_counter += 1;
+
+	  if(vision_lost_counter > vision_lost_threshold){
+		  vision_lost_counter = vision_lost_threshold + 1;
+		  vision_lost = true;
+
+		  world_robotpos_x = ref_world_x;
+		  world_robotpos_y = 0;
+		  world_robotpos_theta = 0;
+	  }
+  }
+
+  float imu_theta;
+  // 制御処理
+  switch(opeMode){
+  case OPE_MODE_DEBUG://ロボット座標のみで動く
+	  imu_theta = bno055.get_IMU_yaw() * -1;
 
 	  if(imu_theta > M_PI){
 		  imu_theta -=2 * M_PI;
@@ -147,28 +147,67 @@ void Sanran::captureBall(BallInformation &ball_data){
 	  if(imu_theta < -M_PI){
 		  imu_theta +=2 * M_PI;
 	  }
-//	  printf("rad: %f\n", imu_theta);
 
-	  theta_error = imu_theta - ref_rad;
-  }else{
-//	  theta_error = 0;
-	  vel_x_for_world = 0;
-	  vel_y_for_world = 0;
+	  theta_error = imu_theta;
+
+	  vel_w_for_world = -gain_w * (theta_error);
+
+	  if(!lost_flag){
+		  x_error = ball_x;
+		  vel_x_for_ball = gain_ball_x * x_error;
+	  }else{
+		  x_error = 0;
+		  vel_x_for_ball = 0;
+	  }
+	  omniCmd.robot_vel_x = fminf(1, fmaxf(-1 , vel_x_for_ball));
+	  omniCmd.robot_vel_y = 0;
+	  omniCmd.robot_omega = fminf(4, fmaxf(-4 , vel_w_for_world));
+	  break;
+  case OPE_MODE_KEEPER_W_LOCALCAMERA://Visionから位置情報がもらえる
+
+	  if(!vision_lost){
+		  theta_error = world_robotpos_theta - ref_rad;
+		  if(theta_error < -M_PI)
+			  theta_error += 2 * M_PI;
+		  else if(theta_error > M_PI)
+			  theta_error -= 2 * M_PI;
+
+		  vel_w_for_world = -gain_w * (theta_error);
+
+		  world_x_error = world_ball_pos_x - ref_world_x;
+
+		  if (world_ball_pos_y < y_pos_min){
+			  world_y_error = world_ball_pos_y - y_pos_min;
+		  }else if(world_ball_pos_y > 0){
+			  world_y_error = 0.009;
+		  }else{
+			  world_y_error = -0.009;
+		  }
+
+		  vel_x_for_world = (-gain_postion_world_x * world_x_error) * cosf(world_robotpos_theta) + (-gain_postion_world_y * world_y_error) * sinf(world_robotpos_theta);
+		  vel_y_for_world = (gain_postion_world_x * world_x_error) * sinf(world_robotpos_theta) + (-gain_postion_world_y * world_y_error) * cosf(world_robotpos_theta);
+	  }else{
+		  vel_x_for_world = 0;
+		  vel_y_for_world = 0;
+	  }
+
+	  if(!lost_flag){
+		  x_error = ball_x;
+		  vel_x_for_ball = gain_ball_x * x_error;
+	  }else{
+		  x_error = 0;
+		  vel_x_for_ball = 0;
+	  }
+	  omniCmd.robot_omega = fminf(4, fmaxf(-4 , vel_w_for_world));
+	  omniCmd.robot_vel_x = fminf(1, fmaxf(-1 , vel_x_for_ball + vel_x_for_world));
+	  omniCmd.robot_vel_y = vel_y_for_world;
+
+	  //  printf("%f\r\n", matcha.normal_cmd.fb_theta);
+	 //   printf("world_x_error: %f, world_y_error: %f\n", world_x_error, world_y_error);
+	  break;
+  default:
+	  break;
   }
-  vel_x_for_world = (-gain_postion_world_x * world_x_error) * cosf(matcha.normal_cmd.fb_theta) + (-gain_postion_world_y * world_y_error) * sinf(matcha.normal_cmd.fb_theta);
-  vel_y_for_world = (gain_postion_world_x * world_x_error) * sinf(matcha.normal_cmd.fb_theta) + (-gain_postion_world_y * world_y_error) * cosf(matcha.normal_cmd.fb_theta);
-
-  if(theta_error < -M_PI)
-	  theta_error += 2 * M_PI;
-  else if(theta_error > M_PI)
-	  theta_error -= 2 * M_PI;
-
-  omniCmd.robot_omega = fminf(4, fmaxf(-4 , -gain_w * (theta_error)));
-  omniCmd.robot_vel_x = fminf(1, fmaxf(-1 , gain_ball_x * x_error + vel_x_for_world));
-
-//  printf("%f\r\n", matcha.normal_cmd.fb_theta);
-  printf("world_x_error: %f, world_y_error: %f\n", world_x_error, world_y_error);
-  omniCmd.robot_vel_y = vel_y_for_world;//fminf(0.5, fmaxf(-0.5 , gain_y * ball_data->y));
 
 }
 
