@@ -60,6 +60,7 @@ void Sanran::captureBall(BallInformation &ball_data){
   static bool lost_flag = true;
   static float ball_x = 0; //受信したボール位置 単位はm
   static float ball_y = 0; //受信したボール位置 単位はm
+  float robot_radius = 0.09; //ロボット半径 m
   static float vel_x_for_ball = 0;		//ボール追従のためのロボットの制御速度
   static float vel_y_for_ball = 0;		//ボール追従のためのロボットの制御速度
   static float vel_w_for_ball = 0;		//ボール追従のためのロボットの制御速度
@@ -81,8 +82,9 @@ void Sanran::captureBall(BallInformation &ball_data){
 
   static float theta_error = 0;		//守備向きの誤差
 
-  float gain_w = 2.5;
   float gain_ball_x = 1;
+  float gain_ball_w = 2.5;
+  float gain_w = 2.5;
   float gain_postion_world_y = 2;
   float gain_postion_world_x = 1.2;
 
@@ -90,6 +92,7 @@ void Sanran::captureBall(BallInformation &ball_data){
   float y_pos_min = -0.3;
 
   static float x_error = 0;			//ボールの位置に対する誤差
+  static float y_error = 0;			//ボールの位置に対する誤差
 
   omniCmd.robot_vel_x = 0;
 
@@ -122,6 +125,14 @@ void Sanran::captureBall(BallInformation &ball_data){
 	  world_robotpos_y = matcha.normal_cmd.fb_y;
 	  world_robotpos_theta = matcha.normal_cmd.fb_theta;
 
+	  auto offset_ball_y = ball_y + robot_radius;
+
+	  auto rotate_ball_x = ball_x * cosf(world_robotpos_theta) - offset_ball_y * sinf(world_robotpos_theta);
+	  auto rotate_ball_y = ball_x * sinf(world_robotpos_theta) + offset_ball_y * cos(world_robotpos_theta);
+
+	  world_ball_pos_x = rotate_ball_x + world_robotpos_x;
+	  world_ball_pos_y = rotate_ball_y + world_robotpos_y;
+
   }else{
 	  vision_lost_counter += 1;
 
@@ -136,6 +147,7 @@ void Sanran::captureBall(BallInformation &ball_data){
   }
 
   float imu_theta;
+  float ball_error_theta;
   // 制御処理
   switch(opeMode){
   case OPE_MODE_DEBUG://ロボット座標のみで動く
@@ -165,6 +177,23 @@ void Sanran::captureBall(BallInformation &ball_data){
 	  break;
   case OPE_MODE_KEEPER_W_LOCALCAMERA://Visionから位置情報がもらえる
 
+	  if(!lost_flag){
+
+		  x_error = world_ball_pos_x - world_robotpos_x;	//ワールド基準で考える
+		  y_error = world_ball_pos_y - world_robotpos_y;
+		  ball_error_theta = atan2f(ball_y, ball_x) - M_PI / 2; //float atan2(float y, float x);
+
+		  vel_x_for_ball = gain_ball_x * x_error * sinf(world_robotpos_theta);
+		  vel_y_for_ball = gain_ball_x * x_error * cosf(world_robotpos_theta);
+		  vel_w_for_ball = gain_ball_w * ball_error_theta;
+		  vel_w_for_world = 0;
+	  }else{
+		  x_error = 0;
+		  vel_x_for_ball = 0;
+		  vel_y_for_ball = 0;
+		  vel_w_for_ball = 0;
+	  }
+
 	  if(!vision_lost){
 		  theta_error = world_robotpos_theta - ref_rad;
 		  if(theta_error < -M_PI)
@@ -172,16 +201,26 @@ void Sanran::captureBall(BallInformation &ball_data){
 		  else if(theta_error > M_PI)
 			  theta_error -= 2 * M_PI;
 
-		  vel_w_for_world = -gain_w * (theta_error);
+		  if(!lost_flag)
+			  vel_w_for_world = -gain_w * (theta_error);
+		  else
+			  vel_w_for_world = 0;
 
 		  world_x_error = world_ball_pos_x - ref_world_x;
 
 		  if (world_ball_pos_y < y_pos_min){
 			  world_y_error = world_ball_pos_y - y_pos_min;
+			  vel_x_for_ball = 0;							//出ていかないようにボール追従をやめる
+			  vel_y_for_ball = 0;							//出ていかないようにボール追従をやめる
+
+		  }else if (world_ball_pos_y > y_pos_max){
+			  world_y_error = world_ball_pos_y - y_pos_max;
+			  vel_x_for_ball = 0;							//出ていかないようにボール追従をやめる
+			  vel_y_for_ball = 0;							//出ていかないようにボール追従をやめる
 		  }else if(world_ball_pos_y > 0){
-			  world_y_error = 0.009;
+			  world_y_error = 0.01;
 		  }else{
-			  world_y_error = -0.009;
+			  world_y_error = -0.01;
 		  }
 
 		  vel_x_for_world = (-gain_postion_world_x * world_x_error) * cosf(world_robotpos_theta) + (-gain_postion_world_y * world_y_error) * sinf(world_robotpos_theta);
@@ -191,14 +230,7 @@ void Sanran::captureBall(BallInformation &ball_data){
 		  vel_y_for_world = 0;
 	  }
 
-	  if(!lost_flag){
-		  x_error = ball_x;
-		  vel_x_for_ball = gain_ball_x * x_error;
-	  }else{
-		  x_error = 0;
-		  vel_x_for_ball = 0;
-	  }
-	  omniCmd.robot_omega = fminf(4, fmaxf(-4 , vel_w_for_world));
+	  omniCmd.robot_omega = fminf(4, fmaxf(-4 , vel_w_for_world + vel_w_for_ball));
 	  omniCmd.robot_vel_x = fminf(1, fmaxf(-1 , vel_x_for_ball + vel_x_for_world));
 	  omniCmd.robot_vel_y = vel_y_for_world;
 
