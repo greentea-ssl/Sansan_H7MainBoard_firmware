@@ -37,6 +37,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "main.h"
 
@@ -189,7 +190,7 @@ static int usrcmd_ntopt_callback(int argc, char **argv, void *extobj)
         return 0;
     }
     const cmd_table_t *p = &cmdlist[0];
-    for (uint i = 0; i < sizeof(cmdlist) / sizeof(cmdlist[0]); i++) {
+    for (uint32_t i = 0; i < sizeof(cmdlist) / sizeof(cmdlist[0]); i++) {
         if (ntlibc_strcmp((const char *)argv[0], p->cmd) == 0) {
             return p->func(argc, argv);
         }
@@ -202,7 +203,7 @@ static int usrcmd_ntopt_callback(int argc, char **argv, void *extobj)
 static int usrcmd_help(int argc, char **argv)
 {
     const cmd_table_t *p = &cmdlist[0];
-    for (uint i = 0; i < sizeof(cmdlist) / sizeof(cmdlist[0]); i++) {
+    for (uint32_t i = 0; i < sizeof(cmdlist) / sizeof(cmdlist[0]); i++) {
         uart_puts(p->cmd);
         uart_puts("\t:");
         uart_puts(p->desc);
@@ -611,7 +612,7 @@ static int usrcmd_dribble(int argc, char **argv)
 			return 0;
 		}
 		sanran.dribbler.setPower(preset_idx);
-		printf("\r\npreset idx = %d \r\n", preset_idx);
+		printf("\r\npreset idx = %ld \r\n", preset_idx);
 		return 0;
 	}
 	else if (ntlibc_strcmp(argv[1], "setus") == 0 && argc == 3) {
