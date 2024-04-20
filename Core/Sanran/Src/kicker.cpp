@@ -18,10 +18,15 @@ Kicker::Kicker(TIM_HandleTypeDef *htim, uint32_t channel)
 
 	m_select_wait_dulation = 5;
 
+	const int pulse_min_us = 3000;
+	const int pulse_max_us = 5000;
+
+	const int n_levels = 16;
+
 	for(int i = 0; i < 16; i++)
 	{
-		m_width_straight[i] = i * 200;
-		m_width_chip[i] = i * 100;
+		m_width_straight[i] = (pulse_max_us - pulse_min_us) * i / (n_levels - 1) + pulse_min_us;
+		m_width_chip[i] = (pulse_max_us - pulse_min_us) * i / (n_levels - 1) + pulse_min_us;
 	}
 
 }
