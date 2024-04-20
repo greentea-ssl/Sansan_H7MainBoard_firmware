@@ -13,13 +13,19 @@
 Dribbler::Dribbler(TIM_HandleTypeDef *htim, uint32_t channel) : m_htim(htim), m_channel(channel)
 {
 
-	for(int i = 0; i < 16; i++)
+	const int thr_min = 1015;
+	const int thr_max = 1500;
+
+	const int n_levels = 16;
+
+	// i=0: 900us (Stop)
+	m_width[0] = 900;
+
+	for(int i = 1; i < n_levels; i++)
 	{
 		// i=1: 1000us, i=15: 1100us, Linear
-		m_width[i] = (i - 1) * 7.142 + 1000;
+		m_width[i] = (thr_max - thr_min) * (i - 1) / (n_levels - 2) + thr_min;
 	}
-	// i=0: 900us
-	m_width[0] = 900;
 
 }
 
