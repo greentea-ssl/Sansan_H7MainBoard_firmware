@@ -277,6 +277,7 @@ void Sanran::UpdateSyncLS()
 		{
 			omniCmd.vel_limit = 0.0f;
 			omni.setControlType(OmniWheel::TYPE_WORLD_POSITION);
+			dribbler.setPower(0);
 		}
 		break;
 
