@@ -24,6 +24,8 @@ OmniWheel::OmniWheel(ControlType_t type, CanMotorIF *canMotorIF) :
 	m_param.Ts = 1E-3;
 	m_param.g_dis = 30;
 
+	m_param.K_vx2omega = 2.0;
+
 	for(int i = 0; i < 4; i++)
 	{
 		m_param.wheel_pos_r[i] = 81E-3;//74.7E-3;
@@ -196,7 +198,7 @@ OmniWheel::ErrorStatus_t OmniWheel::update(Cmd_t *cmd)
 			m_cmd.omega_w[i] =
 					m_convMat_robot2motor[i][0] * cmd->robot_vel_x +
 					m_convMat_robot2motor[i][1] * cmd->robot_vel_y +
-					m_convMat_robot2motor[i][2] * cmd->robot_omega;
+					m_convMat_robot2motor[i][2] * cmd->robot_omega + m_param.K_vx2omega * cmd->robot_vel_x; // Vx->w補正係数 // すぐ消す
 			float error = m_cmd.omega_w[i] - m_canMotorIF->motor[i].get_omega();
 			float estTorque = dob[i].update(m_canMotorIF->motor[i].get_Iq_ref(), m_canMotorIF->motor[i].get_omega());
 			float Iq_ref = m_param.Kp * error + estTorque / m_param.Ktn[i];

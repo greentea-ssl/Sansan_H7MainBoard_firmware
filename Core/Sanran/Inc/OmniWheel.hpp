@@ -56,6 +56,7 @@ public:
 		float Ts; /* Sampling time */
 		float Iq_limit[4]; /* Rated current value */
 
+		float K_vx2omega; // 横移動時の回転を補正する係数 // すぐ消す
 		float wheel_pos_r[4];
 		float wheel_pos_theta_deg[4];
 		float wheel_r[4];
